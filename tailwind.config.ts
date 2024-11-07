@@ -7,6 +7,7 @@ const config: Config = {
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  darkMode: "class",
   theme: {
     extend: {
       fontFamily: {
@@ -14,10 +15,11 @@ const config: Config = {
         serif: ["var(--font-serif)", ...fontFamily.serif],
       },
       colors: {
-        background: "#FCF4EE",
+        light: "#FBF3EC",
+        dark: "#32383E",
 
-        primary: "#7E7FFC",
-        secondary: "#BEBFFF",
+        primary: "#F49B90",
+        secondary: "#FDE4DF",
       },
     },
   },

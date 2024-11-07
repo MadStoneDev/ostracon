@@ -31,7 +31,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`px-[25px] bg-background h-screen overflow-hidden`}>
+      <body
+        className={`h-screen dark:bg-dark bg-light dark:text-light text-dark overflow-hidden`}
+      >
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
