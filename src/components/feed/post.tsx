@@ -8,6 +8,7 @@ import {
   IconMessageFilled,
   IconTool,
 } from "@tabler/icons-react";
+import { useState } from "react";
 
 export default function Post({
   username,
@@ -20,6 +21,9 @@ export default function Post({
   nsfw: boolean;
   date: string;
 }) {
+  // States
+  const [blurred, setBlurred] = useState(true);
+
   return (
     <div className={`px-[25px]`}>
       {/* Header */}
@@ -54,12 +58,42 @@ export default function Post({
       </section>
       {/* Content */}
       <section
-        className={`py-7 border-b border-dark dark:border-light`}
+        className={`relative py-7 ${
+          nsfw ? "px-3" : "px-0"
+        } border-b border-dark dark:border-light transition-all duration-300 ease-in-out`}
         style={{
           whiteSpace: "pre-wrap",
         }}
       >
         {content}
+
+        {nsfw && blurred && (
+          <div
+            className={`absolute top-0 bottom-0 left-0 right-0 grid place-content-center bg-light/20 dark:bg-dark/20`}
+            style={{
+              backdropFilter: "blur(4px)",
+            }}
+          >
+            <button
+              className={`group/nsfw relative px-4 hover:px-6 py-2 text-light rounded-full shadow-lg hover:shadow-2xl shadow-dark/50 transition-all duration-300 ease-in-out overflow-hidden`}
+              onClick={() => setBlurred(false)}
+            >
+              <div
+                className={`absolute top-0 bottom-0 left-0 right-0 bg-danger`}
+              >
+                <div
+                  className={`absolute -top-24 group-hover/nsfw:-top-20 right-72 group-hover/nsfw:-right-0 w-52 h-52 rotate-45 bg-dark z-0 transition-all duration-500 ease-in-out`}
+                ></div>
+              </div>
+
+              <p
+                className={`relative group-hover/nsfw:scale-95 z-10 transition-all duration-300 ease-in-out`}
+              >
+                Unblur Sensitive Content
+              </p>
+            </button>
+          </div>
+        )}
       </section>
 
       {/* Menus */}

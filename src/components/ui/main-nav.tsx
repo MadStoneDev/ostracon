@@ -26,7 +26,7 @@ export default function MainNav({
       <section
         className={`flex items-center font-serif font-black text-sm uppercase`}
       >
-        Ostracon
+        <Link href={`/`}>Ostracon</Link>
       </section>
 
       <section className={`flex-grow flex justify-end items-center gap-2`}>

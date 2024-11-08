@@ -14,7 +14,12 @@ export const metadata = {
 
 export default function Home() {
   return (
-    <div className={`flex flex-col h-full`}>
+    <main
+      className={`flex-grow flex flex-col h-full`}
+      style={{
+        paddingTop: "60px",
+      }}
+    >
       {/* Main Content */}
       <section className={`flex-grow px-[25px] grid grid-cols-1 items-center`}>
         <article>
@@ -40,6 +45,6 @@ export default function Home() {
           </Link>
         </p>
       </footer>
-    </div>
+    </main>
   );
 }
