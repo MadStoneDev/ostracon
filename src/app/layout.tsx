@@ -32,7 +32,7 @@ export default function RootLayout({
       <body>
         <ThemeProvider>
           <div
-            className={`flex flex-col min-h-screen justify-between dark:bg-dark bg-light dark:text-light text-dark overflow-hidden`}
+            className={`flex flex-col min-h-dvh justify-between dark:bg-dark bg-light dark:text-light text-dark overflow-hidden`}
           >
             <MainNav authenticated={authenticated} />
 
