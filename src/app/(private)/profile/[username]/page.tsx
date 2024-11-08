@@ -5,9 +5,9 @@ import BigButton from "@/components/ui/big-button";
 
 import { IconHeartFilled, IconNotes, IconTool } from "@tabler/icons-react";
 
-export default function Profile({ params }: { params: { username: string } }) {
+export default async function Profile({ params }: { params: Promise<{ username: string }> }) {
   // Variables
-  const username = params.username;
+  const username = (await params).username;
 
   return (
     <div className={`flex flex-col border border-red-600`}>
