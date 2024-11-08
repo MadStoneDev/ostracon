@@ -1,11 +1,11 @@
-import Image from "next/image";
-import {
-  IconInfoCircle,
-  IconInfoCircleFilled,
-  IconTool,
-  IconUserPlus,
-} from "@tabler/icons-react";
+import { IconInfoCircleFilled, IconUserPlus } from "@tabler/icons-react";
 import Link from "next/link";
+import BigButton from "@/components/ui/big-button";
+
+export const metadata = {
+  title: "Ostracon",
+  description: "Welcome to Ostracon!",
+};
 
 export default function Home() {
   return (
@@ -36,16 +36,12 @@ export default function Home() {
           <h1 className={`font-serif text-5xl font-black`}>Welcome!</h1>
           <h2 className={`font-serif text-xl`}>Let's create a new account</h2>
 
-          <button
-            className={`mt-10 flex items-center h-12 rounded-full bg-primary font-serif text-xl`}
-          >
-            <span className={`px-5`}>Start creating</span>
-            <div
-              className={`grid place-content-center w-12 h-12 rounded-full bg-secondary scale-105`}
-            >
-              <IconUserPlus size={28} strokeWidth={1.5} />
-            </div>
-          </button>
+          <div className={`mt-10`}>
+            <BigButton
+              title={"Start creating"}
+              indicator={<IconUserPlus size={28} strokeWidth={1.5} />}
+            />
+          </div>
         </article>
       </section>
 

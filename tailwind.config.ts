@@ -15,11 +15,13 @@ const config: Config = {
         serif: ["var(--font-serif)", ...fontFamily.serif],
       },
       colors: {
-        light: "#FBF3EC",
+        light: "#FCFAF9",
         dark: "#32383E",
 
         primary: "#F49B90",
         secondary: "#FDE4DF",
+
+        danger: "#DB678A",
       },
     },
   },

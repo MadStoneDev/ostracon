@@ -7,6 +7,8 @@ import {
   IconTool,
   IconUserPlus,
 } from "@tabler/icons-react";
+import BigButton from "@/components/ui/big-button";
+import Post from "@/components/feed/post";
 
 export default function Profile({ params }: { params: { username: string } }) {
   // Variables
@@ -41,67 +43,58 @@ export default function Profile({ params }: { params: { username: string } }) {
       </section>
 
       {/* Main Content */}
-      <section className={`px-[25px] flex items-center`}>
-        <article className={`mb-10 grid gap-6`}>
+      <section className={`px-[25px] grid gap-6`}>
+        <article className={`flex flex-col gap-3`}>
           <h1 className={`font-serif text-2xl font-black`}>{username}</h1>
           <p className={`opacity-75 font-normal`}>
             A small bio about this user that tells a little of who they are,
             what they like, how old they are and why they're here.
           </p>
+        </article>
 
-          <div className={`flex items-center gap-5`}>
-            <button
-              className={`flex items-center h-12 rounded-full bg-primary font-serif text-xl`}
-            >
-              <div
-                className={`grid place-content-center w-12 h-12 rounded-full bg-secondary scale-105`}
-              >
-                25
-              </div>
-              <span className={`px-5`}>Followers</span>
-            </button>
+        <article className={`flex flex-col justify-center gap-4`}>
+          <div className={`flex items-center gap-3`}>
+            <BigButton title={"Followers"} indicator={25} direction={"left"} />
 
-            <button
-              className={`flex items-center h-12 rounded-full bg-primary font-serif text-xl`}
-            >
-              <div
-                className={`grid place-content-center w-12 h-12 rounded-full bg-secondary scale-105`}
-              >
-                25
-              </div>
-              <span className={`px-5`}>Followers</span>
-            </button>
+            <BigButton
+              title={"Following"}
+              indicator={"952k"}
+              direction={"left"}
+            />
           </div>
 
-          <div className={`flex items-center gap-5`}>
-            <button
-              className={`flex items-center h-12 rounded-full bg-primary font-serif text-xl`}
-            >
-              <span className={`px-5`}>Posted</span>
-              <div
-                className={`grid place-content-center w-12 h-12 rounded-full bg-secondary scale-105`}
-              >
-                <IconNotes size={28} strokeWidth={1.5} />
-              </div>
-            </button>
+          <div className={`flex items-center gap-3`}>
+            <BigButton
+              title={"Posted"}
+              indicator={<IconNotes size={28} strokeWidth={1.5} />}
+            />
 
-            <button
-              className={`flex items-center h-12 rounded-full bg-primary font-serif text-xl`}
-            >
-              <span className={`px-5`}>Liked</span>
-              <div
-                className={`grid place-content-center w-12 h-12 rounded-full bg-secondary scale-105`}
-              >
-                <IconHeartFilled size={28} strokeWidth={1.5} />
-              </div>
-            </button>
+            <BigButton
+              title={"Followers"}
+              indicator={<IconHeartFilled size={28} strokeWidth={1.5} />}
+            />
           </div>
         </article>
       </section>
 
+      {/* Separator */}
+      <section className={`mx-[25px] my-7 h-[1px] bg-dark`}></section>
+
+      {/* Feed */}
+      <section className={`grid`}>
+        <Post
+          username={username}
+          content={`Nullam eu ante non enim tincidunt fringilla. Integer leo. Duis eget enim.
+
+Curabitur felis erat, tempus eu, placerat et, pellentesque sed, purus. Sed sed diam. Nam nunc. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Aenean risus est, porttitor vel, placerat sit amet, vestibulum sit amet, nibh. Ut faucibus justo quis nisl. Etiam vulputate, sapien eu egestas rutrum, `}
+          nsfw={true}
+          date={""}
+        />
+      </section>
+
       {/* Navigation Bar */}
       <nav
-        className={`px-[25px] flex items-center h-[60px] bg-secondary`}
+        className={`px-[25px] fixed bottom-0 left-0 right-0 flex items-center h-[60px] bg-secondary`}
       ></nav>
     </main>
   );
