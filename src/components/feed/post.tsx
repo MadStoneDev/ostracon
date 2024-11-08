@@ -1,6 +1,13 @@
 ﻿"use client";
 
-import { IconEyeOff } from "@tabler/icons-react";
+import {
+  IconEyeOff,
+  IconHeart,
+  IconHeartFilled,
+  IconMessage,
+  IconMessageFilled,
+  IconTool,
+} from "@tabler/icons-react";
 
 export default function Post({
   username,
@@ -47,14 +54,26 @@ export default function Post({
       </section>
       {/* Content */}
       <section
-        className={`py-2`}
+        className={`py-7 border-b border-dark dark:border-light`}
         style={{
           whiteSpace: "pre-wrap",
         }}
       >
         {content}
       </section>
+
       {/* Menus */}
+      <section className={`flex flex-nowrap justify-around items-center h-20`}>
+        <article>
+          <IconHeart size={28} strokeWidth={1.5} />
+        </article>
+        <article>
+          <IconMessage size={28} strokeWidth={1.5} />
+        </article>
+        <article>
+          <IconTool size={28} strokeWidth={1.5} />
+        </article>
+      </section>
     </div>
   );
 }

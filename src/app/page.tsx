@@ -1,6 +1,11 @@
-import { IconInfoCircleFilled, IconUserPlus } from "@tabler/icons-react";
+import {
+  IconInfoCircleFilled,
+  IconSun,
+  IconUserPlus,
+} from "@tabler/icons-react";
 import Link from "next/link";
 import BigButton from "@/components/ui/big-button";
+import MainNav from "@/components/ui/main-nav";
 
 export const metadata = {
   title: "Ostracon",
@@ -9,27 +14,7 @@ export const metadata = {
 
 export default function Home() {
   return (
-    <main className="flex flex-col min-h-full">
-      {/* Header Bar */}
-      <nav
-        className={`px-[25px] flex justify-between items-stretch gap-10 h-[60px]`}
-      >
-        <section
-          className={`flex items-center font-serif font-black text-sm uppercase`}
-        >
-          Ostracon
-        </section>
-
-        <section className={`flex-grow flex justify-end items-center gap-2`}>
-          <Link
-            href={`/info`}
-            className={`hover:text-primary transition-all duration-200`}
-          >
-            <IconInfoCircleFilled size={28} strokeWidth={1.5} />
-          </Link>
-        </section>
-      </nav>
-
+    <div className={`flex flex-col h-full`}>
       {/* Main Content */}
       <section className={`flex-grow px-[25px] grid grid-cols-1 items-center`}>
         <article>
@@ -40,6 +25,7 @@ export default function Home() {
             <BigButton
               title={"Start creating"}
               indicator={<IconUserPlus size={28} strokeWidth={1.5} />}
+              active={true}
             />
           </div>
         </article>
@@ -54,6 +40,6 @@ export default function Home() {
           </Link>
         </p>
       </footer>
-    </main>
+    </div>
   );
 }

@@ -21,7 +21,7 @@ const config: Config = {
         primary: "#F49B90",
         secondary: "#FDE4DF",
 
-        danger: "#DB678A",
+        danger: "#AF484D",
       },
     },
   },
