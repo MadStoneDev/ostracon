@@ -38,15 +38,15 @@ export default function MainNav({
             >
               <IconInfoCircleFilled size={28} strokeWidth={1.5} />
             </Link>
-
-            <button
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className={`hover:text-primary transition-all duration-200`}
-            >
-              <IconSunFilled size={28} strokeWidth={1.5} />
-            </button>
           </>
         )}
+
+        <button
+          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          className={`hover:text-primary transition-all duration-200`}
+        >
+          <IconSunFilled size={28} strokeWidth={1.5} />
+        </button>
       </section>
     </nav>
   );

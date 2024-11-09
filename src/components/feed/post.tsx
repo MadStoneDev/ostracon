@@ -22,7 +22,7 @@ export default function Post({
   date: string;
 }) {
   // States
-  const [blurred, setBlurred] = useState(true);
+  const [blurred, setBlurred] = useState(nsfw);
   const [liked, setLiked] = useState(false);
   const [hasCommented, setHasCommented] = useState(false);
   const [toolsOpen, setToolsOpen] = useState(false);
@@ -45,7 +45,7 @@ export default function Post({
         {/* Tag */}
         {nsfw && (
           <button
-            className={`p-1 flex flex-col items-center justify-center gap-1 h-full aspect-square bg-danger`}
+            className={`p-1 flex flex-col items-center justify-center gap-1 h-full aspect-square bg-danger text-dark dark:text-light`}
             onClick={() => setBlurred(true)}
           >
             <span
@@ -94,7 +94,7 @@ export default function Post({
                 }}
               >
                 <div
-                  className={`absolute -top-24 group-hover/nsfw:-top-20 right-72 group-hover/nsfw:-right-0 w-52 h-52 rotate-45 bg-dark z-0 transition-all duration-500 ease-in-out`}
+                  className={`absolute -top-24 group-hover/nsfw:-top-20 right-72 group-hover/nsfw:-right-0 w-52 h-52 rotate-45 bg-dark dark:bg-light z-0 transition-all duration-500 ease-in-out`}
                   style={{
                     boxShadow: "0 0 20px 20px transparent inset",
                   }}
@@ -102,7 +102,7 @@ export default function Post({
               </div>
 
               <p
-                className={`relative group-hover/nsfw:scale-95 z-10 transition-all duration-300 ease-in-out`}
+                className={`relative group-hover/nsfw:scale-95 dark:group-hover/nsfw:text-dark z-10 transition-all duration-300 ease-in-out`}
               >
                 Unblur Sensitive Content
               </p>

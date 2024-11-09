@@ -7,6 +7,7 @@ import type { Metadata } from "next";
 
 import ThemeProvider from "@/components/ui/ThemeProvider";
 import MainNav from "@/components/ui/main-nav";
+import OstraconAction from "@/components/ui/ostracon-action";
 
 const sans = Sans({
   weight: ["100", "300", "400", "700", "900"],

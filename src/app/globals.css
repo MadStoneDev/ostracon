@@ -6,3 +6,36 @@
     --font-sans: Lato, sans-serif;
     --font-serif: Merriweather, serif;
 }
+
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0);
+}
+
+.dark ::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(255, 255, 255, 0);
+}
+
+*:hover::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.2);
+}
+
+.dark *:hover::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(255, 255, 255, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: rgba(50, 56, 62, 0);
+}
+
+*:hover::-webkit-scrollbar-thumb {
+    background-color: rgba(50, 56, 62, 0.8);
+}
+
+.dark *:hover::-webkit-scrollbar-thumb {
+    background-color: rgba(252, 250, 249, 0.8);
+}
