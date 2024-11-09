@@ -38,7 +38,7 @@ export default function BigButton({
   const baseClassName = `group inline-flex ${
     direction === "left" ? "flex-row-reverse" : "flex-row"
   } items-center h-12 rounded-full ${
-    active ? "bg-primary" : "hover:bg-primary/50"
+    active ? "bg-primary text-dark" : "text-light hover:bg-primary/50"
   } font-serif text-base font-bold text-dark transition-all duration-300 ease-in-out`;
 
   const contents = (
@@ -48,7 +48,9 @@ export default function BigButton({
       </span>
       <div
         className={`p-2 grid place-content-center w-12 h-12 rounded-full ${
-          active ? "bg-secondary" : "group-hover:bg-secondary/70"
+          active
+            ? "bg-secondary dark:bg-secondary/80"
+            : "group-hover:bg-secondary/70"
         } scale-105 text-sm font-bold overflow-hidden transition-all duration-300 ease-in-out`}
       >
         {indicator}
