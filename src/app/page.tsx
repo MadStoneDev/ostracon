@@ -30,7 +30,7 @@ export default function Home() {
             <BigButton
               title={"Start creating"}
               indicator={<IconUserPlus size={28} strokeWidth={1.5} />}
-              
+              href={`/register`}
               active={true}
             />
           </div>
