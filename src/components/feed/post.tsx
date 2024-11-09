@@ -23,6 +23,9 @@ export default function Post({
 }) {
   // States
   const [blurred, setBlurred] = useState(true);
+  const [liked, setLiked] = useState(false);
+  const [hasCommented, setHasCommented] = useState(false);
+  const [toolsOpen, setToolsOpen] = useState(false);
 
   return (
     <div className={`px-[25px]`}>
@@ -41,8 +44,9 @@ export default function Post({
 
         {/* Tag */}
         {nsfw && (
-          <article
+          <button
             className={`p-1 flex flex-col items-center justify-center gap-1 h-full aspect-square bg-danger`}
+            onClick={() => setBlurred(true)}
           >
             <span
               className={`text-xs text-center`}
@@ -53,19 +57,24 @@ export default function Post({
               Sensitive Content
             </span>
             <IconEyeOff />
-          </article>
+          </button>
         )}
       </section>
+
       {/* Content */}
       <section
-        className={`relative py-7 ${
-          nsfw ? "px-3" : "px-0"
-        } border-b border-dark dark:border-light transition-all duration-300 ease-in-out`}
+        className={`relative py-7 flex flex-col ${
+          nsfw && blurred ? "px-3" : "px-0"
+        } h-[200px] border-b border-dark dark:border-light transition-all duration-300 ease-in-out overflow-x-hidden`}
         style={{
           whiteSpace: "pre-wrap",
         }}
       >
-        {content}
+        <article
+          className={`pr-3 ${blurred ? "overflow-hidden" : "overflow-y-auto"}`}
+        >
+          {content}
+        </article>
 
         {nsfw && blurred && (
           <div
@@ -80,9 +89,15 @@ export default function Post({
             >
               <div
                 className={`absolute top-0 bottom-0 left-0 right-0 bg-danger`}
+                style={{
+                  backdropFilter: "blur(4px)",
+                }}
               >
                 <div
                   className={`absolute -top-24 group-hover/nsfw:-top-20 right-72 group-hover/nsfw:-right-0 w-52 h-52 rotate-45 bg-dark z-0 transition-all duration-500 ease-in-out`}
+                  style={{
+                    boxShadow: "0 0 20px 20px transparent inset",
+                  }}
                 ></div>
               </div>
 
@@ -94,19 +109,48 @@ export default function Post({
             </button>
           </div>
         )}
+
+        {/* Tools Menu */}
+        <article
+          className={`absolute py-5 top-0 ${
+            toolsOpen ? "right-0" : "-right-full"
+          } flex flex-col gap-4 w-full h-full bg-light dark:bg-dark z-10 transition-all duration-300 ease-in-out overflow-auto`}
+        >
+          <span className={`font-serif`}>Share Post</span>
+          <span className={`font-serif`}>Report Post</span>
+          <span className={`font-serif`}>Report {username}</span>
+          <span className={`font-serif`}>Hide Post</span>
+        </article>
       </section>
 
       {/* Menus */}
-      <section className={`flex flex-nowrap justify-around items-center h-20`}>
-        <article>
-          <IconHeart size={28} strokeWidth={1.5} />
-        </article>
-        <article>
-          <IconMessage size={28} strokeWidth={1.5} />
-        </article>
-        <article>
+      <section className={`flex flex-nowrap justify-around items-center h-16`}>
+        <button
+          className={`hover:text-primary transition-all duration-300 ease-in-out`}
+          onClick={() => setLiked(!liked)}
+        >
+          {liked ? (
+            <IconHeartFilled size={28} strokeWidth={1.5} />
+          ) : (
+            <IconHeart size={28} strokeWidth={1.5} />
+          )}
+        </button>
+        <button
+          className={`hover:text-primary transition-all duration-300 ease-in-out`}
+          onClick={() => setHasCommented(!hasCommented)}
+        >
+          {hasCommented ? (
+            <IconMessageFilled size={28} strokeWidth={1.5} />
+          ) : (
+            <IconMessage size={28} strokeWidth={1.5} />
+          )}
+        </button>
+        <button
+          className={`hover:text-primary transition-all duration-300 ease-in-out`}
+          onClick={() => setToolsOpen(!toolsOpen)}
+        >
           <IconTool size={28} strokeWidth={1.5} />
-        </article>
+        </button>
       </section>
     </div>
   );

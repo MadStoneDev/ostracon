@@ -4,6 +4,7 @@ export default function PrivateLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
+  params: Promise<{ username: string }>;
 }>) {
   const authenticated = true;
 
@@ -15,7 +16,16 @@ export default function PrivateLayout({
           padding: "60px 0",
         }}
       >
-        {children}
+        <>
+          {/* Header */}
+          <section className={`relative mb-[75px] px-[25px] h-28 bg-dark`}>
+            <article
+              className={`absolute top-full -translate-y-1/2  w-36 h-36 rounded-full bg-dark border-[10px] border-light`}
+            ></article>
+          </section>
+
+          {children}
+        </>
       </main>
 
       {authenticated ? (
