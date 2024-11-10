@@ -38,7 +38,9 @@ export default function BigButton({
   const baseClassName = `group inline-flex ${
     direction === "left" ? "flex-row-reverse" : "flex-row"
   } items-center h-12 rounded-full ${
-    active ? "bg-primary text-dark" : "text-light hover:bg-primary/50"
+    active
+      ? "bg-primary text-dark"
+      : "text-dark dark:text-light hover:bg-primary/50"
   } font-serif text-base font-bold text-dark transition-all duration-300 ease-in-out`;
 
   const contents = (

@@ -4,10 +4,15 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import { StarterKit } from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
 
-import Emoji from "@tiptap/extension-emoji";
-import { emojis, gitHubEmojis } from "@tiptap-pro/extension-emoji";
+import Emoji, { gitHubEmojis } from "@tiptap-pro/extension-emoji";
 
-export default function TipTap({ content }: { content: string }) {
+export default function TipTap({
+  content,
+  onChange,
+}: {
+  content: string;
+  onChange: (content: string) => void;
+}) {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -21,13 +26,10 @@ export default function TipTap({ content }: { content: string }) {
         strike: false,
         heading: false,
       }),
-      Placeholder.configure({
-        placeholder: "Start here...",
-      }),
     ],
     content: content,
     onUpdate: ({ editor }) => {
-      // onChange(editor.getHTML());
+      onChange(editor.getHTML());
     },
     editorProps: {
       attributes: {

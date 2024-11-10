@@ -45,7 +45,7 @@ export default function Post({
         {/* Tag */}
         {nsfw && (
           <button
-            className={`p-1 flex flex-col items-center justify-center gap-1 h-full aspect-square bg-danger text-dark dark:text-light`}
+            className={`p-1 flex flex-col items-center justify-center gap-1 h-full aspect-square bg-danger text-light`}
             onClick={() => setBlurred(true)}
           >
             <span
