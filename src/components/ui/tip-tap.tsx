@@ -2,9 +2,6 @@
 
 import { useEditor, EditorContent } from "@tiptap/react";
 import { StarterKit } from "@tiptap/starter-kit";
-import Placeholder from "@tiptap/extension-placeholder";
-
-import Emoji, { gitHubEmojis } from "@tiptap-pro/extension-emoji";
 
 export default function TipTap({
   content,
