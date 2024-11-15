@@ -6,6 +6,8 @@ import {
   IconHeartFilled,
   IconMessage,
   IconMessageFilled,
+  IconSquareX,
+  IconSquareXFilled,
   IconTool,
 } from "@tabler/icons-react";
 import { useState } from "react";
@@ -45,7 +47,7 @@ export default function Post({
         {/* Tag */}
         {nsfw && (
           <button
-            className={`p-1 flex flex-col items-center justify-center gap-1 h-full aspect-square bg-danger text-dark dark:text-light`}
+            className={`p-1 flex flex-col items-center justify-center gap-1 h-full hover:scale-110 aspect-square bg-danger text-light z-10 transition-all duration-300 ease-in-out`}
             onClick={() => setBlurred(true)}
           >
             <span
@@ -84,7 +86,7 @@ export default function Post({
             }}
           >
             <button
-              className={`group/nsfw relative px-4 hover:px-6 py-2 text-light rounded-full shadow-lg hover:shadow-2xl shadow-dark/50 transition-all duration-300 ease-in-out overflow-hidden`}
+              className={`group/nsfw relative px-4 hover:px-6 py-2 text-light shadow-lg hover:shadow-2xl shadow-dark/50 transition-all duration-300 ease-in-out overflow-hidden`}
               onClick={() => setBlurred(false)}
             >
               <div
@@ -94,7 +96,7 @@ export default function Post({
                 }}
               >
                 <div
-                  className={`absolute -top-24 group-hover/nsfw:-top-20 right-72 group-hover/nsfw:-right-0 w-52 h-52 rotate-45 bg-dark dark:bg-light z-0 transition-all duration-500 ease-in-out`}
+                  className={`absolute top-0 left-0 right-full group-hover/nsfw:right-0 h-full bg-dark dark:bg-light z-0 transition-all duration-500 ease-in-out`}
                   style={{
                     boxShadow: "0 0 20px 20px transparent inset",
                   }}
@@ -112,14 +114,16 @@ export default function Post({
 
         {/* Tools Menu */}
         <article
-          className={`absolute py-5 top-0 ${
+          className={`absolute py-3 top-0 ${
             toolsOpen ? "right-0" : "-right-full"
-          } flex flex-col gap-4 w-full h-full bg-light dark:bg-dark z-10 transition-all duration-300 ease-in-out overflow-auto`}
+          } flex flex-col w-full h-full bg-secondary dark:bg-dark z-10 transition-all duration-300 ease-in-out overflow-auto`}
         >
-          <span className={`font-serif`}>Share Post</span>
-          <span className={`font-serif`}>Report Post</span>
-          <span className={`font-serif`}>Report {username}</span>
-          <span className={`font-serif`}>Hide Post</span>
+          <span className={`p-2 hover:bg-primary font-serif`}>Share Post</span>
+          <span className={`p-2 hover:bg-primary font-serif`}>Report Post</span>
+          <span className={`p-2 hover:bg-primary font-serif`}>
+            Report {username}
+          </span>
+          <span className={`p-2 hover:bg-primary font-serif`}>Hide Post</span>
         </article>
       </section>
 
@@ -149,7 +153,11 @@ export default function Post({
           className={`hover:text-primary transition-all duration-300 ease-in-out`}
           onClick={() => setToolsOpen(!toolsOpen)}
         >
-          <IconTool size={28} strokeWidth={1.5} />
+          {toolsOpen ? (
+            <IconSquareXFilled size={28} strokeWidth={1.5} />
+          ) : (
+            <IconTool size={28} strokeWidth={1.5} />
+          )}
         </button>
       </section>
     </div>

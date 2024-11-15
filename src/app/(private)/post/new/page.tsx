@@ -38,18 +38,18 @@ export default function NewPost() {
 
       {/*  Footer*/}
       <footer
-        className={`flex items-center border-y border-dark dark:border-light`}
+        className={`flex items-center border-y border-dark dark:border-light h-[50px]`}
       >
         <button className={`flex-grow flex justify-center items-center h-full`}>
-          <IconHeart size={36} strokeWidth={2} />
+          <IconHeart size={28} strokeWidth={2} />
         </button>
 
         <button className={`flex-grow flex justify-center items-center h-full`}>
-          <IconMessage size={36} strokeWidth={2} />
+          <IconMessage size={28} strokeWidth={2} />
         </button>
 
         <button
-          className={`flex-grow py-2 flex flex-col justify-center items-center gap-1 h-full bg-danger text-light`}
+          className={`flex-grow flex justify-center items-center gap-1 h-full bg-danger text-light`}
         >
           <span
             className={`max-w-20 text-xs text-center`}
@@ -67,7 +67,7 @@ export default function NewPost() {
       <button
         className={`absolute top-0 right-[25px] text-dark dark:text-light hover:text-primary transition-all duration-300 ease-in-out`}
       >
-        <IconSend size={36} strokeWidth={2} />
+        <IconSend size={28} strokeWidth={2} />
       </button>
     </main>
   );

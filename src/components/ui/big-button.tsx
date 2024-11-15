@@ -37,21 +37,25 @@ export default function BigButton({
 }: ButtonProps) {
   const baseClassName = `group inline-flex ${
     direction === "left" ? "flex-row-reverse" : "flex-row"
-  } items-center h-12 rounded-full ${
+  } items-center h-10 ${
     active ? "bg-primary text-dark" : "text-light hover:bg-primary/50"
-  } font-serif text-base font-bold text-dark transition-all duration-300 ease-in-out`;
+  } font-serif text-sm font-bold text-dark transition-all duration-300 ease-in-out`;
 
   const contents = (
     <>
-      <span className={`${direction === "left" ? "pr-5 pl-3" : "pl-5 pr-3"}`}>
+      <span
+        className={`text-dark ${!active && "dark:text-light"} ${
+          direction === "left" ? "pr-5 pl-3" : "pl-5 pr-3"
+        }`}
+      >
         {title}
       </span>
       <div
-        className={`p-2 grid place-content-center w-12 h-12 rounded-full ${
+        className={`p-2 grid place-content-center w-10 h-10 text-dark ${
           active
-            ? "bg-secondary dark:bg-secondary/80"
-            : "group-hover:bg-secondary/70"
-        } scale-105 text-sm font-bold overflow-hidden transition-all duration-300 ease-in-out`}
+            ? "bg-secondary dark:bg-secondary/80 scale-110"
+            : "group-hover:bg-secondary/70 dark:text-light scale-105"
+        } group-hover:scale-125 text-sm font-bold overflow-hidden transition-all duration-300 ease-in-out`}
       >
         {indicator}
       </div>

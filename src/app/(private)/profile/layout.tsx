@@ -14,7 +14,7 @@ export default function PrivateLayout({
     <div
       className={`flex-grow flex flex-col`}
       style={{
-        padding: "60px 0",
+        padding: "60px 0 50px",
       }}
     >
       <main className={`flex-grow overflow-y-auto`}>
@@ -23,7 +23,7 @@ export default function PrivateLayout({
           className={`relative mb-[75px] px-[25px] h-28 bg-dark dark:bg-light`}
         >
           <article
-            className={`absolute top-full -translate-y-1/2  w-36 h-36 rounded-full bg-dark dark:bg-light border-[10px] border-light dark:border-dark`}
+            className={`absolute top-full -translate-y-1/2 w-36 h-36 rounded-full bg-dark dark:bg-light border-[10px] border-light dark:border-dark`}
           ></article>
         </section>
 

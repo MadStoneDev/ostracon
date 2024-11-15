@@ -172,8 +172,8 @@ export default function ProfileContent({ username }: { username: string }) {
           </p>
         </article>
 
-        <article className={`flex flex-col justify-center gap-4`}>
-          <div className={`flex items-center gap-3`}>
+        <article className={`flex flex-col justify-center gap-2`}>
+          <div className={`flex items-center gap-2`}>
             <BigButton
               title={"Followers"}
               indicator={25}
@@ -191,7 +191,7 @@ export default function ProfileContent({ username }: { username: string }) {
             />
           </div>
 
-          <div className={`flex items-center gap-3`}>
+          <div className={`flex items-center gap-2`}>
             <BigButton
               title={"Posted"}
               indicator={<IconNotes size={28} strokeWidth={1.5} />}

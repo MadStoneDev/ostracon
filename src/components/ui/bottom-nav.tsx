@@ -21,7 +21,7 @@ export default function BottomNav() {
     <nav
       className={`fixed bottom-0 left-0 right-0 flex items-stretch bg-secondary text-dark dark:text-dark z-50`}
       style={{
-        minHeight: "60px",
+        minHeight: "50px",
       }}
     >
       <Link
@@ -30,7 +30,7 @@ export default function BottomNav() {
           pathname.includes("/explore") ? "bg-primary" : "hover:bg-primary/35"
         } transition-all duration-300 ease-in-out`}
       >
-        <IconLayoutList size={32} strokeWidth={2} />
+        <IconLayoutList size={28} strokeWidth={2} />
       </Link>
 
       <Link
@@ -39,7 +39,7 @@ export default function BottomNav() {
           pathname.includes("/groups") ? "bg-primary" : "hover:bg-primary/35"
         } transition-all duration-300 ease-in-out`}
       >
-        <IconCategory size={32} strokeWidth={2} />
+        <IconCategory size={28} strokeWidth={2} />
       </Link>
 
       <Link
@@ -48,7 +48,7 @@ export default function BottomNav() {
           pathname.includes("/messages") ? "bg-primary" : "hover:bg-primary/35"
         } transition-all duration-300 ease-in-out`}
       >
-        <IconMail size={32} strokeWidth={2} />
+        <IconMail size={28} strokeWidth={2} />
       </Link>
 
       <Link
@@ -59,7 +59,7 @@ export default function BottomNav() {
             : "hover:bg-primary/35"
         } transition-all duration-300 ease-in-out`}
       >
-        <IconBell size={32} strokeWidth={2} />
+        <IconBell size={28} strokeWidth={2} />
       </Link>
 
       <Link
@@ -68,7 +68,7 @@ export default function BottomNav() {
           pathname.includes("/profile") ? "bg-primary" : "hover:bg-primary/35"
         } transition-all duration-300 ease-in-out`}
       >
-        <IconUser size={32} strokeWidth={2} />
+        <IconUser size={28} strokeWidth={2} />
       </Link>
     </nav>
   );

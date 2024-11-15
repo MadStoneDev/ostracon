@@ -13,13 +13,13 @@ export default function OstraconAction() {
   return (
     <Link
       href={`/post/new`}
-      className={`fixed pr-0.5 grid place-content-center w-20 h-20 rounded-full bg-primary shadow-lg hover:shadow-xl shadow-dark/35 hover:scale-105 text-dark z-50 transition-all duration-300 ease-in-out`}
+      className={`fixed pr-0.5 grid place-content-center w-14 h-14 rounded-full bg-primary shadow-lg hover:shadow-xl shadow-dark/70 hover:scale-110 text-dark z-50 transition-all duration-300 ease-in-out`}
       style={{
-        bottom: "80px",
-        right: "20px",
+        bottom: "65px",
+        right: "15px",
       }}
     >
-      <IconBallpen size={36} strokeWidth={2} />
+      <IconBallpen size={30} strokeWidth={2} />
     </Link>
   );
 }
