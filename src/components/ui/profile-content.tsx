@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import Post from "@/components/feed/post";
+import Post from "@/components/feed/single-post";
 import BigButton from "@/components/ui/big-button";
 import { motion, AnimatePresence } from "framer-motion";
 
