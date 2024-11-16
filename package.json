@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.5.2",
+    "@supabase/supabase-js": "^2.46.1",
     "@tabler/icons-react": "^3.21.0",
     "@tiptap-pro/extension-emoji": "^2.14.0",
     "@tiptap-pro/extension-unique-id": "^2.14.0",
