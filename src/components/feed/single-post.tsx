@@ -8,8 +8,6 @@ import {
   IconHeartFilled,
   IconMessage2,
   IconMessageFilled,
-  IconSquareXFilled,
-  IconTool,
 } from "@tabler/icons-react";
 import { useState } from "react";
 
@@ -28,13 +26,12 @@ export default function Post({
   const [blurred, setBlurred] = useState(nsfw);
   const [liked, setLiked] = useState(false);
   const [hasCommented, setHasCommented] = useState(false);
-  const [toolsOpen, setToolsOpen] = useState(false);
 
   return (
     <div className={``}>
       {/* Header */}
       <section
-        className={`flex justify-between items-center gap-2 w-full max-w-full text-dark dark:text-light border transition-all duration-300 ease-in-out`}
+        className={`flex justify-between items-center gap-2 w-full max-w-full text-dark dark:text-light transition-all duration-300 ease-in-out`}
       >
         {/* Avatar */}
         <article
@@ -87,9 +84,9 @@ export default function Post({
 
         {nsfw && blurred && (
           <div
-            className={`absolute top-0 bottom-0 left-0 right-0 grid place-content-center bg-light/20 dark:bg-dark/20`}
+            className={`absolute top-0 bottom-0 left-0 right-0 grid place-content-center`}
             style={{
-              backdropFilter: "blur(3px)",
+              backdropFilter: "blur(2.5px)",
             }}
           ></div>
         )}
@@ -99,7 +96,7 @@ export default function Post({
       <section className={`py-2 flex flex-nowrap justify-between items-center`}>
         <article className={`flex gap-5`}>
           <button
-            className={`hover:text-primary transition-all duration-300 ease-in-out`}
+            className={`transition-all duration-300 ease-in-out`}
             onClick={() => setLiked(!liked)}
           >
             {liked ? (
@@ -109,7 +106,7 @@ export default function Post({
             )}
           </button>
           <button
-            className={`hover:text-primary transition-all duration-300 ease-in-out`}
+            className={`transition-all duration-300 ease-in-out`}
             onClick={() => setHasCommented(!hasCommented)}
           >
             {hasCommented ? (
@@ -122,17 +119,17 @@ export default function Post({
 
         <article className={`flex gap-3 text-dark dark:text-light opacity-30`}>
           <div className={`flex items-center gap-1`}>
-            <IconHeart size={24} strokeWidth={2} />
+            <IconHeart size={20} strokeWidth={2.5} />
             <span className={`font-sans text-sm font-bold`}>50</span>
           </div>
 
           <div className={`flex items-center gap-1`}>
-            <IconMessage2 size={24} strokeWidth={2} />
+            <IconMessage2 size={20} strokeWidth={2.5} />
             <span className={`font-sans text-sm font-bold`}>50</span>
           </div>
 
           <div className={`flex items-center gap-1`}>
-            <IconChartBarPopular size={24} strokeWidth={2} />
+            <IconChartBarPopular size={20} strokeWidth={2.5} />
             <span className={`font-sans text-sm font-bold`}>50</span>
           </div>
         </article>

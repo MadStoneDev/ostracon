@@ -10,13 +10,12 @@ export default function PrivateLayout({
   const authenticated = true;
 
   return (
-    <div
-      className={`flex-grow flex flex-col`}
-      style={{
-        padding: "70px 0",
-      }}
-    >
-      <main className={`px-[25px] pt-5 flex-grow overflow-y-auto`}>
+    <div className={`relative flex-grow grid overflow-hidden`}>
+      <div
+        className={`fixed top-0 bg-primary w-full h-[70px] dark:bg-dark z-10`}
+      ></div>
+
+      <main className={`relative py-[100px] px-[25px] flex-grow`}>
         {children}
       </main>
 
