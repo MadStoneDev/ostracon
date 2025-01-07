@@ -21,9 +21,9 @@ export default function MainNav({
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 px-[25px] flex justify-between items-stretch gap-10 bg-light dark:bg-dark z-50`}
+      className={`fixed top-0 left-0 right-0 px-[25px] flex justify-between items-stretch gap-10 z-40`}
       style={{
-        minHeight: "70px",
+        height: "70px",
       }}
     >
       <section
@@ -32,7 +32,7 @@ export default function MainNav({
         <Link href={`/`}>Ostracon</Link>
       </section>
 
-      <section className={`flex-grow flex justify-end items-center gap-4`}>
+      <section className={`flex-grow flex justify-end items-center gap-4 z-50`}>
         {authenticated ? null : (
           <>
             <Link
@@ -46,14 +46,14 @@ export default function MainNav({
 
         <button
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          className={`hover:text-primary transition-all duration-200`}
+          className={`transition-all duration-200`}
         >
           <IconSun size={28} strokeWidth={2} />
         </button>
 
         <button
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          className={`hover:text-primary transition-all duration-200`}
+          className={`transition-all duration-200`}
         >
           <IconTool size={28} strokeWidth={2} />
         </button>

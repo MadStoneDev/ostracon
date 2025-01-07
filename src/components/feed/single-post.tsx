@@ -1,12 +1,13 @@
 ﻿"use client";
 
 import {
+  IconChartBarPopular,
+  IconClock,
   IconEyeOff,
   IconHeart,
   IconHeartFilled,
-  IconMessage,
+  IconMessage2,
   IconMessageFilled,
-  IconSquareX,
   IconSquareXFilled,
   IconTool,
 } from "@tabler/icons-react";
@@ -30,44 +31,50 @@ export default function Post({
   const [toolsOpen, setToolsOpen] = useState(false);
 
   return (
-    <div className={`px-[25px]`}>
+    <div className={``}>
       {/* Header */}
       <section
-        className={`flex items-center gap-2 h-16 bg-dark dark:bg-light text-light dark:text-dark`}
+        className={`flex justify-between items-center gap-2 w-full max-w-full text-dark dark:text-light border transition-all duration-300 ease-in-out`}
       >
         {/* Avatar */}
-        <article className={`ml-2 h-10 w-10 rounded-full bg-light`}></article>
+        <article
+          className={`shrink-0 h-12 w-12 rounded-full bg-dark dark:bg-light`}
+        ></article>
 
         {/* Information */}
-        <article className={`flex-grow flex flex-col gap-0`}>
-          <span className={`text-xs opacity-50`}>2 hours ago</span>
-          <h3 className={`font-serif text-base`}>Username posted:</h3>
-        </article>
-
-        {/* Tag */}
-        {nsfw && (
-          <button
-            className={`p-1 flex flex-col items-center justify-center gap-1 h-full hover:scale-110 aspect-square bg-danger text-light z-10 transition-all duration-300 ease-in-out`}
-            onClick={() => setBlurred(true)}
-          >
-            <span
-              className={`text-xs text-center`}
-              style={{
-                lineHeight: "0.75rem",
-              }}
+        <article className={`flex-grow flex items-center gap-4`}>
+          <div className={`flex-grow`}>
+            <h3
+              className={`max-w-[150px] font-sans text-base font-bold truncate`}
             >
-              Sensitive Content
-            </span>
-            <IconEyeOff />
-          </button>
-        )}
+              @{username}asdasdasdasdas
+            </h3>
+          </div>
+
+          <div
+            className={`shrink-0 flex gap-1 items-center text-dark dark:text-light opacity-30`}
+          >
+            <IconClock size={20} strokeWidth={2.5} />
+            <span className={`font-sans text-base font-bold`}>2h</span>
+          </div>
+        </article>
       </section>
+
+      {/* Tag */}
+      {nsfw && (
+        <button
+          className={`my-3 px-1.5 py-0.5 grid place-content-center bg-nsfw font-accent text-light z-10 transition-all duration-300 ease-in-out`}
+          onClick={() => setBlurred(true)}
+        >
+          <span className={`text-sm text-center`}>nsfw</span>
+        </button>
+      )}
 
       {/* Content */}
       <section
-        className={`relative py-7 flex flex-col ${
+        className={`relative py-3 flex flex-col ${
           nsfw && blurred ? "px-3" : "px-0"
-        } h-[200px] border-b border-dark dark:border-light transition-all duration-300 ease-in-out overflow-x-hidden`}
+        } h-[150px] transition-all duration-300 ease-in-out overflow-x-hidden`}
         style={{
           whiteSpace: "pre-wrap",
         }}
@@ -82,83 +89,53 @@ export default function Post({
           <div
             className={`absolute top-0 bottom-0 left-0 right-0 grid place-content-center bg-light/20 dark:bg-dark/20`}
             style={{
-              backdropFilter: "blur(4px)",
+              backdropFilter: "blur(3px)",
             }}
-          >
-            <button
-              className={`group/nsfw relative px-4 hover:px-6 py-2 text-light shadow-lg hover:shadow-2xl shadow-dark/50 transition-all duration-300 ease-in-out overflow-hidden`}
-              onClick={() => setBlurred(false)}
-            >
-              <div
-                className={`absolute top-0 bottom-0 left-0 right-0 bg-danger`}
-                style={{
-                  backdropFilter: "blur(4px)",
-                }}
-              >
-                <div
-                  className={`absolute top-0 left-0 right-full group-hover/nsfw:right-0 h-full bg-dark dark:bg-light z-0 transition-all duration-500 ease-in-out`}
-                  style={{
-                    boxShadow: "0 0 20px 20px transparent inset",
-                  }}
-                ></div>
-              </div>
-
-              <p
-                className={`relative group-hover/nsfw:scale-95 dark:group-hover/nsfw:text-dark z-10 transition-all duration-300 ease-in-out`}
-              >
-                Unblur Sensitive Content
-              </p>
-            </button>
-          </div>
+          ></div>
         )}
-
-        {/* Tools Menu */}
-        <article
-          className={`absolute py-3 top-0 ${
-            toolsOpen ? "right-0" : "-right-full"
-          } flex flex-col w-full h-full bg-secondary dark:bg-dark z-10 transition-all duration-300 ease-in-out overflow-auto`}
-        >
-          <span className={`p-2 hover:bg-primary font-serif`}>Share Post</span>
-          <span className={`p-2 hover:bg-primary font-serif`}>Report Post</span>
-          <span className={`p-2 hover:bg-primary font-serif`}>
-            Report {username}
-          </span>
-          <span className={`p-2 hover:bg-primary font-serif`}>Hide Post</span>
-        </article>
       </section>
 
-      {/* Menus */}
-      <section className={`flex flex-nowrap justify-around items-center h-16`}>
-        <button
-          className={`hover:text-primary transition-all duration-300 ease-in-out`}
-          onClick={() => setLiked(!liked)}
-        >
-          {liked ? (
-            <IconHeartFilled size={28} strokeWidth={1.5} />
-          ) : (
-            <IconHeart size={28} strokeWidth={1.5} />
-          )}
-        </button>
-        <button
-          className={`hover:text-primary transition-all duration-300 ease-in-out`}
-          onClick={() => setHasCommented(!hasCommented)}
-        >
-          {hasCommented ? (
-            <IconMessageFilled size={28} strokeWidth={1.5} />
-          ) : (
-            <IconMessage size={28} strokeWidth={1.5} />
-          )}
-        </button>
-        <button
-          className={`hover:text-primary transition-all duration-300 ease-in-out`}
-          onClick={() => setToolsOpen(!toolsOpen)}
-        >
-          {toolsOpen ? (
-            <IconSquareXFilled size={28} strokeWidth={1.5} />
-          ) : (
-            <IconTool size={28} strokeWidth={1.5} />
-          )}
-        </button>
+      {/* Actions */}
+      <section className={`py-2 flex flex-nowrap justify-between items-center`}>
+        <article className={`flex gap-5`}>
+          <button
+            className={`hover:text-primary transition-all duration-300 ease-in-out`}
+            onClick={() => setLiked(!liked)}
+          >
+            {liked ? (
+              <IconHeartFilled size={24} strokeWidth={2} />
+            ) : (
+              <IconHeart size={24} strokeWidth={2} />
+            )}
+          </button>
+          <button
+            className={`hover:text-primary transition-all duration-300 ease-in-out`}
+            onClick={() => setHasCommented(!hasCommented)}
+          >
+            {hasCommented ? (
+              <IconMessageFilled size={24} strokeWidth={2} />
+            ) : (
+              <IconMessage2 size={24} strokeWidth={2} />
+            )}
+          </button>
+        </article>
+
+        <article className={`flex gap-3 text-dark dark:text-light opacity-30`}>
+          <div className={`flex items-center gap-1`}>
+            <IconHeart size={24} strokeWidth={2} />
+            <span className={`font-sans text-sm font-bold`}>50</span>
+          </div>
+
+          <div className={`flex items-center gap-1`}>
+            <IconMessage2 size={24} strokeWidth={2} />
+            <span className={`font-sans text-sm font-bold`}>50</span>
+          </div>
+
+          <div className={`flex items-center gap-1`}>
+            <IconChartBarPopular size={24} strokeWidth={2} />
+            <span className={`font-sans text-sm font-bold`}>50</span>
+          </div>
+        </article>
       </section>
     </div>
   );

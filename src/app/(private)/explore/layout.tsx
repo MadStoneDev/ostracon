@@ -13,10 +13,12 @@ export default function PrivateLayout({
     <div
       className={`flex-grow flex flex-col`}
       style={{
-        padding: "60px 0",
+        padding: "70px 0",
       }}
     >
-      <main className={`flex-grow overflow-y-auto`}>{children}</main>
+      <main className={`px-[25px] pt-5 flex-grow overflow-y-auto`}>
+        {children}
+      </main>
 
       {authenticated ? <BottomNav /> : null}
     </div>

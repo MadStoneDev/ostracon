@@ -41,7 +41,7 @@ export default function RootLayout({
       <body>
         <ThemeProvider>
           <div
-            className={`flex flex-col min-h-dvh justify-between dark:bg-dark bg-light dark:text-light text-dark overflow-hidden`}
+            className={`relative grid justify-stretch min-h-dvh dark:bg-dark bg-light dark:text-light text-dark overflow-hidden`}
           >
             <MainNav authenticated={authenticated} />
 

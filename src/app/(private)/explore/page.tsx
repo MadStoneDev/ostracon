@@ -1,7 +1,14 @@
+import Post from "@/components/feed/single-post";
+
 export default function Explore() {
-    return (
-        <div>
-            <h1>Explore</h1>
-        </div>
-    );
+  return (
+    <div>
+      <Post
+        username={"username"}
+        content={"content"}
+        nsfw={true}
+        date={"25 May 2023"}
+      />
+    </div>
+  );
 }
