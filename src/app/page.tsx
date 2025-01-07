@@ -1,11 +1,8 @@
-import {
-  IconInfoCircleFilled,
-  IconSun,
-  IconUserPlus,
-} from "@tabler/icons-react";
 import Link from "next/link";
+
+import { IconUserPlus } from "@tabler/icons-react";
+
 import BigButton from "@/components/ui/big-button";
-import MainNav from "@/components/ui/main-nav";
 
 export const metadata = {
   title: "Ostracon",

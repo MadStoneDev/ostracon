@@ -1,6 +1,5 @@
 ﻿import React from "react";
 import BottomNav from "@/components/ui/bottom-nav";
-import OstraconAction from "@/components/ui/ostracon-action";
 
 export default function PrivateLayout({
   children,
@@ -18,8 +17,6 @@ export default function PrivateLayout({
       }}
     >
       <main className={`flex-grow overflow-y-auto`}>{children}</main>
-
-      <OstraconAction />
 
       {authenticated ? <BottomNav /> : null}
     </div>

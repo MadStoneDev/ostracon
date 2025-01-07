@@ -1,24 +1,28 @@
 import "./globals.css";
 
-import { Lato as Sans, Merriweather as Serif } from "next/font/google";
-
 import React from "react";
-import type { Metadata } from "next";
 
 import ThemeProvider from "@/components/ui/ThemeProvider";
-import MainNav from "@/components/ui/main-nav";
-import OstraconAction from "@/components/ui/ostracon-action";
 
-const sans = Sans({
-  weight: ["100", "300", "400", "700", "900"],
+import { Outfit, Merriweather, Lilita_One } from "next/font/google";
+
+import MainNav from "@/components/ui/main-nav";
+
+const outfit = Outfit({
   subsets: ["latin"],
-  variable: "--font-sans",
+  weight: ["300", "700"],
+  variable: "--font-outfit",
 });
 
-const serif = Serif({
-  weight: ["300", "400", "700", "900"],
+const merriweather = Merriweather({
   subsets: ["latin"],
-  variable: "--font-serif",
+  weight: ["400", "700"],
+  variable: "--font-merriweather",
+});
+const lilitaOne = Lilita_One({
+  subsets: ["latin"],
+  weight: ["400"],
+  variable: "--font-lilita-one",
 });
 
 export default function RootLayout({
@@ -29,7 +33,11 @@ export default function RootLayout({
   const authenticated = true;
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`${outfit.variable} ${merriweather.variable} ${lilitaOne.variable}`}
+      suppressHydrationWarning
+    >
       <body>
         <ThemeProvider>
           <div

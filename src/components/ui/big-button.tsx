@@ -39,19 +39,15 @@ export default function BigButton({
     direction === "left" ? "flex-row-reverse" : "flex-row"
   } items-center h-10 ${
     active ? "bg-primary text-dark" : "text-light hover:bg-primary/50"
-  } font-serif text-sm font-bold text-dark transition-all duration-300 ease-in-out`;
+  } rounded-full font-serif text-sm font-bold text-dark transition-all duration-300 ease-in-out`;
 
   const contents = (
     <>
-      <span
-        className={`text-dark ${!active && "dark:text-light"} ${
-          direction === "left" ? "pr-5 pl-3" : "pl-5 pr-3"
-        }`}
-      >
+      <span className={`px-3 text-dark ${!active && "dark:text-light"}`}>
         {title}
       </span>
       <div
-        className={`p-2 grid place-content-center w-10 h-10 text-dark ${
+        className={`p-2 grid place-content-center w-10 h-10 rounded-full text-dark ${
           active
             ? "bg-secondary dark:bg-secondary/80 scale-110"
             : "group-hover:bg-secondary/70 dark:text-light scale-105"

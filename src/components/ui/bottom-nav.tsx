@@ -6,8 +6,16 @@ import Link from "next/link";
 import {
   IconBell,
   IconCategory,
+  IconHome,
   IconLayoutList,
   IconMail,
+  IconMenu,
+  IconPlug,
+  IconSearch,
+  IconSquarePlus,
+  IconSquareRounded,
+  IconSquareRoundedPlus,
+  IconSquareRoundedPlusFilled,
   IconUser,
 } from "@tabler/icons-react";
 import { usePathname } from "next/navigation";
@@ -19,57 +27,73 @@ export default function BottomNav() {
 
   return (
     <nav
-      className={`fixed bottom-0 left-0 right-0 flex items-stretch bg-secondary text-dark dark:text-dark z-50`}
+      className={`fixed bottom-0 left-0 right-0 px-2 sm:px-[25px] flex items-center justify-between bg-primary text-dark dark:text-light z-50`}
       style={{
-        minHeight: "50px",
+        minHeight: "70px",
       }}
     >
       <Link
         href={`/explore`}
-        className={`flex-grow flex items-center justify-center ${
-          pathname.includes("/explore") ? "bg-primary" : "hover:bg-primary/35"
-        } transition-all duration-300 ease-in-out`}
+        className={`flex items-center justify-center ${
+          pathname.includes("/explore") ? "" : ""
+        } w-12 h-12 rounded-full transition-all duration-300 ease-in-out`}
       >
-        <IconLayoutList size={28} strokeWidth={2} />
+        <IconHome size={24} strokeWidth={2} />
       </Link>
 
       <Link
-        href={`/groups`}
-        className={`flex-grow flex items-center justify-center ${
-          pathname.includes("/groups") ? "bg-primary" : "hover:bg-primary/35"
-        } transition-all duration-300 ease-in-out`}
+        href={`/search`}
+        className={`flex items-center justify-center ${
+          pathname.includes("/groups") ? "" : ""
+        } w-12 h-12 rounded-full transition-all duration-300 ease-in-out`}
       >
-        <IconCategory size={28} strokeWidth={2} />
+        <IconSearch size={24} strokeWidth={2} />
       </Link>
 
       <Link
-        href={`/messages`}
-        className={`flex-grow flex items-center justify-center ${
-          pathname.includes("/messages") ? "bg-primary" : "hover:bg-primary/35"
-        } transition-all duration-300 ease-in-out`}
+        href={`/connect`}
+        className={`flex items-center justify-center ${
+          pathname.includes("/groups") ? "bg-secondary/50" : ""
+        } w-12 h-12 rounded-full transition-all duration-300 ease-in-out`}
       >
-        <IconMail size={28} strokeWidth={2} />
+        <IconPlug size={24} strokeWidth={2} />
+      </Link>
+
+      {/* Main Button */}
+      <Link
+        href={`/post/new`}
+        className={`flex items-center justify-center ${
+          pathname.includes("/groups") ? "" : ""
+        } rounded-full transition-all duration-300 ease-in-out`}
+      >
+        <IconSquareRoundedPlusFilled size={54} />
       </Link>
 
       <Link
         href={`/notifications`}
-        className={`flex-grow flex items-center justify-center ${
-          pathname.includes("/notifications")
-            ? "bg-primary"
-            : "hover:bg-primary/35"
-        } transition-all duration-300 ease-in-out`}
+        className={`flex items-center justify-center ${
+          pathname.includes("/notifications") ? "" : ""
+        } w-12 h-12 rounded-full transition-all duration-300 ease-in-out`}
       >
-        <IconBell size={28} strokeWidth={2} />
+        <IconBell size={24} strokeWidth={2} />
       </Link>
 
       <Link
-        href={`/profile`}
-        className={`flex-grow flex items-center justify-center ${
-          pathname.includes("/profile") ? "bg-primary" : "hover:bg-primary/35"
-        } transition-all duration-300 ease-in-out`}
+        href={`/messages`}
+        className={`flex items-center justify-center ${
+          pathname.includes("/messages") ? "" : ""
+        } w-12 h-12 rounded-full transition-all duration-300 ease-in-out`}
       >
-        <IconUser size={28} strokeWidth={2} />
+        <IconMail size={24} strokeWidth={2} />
       </Link>
+
+      <button
+        className={`flex items-center justify-center ${
+          pathname.includes("/profile") ? "" : ""
+        } w-12 h-12 rounded-full transition-all duration-300 ease-in-out`}
+      >
+        <IconMenu size={24} strokeWidth={2} />
+      </button>
     </nav>
   );
 }

@@ -11,8 +11,9 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["var(--font-sans)", ...fontFamily.sans],
-        serif: ["var(--font-serif)", ...fontFamily.serif],
+        sans: ["var(--font-outfit)", ...fontFamily.sans],
+        serif: ["var(--font-merriweather)", ...fontFamily.serif],
+        accent: ["var(--font-lilita-one)", ...fontFamily.sans],
       },
       colors: {
         light: "#FCFAF9",
@@ -21,7 +22,7 @@ const config: Config = {
         primary: "#F49B90",
         secondary: "#FDE4DF",
 
-        danger: "#AF484D",
+        nsfw: "#934FA5",
       },
     },
   },
