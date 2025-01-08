@@ -17,12 +17,14 @@ import ProcessedContent from "@/components/feed/processed-content";
 
 export default function Post({
   postId,
+  avatar_url,
   username,
   content,
   nsfw,
   timestamp,
 }: {
   postId: string;
+  avatar_url: string;
   username: string;
   content: string;
   nsfw: boolean;
@@ -46,8 +48,16 @@ export default function Post({
       >
         {/* Avatar */}
         <article
-          className={`shrink-0 h-12 w-12 rounded-full bg-dark dark:bg-light`}
-        ></article>
+          className={`shrink-0 h-12 w-12 rounded-full bg-dark dark:bg-light border-[2px] border-dark dark:border-light overflow-hidden`}
+        >
+          {avatar_url ? (
+            <img
+              src={avatar_url}
+              alt={`Avatar photo of ${username}`}
+              className={`h-full w-full object-cover`}
+            />
+          ) : null}
+        </article>
 
         {/* Username */}
         <div className={`min-w-0 flex-grow`}>
@@ -92,7 +102,12 @@ export default function Post({
         <article
           className={`pr-3 ${blurred ? "overflow-hidden" : "overflow-y-auto"}`}
         >
-          <ProcessedContent content={processContent(content)} />
+          <ProcessedContent
+            postId={postId}
+            content={processContent(content)}
+            truncate={true}
+            showExpandButton={true}
+          />
         </article>
 
         {nsfw && blurred && (

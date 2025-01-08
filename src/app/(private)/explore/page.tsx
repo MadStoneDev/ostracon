@@ -15,6 +15,9 @@ export default function Explore() {
         const username = sampleUsers.find((user) => user.id === post.user_id)
           ?.username;
 
+        const avatar_url = sampleUsers.find((user) => user.id === post.user_id)
+          ?.avatar_url;
+
         return (
           <article
             key={`feed-post-${post.id}`}
@@ -22,6 +25,7 @@ export default function Explore() {
           >
             <Post
               postId={`${post.id}`}
+              avatar_url={avatar_url || ""}
               username={username || "Ghost User"}
               content={post.content}
               nsfw={post.is_nsfw}

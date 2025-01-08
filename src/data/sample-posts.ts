@@ -3,7 +3,7 @@
     id: "550e8400-e29b-41d4-a716-446655440000",
     user_id: "a1b2c3d4-e5f6-4321-8765-1a2b3c4d5e6f", // techie_sarah
     content:
-      "Just deployed my first Next.js app! The learning curve was steep but totally worth it. #coding #webdev",
+      "Just deployed my first Next.js app! The learning curve was steep but totally worth it. I spent the last three months diving deep into React, learning about server-side rendering, static site generation, and the whole Next.js ecosystem. The documentation was incredibly helpful, but I did hit some roadblocks with data fetching and state management. After countless Stack Overflow searches and some amazing help from the dev community, I finally got everything working smoothly. The performance improvements compared to my old client-side rendered app are mind-blowing. If anyone's thinking about making the switch to Next.js, I'd be happy to share my learning resources and some gotchas to watch out for. #coding #webdev #nextjs #javascript #reactjs #programming #learninginpublic",
     comments_open: true,
     is_nsfw: false,
     created_at: "2025-01-08T02:22:20.648Z",
@@ -21,7 +21,7 @@
     id: "550e8400-e29b-41d4-a716-446655440002",
     user_id: "c3d4e5f6-a7b8-6543-8765-3c4d5e6f7a8b", // chef_olivia
     content:
-      "Looking for recommendations on mechanical keyboards. Currently using Cherry MX Browns but want to try something new. #mechanicalkeyboards",
+      "Looking for recommendations on mechanical keyboards. Currently using Cherry MX Browns but want to try something new. After spending countless hours watching keyboard reviews and typing tests, I'm torn between going for the Zealios V2 switches for that premium tactile feel or trying something completely different like the Holy Pandas. Price isn't really a concern - I figure since I'm typing all day for work, it's worth investing in something that feels great. I'm particularly interested in hearing from other developers who do a lot of coding. How do you find different switches for long coding sessions? Has anyone tried both tactile and linear switches for programming? Also curious about keyboard formats - currently using a TKL but considering going down to a 75% or even 65% to save desk space. Share your experiences! #mechanicalkeyboards #keyboards #coding #developersetup #workstation #ergonomics",
     comments_open: true,
     is_nsfw: false,
     created_at: "2024-01-05T18:44:12.887Z",
@@ -39,7 +39,7 @@
     id: "550e8400-e29b-41d4-a716-446655440004",
     user_id: "e5f6a7b8-c9d0-8765-8765-5e6f7a8b9c0d", // artist_emma
     content:
-      "PSA: Remember to touch grass today! Working from home is great but we all need some vitamin D 🌱",
+      "PSA: Remember to touch grass today! Working from home is great but we all need some vitamin D 🌱 A friendly reminder to all my fellow remote workers that taking breaks and getting outside is crucial for both physical and mental health. I've started implementing a new routine where I take a 15-minute walk every few hours, and it's been revolutionary for my productivity and wellbeing. The fresh air helps clear my mind, the movement keeps my body from getting stiff, and I've actually started noticing and appreciating the seasonal changes in my neighborhood. Plus, it's a great opportunity to practice some mindfulness and step away from screens for a bit. Would love to hear your strategies for staying active while working remotely! #remotework #worklifebalance #wellness #productivity #mindfulness #wfh #healthyhabits",
     comments_open: true,
     is_nsfw: false,
     created_at: "2024-01-03T11:27:33.219Z",
