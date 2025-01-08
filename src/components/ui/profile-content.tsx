@@ -28,32 +28,32 @@ const slideVariants = {
 const PostedFeed = ({ username }: { username: string }) => {
   return (
     <section className={`grid`}>
-      <Post
-        username={username}
-        content={`Nullam eu ante non enim tincidunt fringilla. Integer leo. Duis eget enim.
-          
-          Curabitur felis erat, tempus eu, placerat et, pellentesque sed, purus. Sed sed diam. Nam nunc. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Aenean risus est, porttitor vel, placerat sit amet, vestibulum sit amet, nibh. Ut faucibus justo quis nisl. Etiam vulputate, sapien eu egestas rutrum, `}
-        nsfw={true}
-        date={""}
-      />
+      {/*<Post*/}
+      {/*  username={username}*/}
+      {/*  content={`Nullam eu ante non enim tincidunt fringilla. Integer leo. Duis eget enim.*/}
+      {/*    */}
+      {/*    Curabitur felis erat, tempus eu, placerat et, pellentesque sed, purus. Sed sed diam. Nam nunc. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Aenean risus est, porttitor vel, placerat sit amet, vestibulum sit amet, nibh. Ut faucibus justo quis nisl. Etiam vulputate, sapien eu egestas rutrum, `}*/}
+      {/*  nsfw={true}*/}
+      {/*  date={""}*/}
+      {/*/>*/}
 
-      <Post
-        username={username}
-        content={`Nullam eu ante non enim tincidunt fringilla. Integer leo. Duis eget enim.
-          
-          Curabitur felis erat, tempus eu, placerat et, pellentesque sed, purus. Sed sed diam. Nam nunc. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Aenean risus est, porttitor vel, placerat sit amet, vestibulum sit amet, nibh. Ut faucibus justo quis nisl. Etiam vulputate, sapien eu egestas rutrum, Curabitur felis erat, tempus eu, placerat et, pellentesque sed, purus. Sed sed diam. Nam nunc. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Aenean risus est, porttitor vel, placerat sit amet, vestibulum sit amet, nibh. Ut faucibus justo quis nisl. Etiam vulputate, sapien eu egestas rutrum,`}
-        nsfw={false}
-        date={""}
-      />
+      {/*<Post*/}
+      {/*  username={username}*/}
+      {/*  content={`Nullam eu ante non enim tincidunt fringilla. Integer leo. Duis eget enim.*/}
+      {/*    */}
+      {/*    Curabitur felis erat, tempus eu, placerat et, pellentesque sed, purus. Sed sed diam. Nam nunc. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Aenean risus est, porttitor vel, placerat sit amet, vestibulum sit amet, nibh. Ut faucibus justo quis nisl. Etiam vulputate, sapien eu egestas rutrum, Curabitur felis erat, tempus eu, placerat et, pellentesque sed, purus. Sed sed diam. Nam nunc. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Aenean risus est, porttitor vel, placerat sit amet, vestibulum sit amet, nibh. Ut faucibus justo quis nisl. Etiam vulputate, sapien eu egestas rutrum,`}*/}
+      {/*  nsfw={false}*/}
+      {/*  date={""}*/}
+      {/*/>*/}
 
-      <Post
-        username={username}
-        content={`Nullam eu ante non enim tincidunt fringilla. Integer leo. Duis eget enim.
-          
-          Curabitur felis erat, tempus eu, placerat et, pellentesque sed, purus. Sed sed diam. Nam nunc. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Aenean risus est, porttitor vel, placerat sit amet, vestibulum sit amet, nibh. Ut faucibus justo quis nisl. Etiam vulputate, sapien eu egestas rutrum, Curabitur felis erat, tempus eu, placerat et, pellentesque sed, purus. Sed sed diam. Nam nunc. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Aenean risus est, porttitor vel, placerat sit amet, vestibulum sit amet, nibh. Ut faucibus justo quis nisl. Etiam vulputate, sapien eu egestas rutrum,`}
-        nsfw={false}
-        date={""}
-      />
+      {/*<Post*/}
+      {/*  username={username}*/}
+      {/*  content={`Nullam eu ante non enim tincidunt fringilla. Integer leo. Duis eget enim.*/}
+      {/*    */}
+      {/*    Curabitur felis erat, tempus eu, placerat et, pellentesque sed, purus. Sed sed diam. Nam nunc. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Aenean risus est, porttitor vel, placerat sit amet, vestibulum sit amet, nibh. Ut faucibus justo quis nisl. Etiam vulputate, sapien eu egestas rutrum, Curabitur felis erat, tempus eu, placerat et, pellentesque sed, purus. Sed sed diam. Nam nunc. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Aenean risus est, porttitor vel, placerat sit amet, vestibulum sit amet, nibh. Ut faucibus justo quis nisl. Etiam vulputate, sapien eu egestas rutrum,`}*/}
+      {/*  nsfw={false}*/}
+      {/*  date={""}*/}
+      {/*/>*/}
     </section>
   );
 };
@@ -61,23 +61,23 @@ const PostedFeed = ({ username }: { username: string }) => {
 const LikedFeed = ({ username }: { username: string }) => {
   return (
     <section className={`grid`}>
-      <Post
-        username={username}
-        content={`Nullam eu ante non enim tincidunt fringilla. Integer leo. Duis eget enim.
-          
-          Curabitur felis erat, tempus eu, placerat et, pellentesque sed, purus. Sed sed diam. Nam nunc. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Aenean risus est, porttitor vel, placerat sit amet, vestibulum sit amet, nibh. Ut faucibus justo quis nisl. Etiam vulputate, sapien eu egestas rutrum, `}
-        nsfw={true}
-        date={""}
-      />
+      {/*<Post*/}
+      {/*  username={username}*/}
+      {/*  content={`Nullam eu ante non enim tincidunt fringilla. Integer leo. Duis eget enim.*/}
+      {/*    */}
+      {/*    Curabitur felis erat, tempus eu, placerat et, pellentesque sed, purus. Sed sed diam. Nam nunc. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Aenean risus est, porttitor vel, placerat sit amet, vestibulum sit amet, nibh. Ut faucibus justo quis nisl. Etiam vulputate, sapien eu egestas rutrum, `}*/}
+      {/*  nsfw={true}*/}
+      {/*  date={""}*/}
+      {/*/>*/}
 
-      <Post
-        username={username}
-        content={`Nullam eu ante non enim tincidunt fringilla. Integer leo. Duis eget enim.
-          
-          Curabitur felis erat, tempus eu, placerat et, pellentesque sed, purus. Sed sed diam. Nam nunc. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Aenean risus est, porttitor vel, placerat sit amet, vestibulum sit amet, nibh. Ut faucibus justo quis nisl. Etiam vulputate, sapien eu egestas rutrum, `}
-        nsfw={true}
-        date={""}
-      />
+      {/*<Post*/}
+      {/*  username={username}*/}
+      {/*  content={`Nullam eu ante non enim tincidunt fringilla. Integer leo. Duis eget enim.*/}
+      {/*    */}
+      {/*    Curabitur felis erat, tempus eu, placerat et, pellentesque sed, purus. Sed sed diam. Nam nunc. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Aenean risus est, porttitor vel, placerat sit amet, vestibulum sit amet, nibh. Ut faucibus justo quis nisl. Etiam vulputate, sapien eu egestas rutrum, `}*/}
+      {/*  nsfw={true}*/}
+      {/*  date={""}*/}
+      {/*/>*/}
     </section>
   );
 };
@@ -85,23 +85,23 @@ const LikedFeed = ({ username }: { username: string }) => {
 const FollowersFeed = ({ username }: { username: string }) => {
   return (
     <section className={`grid`}>
-      <Post
-        username={username}
-        content={`Nullam eu ante non enim tincidunt fringilla. Integer leo. Duis eget enim.
-          
-          Curabitur felis erat, tempus eu, placerat et, pellentesque sed, purus. Sed sed diam. Nam nunc. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Aenean risus est, porttitor vel, placerat sit amet, vestibulum sit amet, nibh. Ut faucibus justo quis nisl. Etiam vulputate, sapien eu egestas rutrum, `}
-        nsfw={true}
-        date={""}
-      />
+      {/*<Post*/}
+      {/*  username={username}*/}
+      {/*  content={`Nullam eu ante non enim tincidunt fringilla. Integer leo. Duis eget enim.*/}
+      {/*    */}
+      {/*    Curabitur felis erat, tempus eu, placerat et, pellentesque sed, purus. Sed sed diam. Nam nunc. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Aenean risus est, porttitor vel, placerat sit amet, vestibulum sit amet, nibh. Ut faucibus justo quis nisl. Etiam vulputate, sapien eu egestas rutrum, `}*/}
+      {/*  nsfw={true}*/}
+      {/*  date={""}*/}
+      {/*/>*/}
 
-      <Post
-        username={username}
-        content={`Nullam eu ante non enim tincidunt fringilla. Integer leo. Duis eget enim.
-          
-          Curabitur felis erat, tempus eu, placerat et, pellentesque sed, purus. Sed sed diam. Nam nunc. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Aenean risus est, porttitor vel, placerat sit amet, vestibulum sit amet, nibh. Ut faucibus justo quis nisl. Etiam vulputate, sapien eu egestas rutrum, `}
-        nsfw={true}
-        date={""}
-      />
+      {/*<Post*/}
+      {/*  username={username}*/}
+      {/*  content={`Nullam eu ante non enim tincidunt fringilla. Integer leo. Duis eget enim.*/}
+      {/*    */}
+      {/*    Curabitur felis erat, tempus eu, placerat et, pellentesque sed, purus. Sed sed diam. Nam nunc. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Aenean risus est, porttitor vel, placerat sit amet, vestibulum sit amet, nibh. Ut faucibus justo quis nisl. Etiam vulputate, sapien eu egestas rutrum, `}*/}
+      {/*  nsfw={true}*/}
+      {/*  date={""}*/}
+      {/*/>*/}
     </section>
   );
 };
@@ -109,23 +109,23 @@ const FollowersFeed = ({ username }: { username: string }) => {
 const FollowingFeed = ({ username }: { username: string }) => {
   return (
     <section className={`grid`}>
-      <Post
-        username={username}
-        content={`Nullam eu ante non enim tincidunt fringilla. Integer leo. Duis eget enim.
-          
-          Curabitur felis erat, tempus eu, placerat et, pellentesque sed, purus. Sed sed diam. Nam nunc. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Aenean risus est, porttitor vel, placerat sit amet, vestibulum sit amet, nibh. Ut faucibus justo quis nisl. Etiam vulputate, sapien eu egestas rutrum, `}
-        nsfw={true}
-        date={""}
-      />
+      {/*<Post*/}
+      {/*  username={username}*/}
+      {/*  content={`Nullam eu ante non enim tincidunt fringilla. Integer leo. Duis eget enim.*/}
+      {/*    */}
+      {/*    Curabitur felis erat, tempus eu, placerat et, pellentesque sed, purus. Sed sed diam. Nam nunc. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Aenean risus est, porttitor vel, placerat sit amet, vestibulum sit amet, nibh. Ut faucibus justo quis nisl. Etiam vulputate, sapien eu egestas rutrum, `}*/}
+      {/*  nsfw={true}*/}
+      {/*  date={""}*/}
+      {/*/>*/}
 
-      <Post
-        username={username}
-        content={`Nullam eu ante non enim tincidunt fringilla. Integer leo. Duis eget enim.
-          
-          Curabitur felis erat, tempus eu, placerat et, pellentesque sed, purus. Sed sed diam. Nam nunc. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Aenean risus est, porttitor vel, placerat sit amet, vestibulum sit amet, nibh. Ut faucibus justo quis nisl. Etiam vulputate, sapien eu egestas rutrum, `}
-        nsfw={true}
-        date={""}
-      />
+      {/*<Post*/}
+      {/*  username={username}*/}
+      {/*  content={`Nullam eu ante non enim tincidunt fringilla. Integer leo. Duis eget enim.*/}
+      {/*    */}
+      {/*    Curabitur felis erat, tempus eu, placerat et, pellentesque sed, purus. Sed sed diam. Nam nunc. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Aenean risus est, porttitor vel, placerat sit amet, vestibulum sit amet, nibh. Ut faucibus justo quis nisl. Etiam vulputate, sapien eu egestas rutrum, `}*/}
+      {/*  nsfw={true}*/}
+      {/*  date={""}*/}
+      {/*/>*/}
     </section>
   );
 };
