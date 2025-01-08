@@ -48,14 +48,14 @@ export default function MainNav({
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
           className={`transition-all duration-200`}
         >
-          <IconSun size={28} strokeWidth={2} />
+          <IconSun size={24} strokeWidth={2} />
         </button>
 
         <button
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
           className={`transition-all duration-200`}
         >
-          <IconTool size={28} strokeWidth={2} />
+          <IconTool size={22} strokeWidth={2} />
         </button>
       </section>
     </nav>

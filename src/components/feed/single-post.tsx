@@ -1,60 +1,73 @@
 ﻿"use client";
 
+import Link from "next/link";
+import { useState, useEffect } from "react";
+
+import { formatTimestamp, processContent } from "@/lib/fragments";
+
 import {
   IconChartBarPopular,
   IconClock,
-  IconEyeOff,
   IconHeart,
   IconHeartFilled,
   IconMessage2,
   IconMessageFilled,
 } from "@tabler/icons-react";
-import { useState } from "react";
+import ProcessedContent from "@/components/feed/processed-content";
 
 export default function Post({
+  postId,
   username,
   content,
-  nsfw = true,
-  date,
+  nsfw,
+  timestamp,
 }: {
+  postId: string;
   username: string;
   content: string;
   nsfw: boolean;
-  date: string;
+  timestamp: string;
 }) {
   // States
   const [blurred, setBlurred] = useState(nsfw);
   const [liked, setLiked] = useState(false);
   const [hasCommented, setHasCommented] = useState(false);
 
+  // Effects
+  useEffect(() => {
+    setBlurred(nsfw);
+  }, [nsfw]);
+
   return (
-    <div className={``}>
+    <>
       {/* Header */}
       <section
-        className={`flex justify-between items-center gap-2 w-full max-w-full text-dark dark:text-light transition-all duration-300 ease-in-out`}
+        className={`flex justify-between items-center gap-2 text-dark dark:text-light transition-all duration-300 ease-in-out`}
       >
         {/* Avatar */}
         <article
           className={`shrink-0 h-12 w-12 rounded-full bg-dark dark:bg-light`}
         ></article>
 
-        {/* Information */}
-        <article className={`flex-grow flex items-center gap-4`}>
-          <div className={`flex-grow`}>
-            <h3
-              className={`max-w-[150px] font-sans text-base font-bold truncate`}
-            >
-              @{username}asdasdasdasdas
-            </h3>
-          </div>
-
-          <div
-            className={`shrink-0 flex gap-1 items-center text-dark dark:text-light opacity-30`}
+        {/* Username */}
+        <div className={`min-w-0 flex-grow`}>
+          <h3
+            className={`w-[150px] xs:w-[250px] sm:w-full font-sans text-base font-bold truncate`}
           >
-            <IconClock size={20} strokeWidth={2.5} />
-            <span className={`font-sans text-base font-bold`}>2h</span>
-          </div>
-        </article>
+            @{username || "Ghost_User"}
+          </h3>
+        </div>
+
+        {/* Time Information */}
+        <div
+          className={`shrink-0 flex gap-1 items-center text-dark dark:text-light opacity-30`}
+          title={formatTimestamp(timestamp).tooltip}
+        >
+          <IconClock size={18} strokeWidth={2.5} />
+          <span className={`font-sans text-sm font-bold`}>
+            {formatTimestamp(timestamp).label}
+          </span>
+        </div>
       </section>
 
       {/* Tag */}
@@ -69,9 +82,9 @@ export default function Post({
 
       {/* Content */}
       <section
-        className={`relative py-3 flex flex-col ${
+        className={`relative pt-3 pb-5 flex flex-col ${
           nsfw && blurred ? "px-3" : "px-0"
-        } h-[150px] transition-all duration-300 ease-in-out overflow-x-hidden`}
+        } transition-all duration-300 ease-in-out overflow-x-hidden`}
         style={{
           whiteSpace: "pre-wrap",
         }}
@@ -79,7 +92,7 @@ export default function Post({
         <article
           className={`pr-3 ${blurred ? "overflow-hidden" : "overflow-y-auto"}`}
         >
-          {content}
+          <ProcessedContent content={processContent(content)} />
         </article>
 
         {nsfw && blurred && (
@@ -92,8 +105,21 @@ export default function Post({
         )}
       </section>
 
+      {nsfw && (
+        <div className={`flex justify-end`}>
+          <button
+            className={`font-accent text-nsfw text-sm transition-all duration-300 ease-in-out`}
+            onClick={() => setBlurred(!blurred)}
+          >
+            {blurred ? "Show" : "Hide"} Content
+          </button>
+        </div>
+      )}
+
       {/* Actions */}
-      <section className={`py-2 flex flex-nowrap justify-between items-center`}>
+      <section
+        className={`mt-1 py-2 flex flex-nowrap justify-between items-center`}
+      >
         <article className={`flex gap-5`}>
           <button
             className={`transition-all duration-300 ease-in-out`}
@@ -118,22 +144,31 @@ export default function Post({
         </article>
 
         <article className={`flex gap-3 text-dark dark:text-light opacity-30`}>
-          <div className={`flex items-center gap-1`}>
+          <Link
+            href={`/post/${postId}/likes`}
+            className={`flex items-center gap-1 transition-all duration-300 ease-in-out`}
+          >
             <IconHeart size={20} strokeWidth={2.5} />
             <span className={`font-sans text-sm font-bold`}>50</span>
-          </div>
+          </Link>
 
-          <div className={`flex items-center gap-1`}>
+          <Link
+            href={`/post/${postId}`}
+            className={`flex items-center gap-1 transition-all duration-300 ease-in-out`}
+          >
             <IconMessage2 size={20} strokeWidth={2.5} />
             <span className={`font-sans text-sm font-bold`}>50</span>
-          </div>
+          </Link>
 
-          <div className={`flex items-center gap-1`}>
+          <Link
+            href={`/post/${postId}/analytics`}
+            className={`flex items-center gap-1 transition-all duration-300 ease-in-out`}
+          >
             <IconChartBarPopular size={20} strokeWidth={2.5} />
             <span className={`font-sans text-sm font-bold`}>50</span>
-          </div>
+          </Link>
         </article>
       </section>
-    </div>
+    </>
   );
 }
