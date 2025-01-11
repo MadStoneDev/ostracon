@@ -1,4 +1,5 @@
 ﻿import ProfileContent from "@/components/ui/profile-content";
+import { sampleUsers } from "@/data/sample-users";
 
 export async function generateMetadata({
   params,
@@ -20,6 +21,9 @@ export default async function Profile({
 }) {
   // Variables
   const username = (await params).username;
+  const userId = sampleUsers.find((user) => user.username === username)?.id;
 
-  return <ProfileContent username={username} />;
+  return (
+    username && userId && <ProfileContent username={username} userId={userId} />
+  );
 }

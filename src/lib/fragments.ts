@@ -85,7 +85,7 @@ export function formatTimestamp(timestamp: string): {
   const daysAgo = Math.floor(hoursAgo / 24);
 
   // Less than 3 days
-  if (daysAgo < 3) {
+  if (daysAgo < 7) {
     return {
       label: `${daysAgo}d`,
       tooltip: `Posted ${daysAgo} day${daysAgo === 1 ? "" : "s"} ago`,

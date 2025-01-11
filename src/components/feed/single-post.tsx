@@ -12,6 +12,7 @@ import {
   IconHeartFilled,
   IconMessage2,
   IconMessageFilled,
+  IconX,
 } from "@tabler/icons-react";
 import ProcessedContent from "@/components/feed/processed-content";
 
@@ -35,6 +36,9 @@ export default function Post({
   const [liked, setLiked] = useState(false);
   const [hasCommented, setHasCommented] = useState(false);
 
+  const [showFullScreen, setShowFullScreen] = useState(false);
+  const [fullscreenImage, setFullScreenImage] = useState(``);
+
   // Effects
   useEffect(() => {
     setBlurred(nsfw);
@@ -48,24 +52,59 @@ export default function Post({
       >
         {/* Avatar */}
         <article
-          className={`shrink-0 h-12 w-12 rounded-full bg-dark dark:bg-light border-[2px] border-dark dark:border-light overflow-hidden`}
+          className={`cursor-pointer shrink-0 h-12 w-12 rounded-full bg-dark dark:bg-light border-[2px] border-dark dark:border-light overflow-hidden`}
         >
           {avatar_url ? (
             <img
               src={avatar_url}
               alt={`Avatar photo of ${username}`}
               className={`h-full w-full object-cover`}
+              onClick={() => {
+                setFullScreenImage(avatar_url);
+                setShowFullScreen(true);
+              }}
             />
           ) : null}
         </article>
 
-        {/* Username */}
-        <div className={`min-w-0 flex-grow`}>
-          <h3
-            className={`w-[150px] xs:w-[250px] sm:w-full font-sans text-base font-bold truncate`}
+        {/* Full Screen Image */}
+        {showFullScreen && (
+          <article
+            className={`fixed top-[70px] left-0 bottom-[60px] right-0 bg-dark overflow-hidden z-30`}
           >
-            @{username || "Ghost_User"}
-          </h3>
+            {fullscreenImage && (
+              <img
+                src={fullscreenImage}
+                alt={`Avatar photo of ${username}`}
+                className={`h-full w-full object-contain`}
+              />
+            )}
+
+            <button
+              onClick={() => {
+                setShowFullScreen(false);
+                setFullScreenImage(``);
+              }}
+            >
+              <IconX
+                className={`absolute top-4 right-4 z-10 text-light/50 text-2xl cursor-pointer`}
+              />
+            </button>
+          </article>
+        )}
+
+        {/* Username */}
+        <div className={`flex-grow inline-flex items-center`}>
+          <Link
+            href={`/profile/${username}`}
+            className={`hover:opacity-65 transition-all duration-300 ease-in-out`}
+          >
+            <h3
+              className={`max-w-[150px] xs:max-w-[250px] sm:max-w-full font-sans font-bold truncate`}
+            >
+              @{username || "Ghost_User"}
+            </h3>
+          </Link>
         </div>
 
         {/* Time Information */}
