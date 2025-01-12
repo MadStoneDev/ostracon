@@ -10,6 +10,7 @@ import { IconHeartFilled, IconNotes } from "@tabler/icons-react";
 import samplePosts from "@/data/sample-posts";
 import { PostFragment } from "@/types/fragments";
 import { sampleUsers } from "@/data/sample-users";
+import SingleUser from "@/components/feed/single-user";
 
 const slideVariants = {
   enter: (direction: number) => ({
@@ -108,24 +109,19 @@ const ListenersFeed = ({
   userId: string;
 }) => {
   return (
-    <section className={`grid`}>
-      {/*<Post*/}
-      {/*  username={username}*/}
-      {/*  content={`Nullam eu ante non enim tincidunt fringilla. Integer leo. Duis eget enim.*/}
-      {/*    */}
-      {/*    Curabitur felis erat, tempus eu, placerat et, pellentesque sed, purus. Sed sed diam. Nam nunc. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Aenean risus est, porttitor vel, placerat sit amet, vestibulum sit amet, nibh. Ut faucibus justo quis nisl. Etiam vulputate, sapien eu egestas rutrum, `}*/}
-      {/*  nsfw={true}*/}
-      {/*  date={""}*/}
-      {/*/>*/}
-
-      {/*<Post*/}
-      {/*  username={username}*/}
-      {/*  content={`Nullam eu ante non enim tincidunt fringilla. Integer leo. Duis eget enim.*/}
-      {/*    */}
-      {/*    Curabitur felis erat, tempus eu, placerat et, pellentesque sed, purus. Sed sed diam. Nam nunc. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Aenean risus est, porttitor vel, placerat sit amet, vestibulum sit amet, nibh. Ut faucibus justo quis nisl. Etiam vulputate, sapien eu egestas rutrum, `}*/}
-      {/*  nsfw={true}*/}
-      {/*  date={""}*/}
-      {/*/>*/}
+    <section
+      className={`mb-5 pb-3 border-b last-of-type:border-b-0 border-dark/10 dark:border-light/10 transition-all duration-300 ease-in-out`}
+    >
+      {sampleUsers.map((user) => {
+        return (
+          <div key={`listener-${user.id}`}>
+            <SingleUser userId={user.id} />
+            <section
+              className={`my-4 h-[1px] bg-dark/10 dark:bg-light`}
+            ></section>
+          </div>
+        );
+      })}
     </section>
   );
 };
@@ -138,24 +134,20 @@ const ListeningFeed = ({
   userId: string;
 }) => {
   return (
-    <section className={`grid`}>
-      {/*<Post*/}
-      {/*  username={username}*/}
-      {/*  content={`Nullam eu ante non enim tincidunt fringilla. Integer leo. Duis eget enim.*/}
-      {/*    */}
-      {/*    Curabitur felis erat, tempus eu, placerat et, pellentesque sed, purus. Sed sed diam. Nam nunc. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Aenean risus est, porttitor vel, placerat sit amet, vestibulum sit amet, nibh. Ut faucibus justo quis nisl. Etiam vulputate, sapien eu egestas rutrum, `}*/}
-      {/*  nsfw={true}*/}
-      {/*  date={""}*/}
-      {/*/>*/}
-
-      {/*<Post*/}
-      {/*  username={username}*/}
-      {/*  content={`Nullam eu ante non enim tincidunt fringilla. Integer leo. Duis eget enim.*/}
-      {/*    */}
-      {/*    Curabitur felis erat, tempus eu, placerat et, pellentesque sed, purus. Sed sed diam. Nam nunc. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Aenean risus est, porttitor vel, placerat sit amet, vestibulum sit amet, nibh. Ut faucibus justo quis nisl. Etiam vulputate, sapien eu egestas rutrum, `}*/}
-      {/*  nsfw={true}*/}
-      {/*  date={""}*/}
-      {/*/>*/}
+    <section
+      className={`mb-5 pb-3 border-b last-of-type:border-b-0 border-dark/10 dark:border-light/10 transition-all duration-300 ease-in-out`}
+    >
+      {sampleUsers.map((user) => {
+        return (
+          <div key={`listening-${user.id}`}>
+            <SingleUser userId={user.id} />
+            <section
+              className={`my-4 h-[1px] bg-dark/10 dark:bg-light`}
+            ></section>
+          </div>
+        );
+      })}
+      s
     </section>
   );
 };
@@ -180,8 +172,6 @@ export default function ProfileContent({
 
     setPrevTab(newTab);
     setActiveTab([newTab, newDirection]);
-
-    console.log(newTab);
   };
 
   const getFeedContent = () => {
@@ -198,13 +188,20 @@ export default function ProfileContent({
     }
   };
 
+  // Variables
+  const avatar_url = sampleUsers.find((user) => user.id === userId)?.avatar_url;
+
   return (
     <main className={`flex-grow flex flex-col gap-4 min-h-0 overflow-y-auto`}>
       <div className={`px-[25px]`}>
         {/* Header */}
         <section className={`relative`}>
-          <article className={`w-32 h-32 rounded-full bg-dark dark:bg-light`}>
-            {/*<img src={avatar_url} alt={`Avatar photo of ${username}`} />*/}
+          <article
+            className={`w-32 h-32 rounded-full bg-dark dark:bg-light overflow-hidden`}
+          >
+            {avatar_url && (
+              <img src={avatar_url} alt={`Avatar photo of ${username}`} />
+            )}
           </article>
         </section>
 
@@ -251,7 +248,7 @@ export default function ProfileContent({
                 onClick={() => updateTab("Listening")}
               >
                 <span
-                  className={`px-3 py-1 bg-dark dark:bg-light rounded-l-full border border-dark text-light dark:text-dark font-bold transition-all duration-300 ease-in-out`}
+                  className={`px-3 py-1 bg-dark dark:bg-light rounded-l-full border border-dark dark:border-light text-light dark:text-dark font-bold transition-all duration-300 ease-in-out`}
                 >
                   150
                 </span>
@@ -271,7 +268,7 @@ export default function ProfileContent({
                 onClick={() => updateTab("Listeners")}
               >
                 <span
-                  className={`px-3 py-1 bg-dark dark:bg-light rounded-l-full border border-dark text-light dark:text-dark font-bold transition-all duration-300 ease-in-out`}
+                  className={`px-3 py-1 bg-dark dark:bg-light rounded-l-full border border-dark dark:border-light text-light dark:text-dark font-bold transition-all duration-300 ease-in-out`}
                 >
                   1.2k
                 </span>
