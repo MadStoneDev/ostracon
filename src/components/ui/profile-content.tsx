@@ -147,7 +147,6 @@ const ListeningFeed = ({
           </div>
         );
       })}
-      s
     </section>
   );
 };
