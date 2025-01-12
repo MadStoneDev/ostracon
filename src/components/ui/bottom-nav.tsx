@@ -28,6 +28,28 @@ export default function BottomNav() {
 
   // States
   const [showMenu, setShowMenu] = useState(false);
+  const [showOverlay, setShowOverlay] = useState(false);
+  const [overlayActive, setOverlayActive] = useState(false);
+
+  // Functions
+  const closeMenu = () => {
+    setShowMenu(false);
+    setShowOverlay(false);
+
+    setTimeout(() => {
+      setOverlayActive(false);
+      1;
+    }, 300);
+  };
+
+  const openMenu = () => {
+    setOverlayActive(true);
+
+    setTimeout(() => {
+      setShowOverlay(true);
+      setShowMenu(true);
+    }, 10);
+  };
 
   return (
     <>
@@ -96,7 +118,9 @@ export default function BottomNav() {
           className={`flex items-center justify-center ${
             pathname.includes("/profile") ? "" : ""
           } w-12 h-12 rounded-full transition-all duration-300 ease-in-out`}
-          onClick={() => setShowMenu(!showMenu)}
+          onClick={() => {
+            showMenu ? closeMenu() : openMenu();
+          }}
         >
           {showMenu ? (
             <IconX size={24} strokeWidth={2} />
@@ -133,11 +157,15 @@ export default function BottomNav() {
         </Link>
       </section>
 
-      <div
-        className={`pointer-events-none fixed top-0 bottom-0 left-0 right-0 bg-dark/50 dark:bg-dark ${
-          showMenu ? "opacity-100" : "opacity-0"
-        } z-20 transition-all duration-300 ease-in-out`}
-      ></div>
+      {/* Overlay */}
+      {overlayActive && (
+        <div
+          className={`fixed top-0 bottom-0 left-0 right-0 bg-dark/50 dark:bg-dark ${
+            showMenu ? "opacity-100" : "pointer-events-none opacity-0"
+          } z-20 transition-all duration-300 ease-in-out`}
+          onClick={() => closeMenu()}
+        ></div>
+      )}
     </>
   );
 }

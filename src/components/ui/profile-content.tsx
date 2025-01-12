@@ -78,25 +78,37 @@ const LikedFeed = ({
   username: string;
   userId: string;
 }) => {
+  const [posts, setPosts] = useState<PostFragment[]>([]);
+
+  useEffect(() => {
+    setPosts(samplePosts.filter((post) => post.user_id === userId));
+  }, [samplePosts, userId]);
+
   return (
     <section className={`grid`}>
-      {/*<Post*/}
-      {/*  username={username}*/}
-      {/*  content={`Nullam eu ante non enim tincidunt fringilla. Integer leo. Duis eget enim.*/}
-      {/*    */}
-      {/*    Curabitur felis erat, tempus eu, placerat et, pellentesque sed, purus. Sed sed diam. Nam nunc. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Aenean risus est, porttitor vel, placerat sit amet, vestibulum sit amet, nibh. Ut faucibus justo quis nisl. Etiam vulputate, sapien eu egestas rutrum, `}*/}
-      {/*  nsfw={true}*/}
-      {/*  date={""}*/}
-      {/*/>*/}
+      {posts.map((post) => {
+        const username = sampleUsers.find((user) => user.id === post.user_id)
+          ?.username;
 
-      {/*<Post*/}
-      {/*  username={username}*/}
-      {/*  content={`Nullam eu ante non enim tincidunt fringilla. Integer leo. Duis eget enim.*/}
-      {/*    */}
-      {/*    Curabitur felis erat, tempus eu, placerat et, pellentesque sed, purus. Sed sed diam. Nam nunc. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Aenean risus est, porttitor vel, placerat sit amet, vestibulum sit amet, nibh. Ut faucibus justo quis nisl. Etiam vulputate, sapien eu egestas rutrum, `}*/}
-      {/*  nsfw={true}*/}
-      {/*  date={""}*/}
-      {/*/>*/}
+        const avatar_url = sampleUsers.find((user) => user.id === post.user_id)
+          ?.avatar_url;
+
+        return (
+          <article
+            key={`feed-post-${post.id}`}
+            className={`mb-5 pb-3 border-b last-of-type:border-b-0 border-dark/10 dark:border-light/10 transition-all duration-300 ease-in-out`}
+          >
+            <Post
+              postId={`${post.id}`}
+              avatar_url={avatar_url || ""}
+              username={username || "Ghost User"}
+              content={post.content}
+              nsfw={post.is_nsfw}
+              timestamp={post.created_at}
+            />
+          </article>
+        );
+      })}
     </section>
   );
 };
@@ -243,7 +255,7 @@ export default function ProfileContent({
 
             <div className={`flex items-center gap-8`}>
               <button
-                className={`group flex items-center rounded-full hover:text-primary/65 overflow-hidden transition-all duration-300 ease-in-out`}
+                className={`group flex items-center rounded-full hover:bg-white hover:text-primary/65 overflow-hidden transition-all duration-300 ease-in-out`}
                 onClick={() => updateTab("Listening")}
               >
                 <span
@@ -263,7 +275,7 @@ export default function ProfileContent({
               </button>
 
               <button
-                className={`group flex items-center rounded-full hover:text-primary/65 overflow-hidden transition-all duration-300 ease-in-out`}
+                className={`group flex items-center rounded-full hover:bg-white hover:text-primary/65 overflow-hidden transition-all duration-300 ease-in-out`}
                 onClick={() => updateTab("Listeners")}
               >
                 <span
