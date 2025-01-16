@@ -29,7 +29,16 @@ export default function MainNav({
       <section
         className={`flex items-center font-accent tracking-tight text-2xl`}
       >
-        <Link href={`/`}>Ostracon</Link>
+        <Link href={`/`}>
+          <img
+            src={`/ostracon-logo-dark.svg`}
+            className={`hidden dark:block h-5`}
+          />
+          <img
+            src={`/ostracon-logo-light.svg`}
+            className={`block dark:hidden h-5`}
+          />
+        </Link>
       </section>
 
       <section className={`flex-grow flex justify-end items-center gap-4 z-50`}>

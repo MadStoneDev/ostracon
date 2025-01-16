@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 2650 512" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;">
+    <g transform="matrix(1,0,0,1,-562,0)">
+        <g id="Artboard1" transform="matrix(5.17578,0,0,1,562,0)">
+            <rect x="0" y="0" width="512" height="512" style="fill:none;"/>
+            <g transform="matrix(4.46309,0,0,23.1,-1498.37,-3326.16)">
+                <path d="M352.808,145.908C355.002,145.908 356.808,147.713 356.808,149.908L356.808,157.908C356.808,160.102 355.002,161.908 352.808,161.908L348.084,161.908L343.322,164.765C343.166,164.858 342.988,164.907 342.807,164.907C342.301,164.907 341.871,164.524 341.814,164.022L341.808,163.908L341.808,161.908L340.808,161.908C338.689,161.908 336.918,160.224 336.813,158.108L336.808,157.908L336.808,149.908C336.808,147.713 338.613,145.908 340.808,145.908L352.808,145.908Z" style="fill:rgb(244,155,144);"/>
+            </g>
+            <g transform="matrix(0.490355,0,0,2.53797,-98.4611,-332.41)">
+                <g transform="matrix(8.625,0,0,8.625,198.163,150.882)">
+                    <path d="M6,6C6,4.903 6.903,4 8,4L16,4C17.097,4 18,4.903 18,6L18,10C18,11.097 17.097,12 16,12L8,12C6.903,12 6,11.097 6,10L6,6Z" style="fill:none;fill-rule:nonzero;stroke:white;stroke-width:2px;"/>
+                </g>
+                <g transform="matrix(8.625,0,0,8.625,198.163,150.882)">
+                    <path d="M12,2L12,4" style="fill:none;fill-rule:nonzero;stroke:white;stroke-width:2px;"/>
+                </g>
+                <g transform="matrix(8.625,0,0,8.625,198.163,150.882)">
+                    <path d="M10,8L10,8.01" style="fill:none;fill-rule:nonzero;stroke:white;stroke-width:2px;"/>
+                </g>
+                <g transform="matrix(8.625,0,0,8.625,198.163,150.882)">
+                    <path d="M14,8L14,8.01" style="fill:none;fill-rule:nonzero;stroke:white;stroke-width:2px;"/>
+                </g>
+            </g>
+            <g transform="matrix(1.97451,0,0,10.2197,-349.65,-2336.46)">
+                <g transform="matrix(50,0,0,50,428.77,268.409)">
+                </g>
+                <text x="233.02px" y="268.409px" style="font-family:'LilitaOne', 'Lilita One';font-size:50px;fill:rgb(50,56,62);">Ostracon</text>
+            </g>
+        </g>
+    </g>
+</svg>
