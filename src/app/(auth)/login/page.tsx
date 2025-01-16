@@ -1,6 +1,7 @@
 import BigButton from "@/components/ui/big-button";
 import { IconUserPlus } from "@tabler/icons-react";
 import Link from "next/link";
+import LoginForm from "@/components/auth/login-form";
 
 export default function Login() {
   return (
@@ -13,16 +14,10 @@ export default function Login() {
       {/* Main Content */}
       <section className={`flex-grow px-[25px] grid grid-cols-1 items-center`}>
         <article>
-          <h1 className={`font-serif text-5xl font-black`}>Welcome!</h1>
-          <h2 className={`font-serif text-xl`}>Let's create a new account</h2>
+          <h1 className={`font-serif text-5xl font-black`}>Welcome Back!</h1>
+          <h2 className={`font-serif text-xl`}>Let's get you logged in</h2>
 
-          <div className={`mt-10`}>
-            {/*<BigButton*/}
-            {/*    title={"Start creating"}*/}
-            {/*    indicator={<IconUserPlus size={28} strokeWidth={1.5}/>}*/}
-            {/*    active={true}*/}
-            {/*/>*/}
-          </div>
+          <LoginForm />
         </article>
       </section>
 

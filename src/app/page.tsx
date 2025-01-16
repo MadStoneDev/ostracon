@@ -25,7 +25,7 @@ export default function Home() {
 
           <div className={`mt-10`}>
             <BigButton
-              title={"Start creating"}
+              title={"Start Posting"}
               indicator={<IconUserPlus size={28} strokeWidth={1.5} />}
               href={`/register`}
               active={true}

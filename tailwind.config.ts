@@ -29,10 +29,7 @@ const config: Config = {
 
         primary: "#F49B90",
 
-        secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
-        },
+        secondary: "#FDE4DF",
 
         nsfw: "#934FA5",
 

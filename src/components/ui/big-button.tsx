@@ -39,7 +39,7 @@ export default function BigButton({
     direction === "left" ? "flex-row-reverse" : "flex-row"
   } items-center h-10 ${
     active ? "bg-primary text-dark" : "text-light hover:bg-primary/50"
-  } rounded-full font-serif text-sm font-bold text-dark transition-all duration-300 ease-in-out`;
+  } focus:outline-none rounded-full font-serif text-sm font-bold text-dark transition-all duration-300 ease-in-out`;
 
   const contents = (
     <>
@@ -49,8 +49,8 @@ export default function BigButton({
       <div
         className={`p-2 grid place-content-center w-10 h-10 rounded-full text-dark ${
           active
-            ? "bg-secondary dark:bg-secondary/80 scale-110"
-            : "group-hover:bg-secondary/70 dark:text-light scale-105"
+            ? "bg-secondary dark:bg-secondary scale-110"
+            : "group-hover:bg-secondary dark:text-light scale-105"
         } group-hover:scale-125 text-sm font-bold overflow-hidden transition-all duration-300 ease-in-out`}
       >
         {indicator}
