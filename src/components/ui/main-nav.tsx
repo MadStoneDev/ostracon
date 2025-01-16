@@ -30,11 +30,16 @@ export default function MainNav({
         className={`flex items-center font-accent tracking-tight text-2xl`}
       >
         <Link href={`/`}>
+          {/* Ostracon Logo for Dark Mode */}
           <img
+            alt={`Ostracon logo`}
             src={`/ostracon-logo-dark.svg`}
             className={`hidden dark:block h-5`}
           />
+
+          {/* Ostracon Logo for Light Mode */}
           <img
+            alt={`Ostracon logo`}
             src={`/ostracon-logo-light.svg`}
             className={`block dark:hidden h-5`}
           />

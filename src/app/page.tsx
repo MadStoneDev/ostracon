@@ -20,6 +20,11 @@ export default function Home() {
       {/* Main Content */}
       <section className={`flex-grow px-[25px] grid grid-cols-1 items-center`}>
         <article>
+          <img
+            alt={`Ostracon Symbol`}
+            src={`/ostracon-symbol.svg`}
+            className={`mb-2 h-20`}
+          />
           <h1 className={`font-serif text-5xl font-black`}>Welcome!</h1>
           <h2 className={`font-serif text-xl`}>Let's create a new account</h2>
 
