@@ -1,5 +1,6 @@
 ﻿import BottomNav from "@/components/ui/bottom-nav";
 import React from "react";
+import Link from "next/link";
 
 export default function TermsOfService() {
   const authenticated = true;
@@ -14,7 +15,7 @@ export default function TermsOfService() {
     >
       <div className="fixed top-0 w-full h-[70px] bg-light dark:bg-dark z-10"></div>
       {/* Main Content */}
-      <div className="mt-4 flex-grow px-[25px] grid grid-cols-1 items-center max-w-md">
+      <div className="mt-4 flex-grow px-[25px] grid grid-cols-1 items-center max-w-md lg:max-w-xl">
         <h1 className="text-4xl font-serif mb-4">Terms of Service</h1>
         <p className="mb-8">
           <strong>Last Updated: January 17, 2025</strong>
@@ -222,6 +223,22 @@ export default function TermsOfService() {
           </p>
         </section>
       </div>
+
+      <footer
+        className={`px-[25px] flex flex-col justify-center items-start h-[60px]`}
+      >
+        <p className={`text-xs text-dark/50 dark:text-light/50`}>
+          Copyright © 2025 Ostracon. All rights reserved.
+        </p>
+        <div className={`flex gap-2 text-xs`}>
+          <Link href={`/privacy-policy`} className={`text-primary font-bold`}>
+            Privacy Policy
+          </Link>
+          <Link href={`/terms-of-service`} className={`text-primary font-bold`}>
+            Terms of Service
+          </Link>
+        </div>
+      </footer>
 
       {authenticated ? <BottomNav /> : null}
     </main>

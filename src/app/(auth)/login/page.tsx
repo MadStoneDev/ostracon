@@ -22,13 +22,21 @@ export default function Login() {
       </section>
 
       {/* Footer */}
-      <footer className={`px-[25px] flex items-center h-[60px]`}>
+      <footer
+        className={`px-[25px] pb-4 flex flex-col justify-center items-start h-fit`}
+      >
         <p>
           Don't have an account?{" "}
           <Link href={`/register`} className={`text-primary font-bold`}>
             Create one here.
           </Link>
         </p>
+
+        <section className={`mt-5`}>
+          <p className={`text-xs text-dark/50 dark:text-light/50`}>
+            Copyright © 2025 Ostracon. All rights reserved.
+          </p>
+        </section>
       </footer>
     </main>
   );

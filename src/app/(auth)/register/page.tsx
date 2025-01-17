@@ -46,13 +46,21 @@ export default function Register() {
       </section>
 
       {/* Footer */}
-      <footer className={`px-[25px] flex items-center h-[60px]`}>
+      <footer
+        className={`px-[25px] pb-4 flex flex-col justify-center items-start h-fit`}
+      >
         <p>
           Already have an account?{" "}
           <Link href={`/login`} className={`text-primary font-bold`}>
             Log in here.
           </Link>
         </p>
+
+        <section className={`mt-5`}>
+          <p className={`text-xs text-dark/50 dark:text-light/50`}>
+            Copyright © 2025 Ostracon. All rights reserved.
+          </p>
+        </section>
       </footer>
     </main>
   );

@@ -19,7 +19,7 @@ export default function PrivacyPolicy() {
 
       {/* Main Content */}
       <div
-        className={`mt-4 flex-grow px-[25px] grid grid-cols-1 items-center max-w-md`}
+        className={`mt-4 flex-grow px-[25px] grid grid-cols-1 items-center max-w-md lg:max-w-xl`}
       >
         <h1 className="text-4xl font-serif mb-4">Privacy Policy</h1>
         <p className="mb-8">
@@ -235,6 +235,22 @@ export default function PrivacyPolicy() {
           <p>Coming Soon</p>
         </section>
       </div>
+
+      <footer
+        className={`px-[25px] flex flex-col justify-center items-start h-[60px]`}
+      >
+        <p className={`text-xs text-dark/50 dark:text-light/50`}>
+          Copyright © 2025 Ostracon. All rights reserved.
+        </p>
+        <div className={`flex gap-2 text-xs`}>
+          <Link href={`/privacy-policy`} className={`text-primary font-bold`}>
+            Privacy Policy
+          </Link>
+          <Link href={`/terms-of-service`} className={`text-primary font-bold`}>
+            Terms of Service
+          </Link>
+        </div>
+      </footer>
 
       {authenticated ? <BottomNav /> : null}
     </main>
