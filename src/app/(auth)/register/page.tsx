@@ -22,6 +22,26 @@ export default function Register() {
           </h2>
 
           <RegisterForm />
+
+          <div className={`mt-2 max-w-sm`}>
+            <span
+              style={{
+                fontSize: "0.8rem",
+                lineHeight: "1rem",
+              }}
+            >
+              By signing up, you confirm that you are 16 years of age or older
+              and agree to Ostracon's{" "}
+              <a href={`/terms-of-service`} className="text-primary font-bold">
+                Terms of Service
+              </a>{" "}
+              and{" "}
+              <a href={`privacy-policy`} className="text-primary font-bold">
+                Privacy Policy
+              </a>
+              .
+            </span>
+          </div>
         </article>
       </section>
 

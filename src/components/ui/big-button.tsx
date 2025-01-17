@@ -9,6 +9,7 @@ interface BaseButtonProps {
   indicator: ReactNode;
   direction?: "left" | "right";
   active?: boolean;
+  type?: "button" | "submit";
   disabled?: boolean;
   className?: string;
 }
@@ -30,6 +31,7 @@ export default function BigButton({
   indicator,
   direction = "right",
   active = false,
+  type = "button",
   disabled = false,
   className = "",
   href,
@@ -68,7 +70,7 @@ export default function BigButton({
 
   return (
     <button
-      type="button"
+      type={type}
       className={`${baseClassName} ${className}`}
       disabled={disabled}
       onClick={onClick}

@@ -23,7 +23,7 @@ export default function Home() {
           <img
             alt={`Ostracon Symbol`}
             src={`/ostracon-symbol.svg`}
-            className={`mb-2 h-20`}
+            className={`mb-4 h-20`}
           />
           <h1 className={`font-serif text-5xl font-black`}>Welcome!</h1>
           <h2 className={`font-serif text-xl`}>Let's create a new account</h2>

@@ -66,13 +66,13 @@ export default function RegisterForm() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleSubmit = () => {
     console.log(formData);
   };
 
   return (
     <form
+      // method={`POST`}
       className={`mt-10 flex flex-col items-start gap-5 max-w-sm transition-all duration-300 ease-in-out`}
     >
       <div
@@ -310,9 +310,9 @@ export default function RegisterForm() {
       <BigButton
         title={"Create Account"}
         indicator={<IconArrowRight size={26} strokeWidth={1.5} />}
-        href={`/register`}
         active={true}
         className={`mt-5`}
+        onClick={handleSubmit}
       />
     </form>
   );
