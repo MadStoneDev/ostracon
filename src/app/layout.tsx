@@ -10,7 +10,7 @@ import MainNav from "@/components/ui/main-nav";
 
 const outfit = Outfit({
   subsets: ["latin"],
-  weight: ["300", "700"],
+  weight: ["300", "700", "800", "900"],
   variable: "--font-outfit",
 });
 

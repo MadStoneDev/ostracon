@@ -4,13 +4,13 @@ import Link from "next/link";
 import { useTheme } from "next-themes";
 
 import {
+  IconInfoCircle,
   IconInfoCircleFilled,
-  IconSettings,
-  IconSettings2,
   IconSun,
-  IconSunFilled,
   IconTool,
+  IconX,
 } from "@tabler/icons-react";
+import { usePathname, useRouter } from "next/navigation";
 
 export default function MainNav({
   authenticated = false,
@@ -18,6 +18,10 @@ export default function MainNav({
   authenticated?: boolean;
 }) {
   const { theme, setTheme } = useTheme();
+
+  // Hooks
+  const router = useRouter();
+  const pathname = usePathname();
 
   return (
     <nav
@@ -60,17 +64,30 @@ export default function MainNav({
 
         <button
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          className={`transition-all duration-200`}
+          className={`hover:text-primary transition-all duration-300 ease-in-out`}
         >
           <IconSun size={24} strokeWidth={2} />
         </button>
 
-        <button
-          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          className={`transition-all duration-200`}
-        >
-          <IconTool size={22} strokeWidth={2} />
-        </button>
+        {authenticated ? (
+          pathname === "/post/new" ? (
+            <button
+              className={`hover:text-primary transition-all duration-300 ease-in-out`}
+              onClick={() => router.back()}
+            >
+              <IconX size={22} strokeWidth={2} />
+            </button>
+          ) : (
+            <Link
+              href={`/settings`}
+              className={`hover:text-primary transition-all duration-300 ease-in-out`}
+            >
+              <IconTool size={22} strokeWidth={2} />
+            </Link>
+          )
+        ) : (
+          <IconInfoCircle />
+        )}
       </section>
     </nav>
   );

@@ -32,27 +32,31 @@ export default function NewPost() {
       }}
     >
       {/* Header */}
-      <section className={`flex-grow relative px-[25px] flex flex-col`}>
-        <article
-          className={`pb-4 flex gap-2 border-b border-dark dark:border-light`}
+      <section className={`mt-5 relative flex-grow px-[25px] flex flex-col`}>
+        {/* Send Button */}
+        <button
+          className={`absolute top-1 right-[25px] text-dark dark:text-light hover:text-primary dark:hover:text-primary disabled:pointer-events-none disabled:opacity-50 transition-all duration-300 ease-in-out`}
+          disabled={postContent.replace(/(<([^>]+)>)/gi, "").length === 0}
         >
-          <button
-            className={`opacity-50 hover:opacity-100 hover:text-primary transition-all duration-300 ease-in-out`}
-            onClick={() => router.back()}
+          <IconSend size={24} strokeWidth={2} />
+        </button>
+
+        <article className={`pb-4 flex gap-2`}>
+          <h1
+            className={`font-sans font-black text-xl text-dark dark:text-light`}
           >
-            <IconChevronLeft size={28} strokeWidth={2} />
-          </button>
-          <h1 className={`font-serif text-3xl font-black`}>New Post</h1>
+            What do you want to share?
+          </h1>
         </article>
 
         <article className={`relative flex-grow flex flex-col py-5`}>
-          <TipTap content={postContent} onChange={setPostContent} />
+          {/*<TipTap content={postContent} onChange={setPostContent} />*/}
 
           {postContent.replace(/(<([^>]+)>)/gi, "").length === 0 && (
             <p
               className={`pointer-events-none absolute top-5 left-0 text-sm opacity-50`}
             >
-              What would you like to share today?
+              Start typing here...
             </p>
           )}
         </article>
@@ -71,19 +75,18 @@ export default function NewPost() {
         </article>
       </section>
 
-      {/*  Footer*/}
-      <footer
-        className={`flex items-center border-y border-dark dark:border-light h-[50px]`}
-        // className={`flex items-center border-y border-dark dark:border-light/20`}
+      {/* Side Bar*/}
+      <aside
+        className={`px-1.5 py-3 fixed top-1/2 -translate-y-1/2 right-0 flex flex-col gap-5 bg-primary text-light dark:text-dark`}
       >
         <button
           className={`flex-grow flex justify-center items-center h-full`}
           onClick={() => setAllowReactions(!allowReactions)}
         >
           {allowReactions ? (
-            <IconHeartFilled size={28} strokeWidth={2} />
+            <IconHeartFilled size={24} strokeWidth={2} />
           ) : (
-            <IconHeart size={28} strokeWidth={2} />
+            <IconHeart size={24} strokeWidth={2} />
           )}
         </button>
 
@@ -92,29 +95,27 @@ export default function NewPost() {
           onClick={() => setAllowComments(!allowComments)}
         >
           {allowComments ? (
-            <IconMessageFilled size={28} strokeWidth={2} />
+            <IconMessageFilled size={24} strokeWidth={2} />
           ) : (
-            <IconMessage size={28} strokeWidth={2} />
+            <IconMessage size={24} strokeWidth={2} />
           )}
         </button>
 
         <button
           className={`flex-grow flex justify-center items-center gap-1 h-full ${
-            postNSFW ? "bg-danger text-light" : "text-dark dark:text-light"
+            postNSFW ? "opacity-100" : "opacity-50"
           }`}
           onClick={() => setPostNSFW(!postNSFW)}
         >
-          <IconEyeOff size={28} strokeWidth={2} />
+          <IconEyeOff size={24} strokeWidth={2} />
         </button>
-      </footer>
+      </aside>
 
-      {/* Send Button */}
-      <button
-        className={`absolute top-0 right-[25px] text-dark dark:text-light hover:text-primary dark:hover:text-primary disabled:pointer-events-none disabled:opacity-50 transition-all duration-300 ease-in-out`}
-        disabled={postContent.replace(/(<([^>]+)>)/gi, "").length === 0}
-      >
-        <IconSend size={28} strokeWidth={2} />
-      </button>
+      {/*  Footer*/}
+      <footer
+        className={`flex items-center border-y border-dark dark:border-light h-[50px]`}
+        // className={`flex items-center border-y border-dark dark:border-light/20`}
+      ></footer>
     </main>
   );
 }

@@ -135,21 +135,21 @@ export default function BottomNav() {
           showMenu ? "right-0" : "-right-full"
         } w-[220px] flex flex-col gap-5 bg-primary z-30 transition-all duration-300 ease-in-out`}
       >
-        <Link href={`/`} className={`flex items-center gap-5`}>
+        <Link href={`/profile`} className={`flex items-center gap-5`}>
           <div
             className={`grid place-content-center w-12 h-12 rounded-full border`}
           ></div>
           <span>Profile</span>
         </Link>
 
-        <Link href={`/`} className={`flex items-center gap-5`}>
+        <Link href={`/search`} className={`flex items-center gap-5`}>
           <div className={`grid place-content-center w-12 h-12`}>
             <IconSearch size={24} strokeWidth={2} />
           </div>
           <span>Search</span>
         </Link>
 
-        <Link href={`/`} className={`flex items-center gap-5`}>
+        <Link href={`/help`} className={`flex items-center gap-5`}>
           <div className={`grid place-content-center w-12 h-12`}>
             <IconInfoCircle size={24} strokeWidth={2} />
           </div>
