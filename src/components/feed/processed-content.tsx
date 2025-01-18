@@ -1,11 +1,12 @@
-﻿import { useState } from "react";
+﻿import Link from "next/link";
+
 import { ContentSegment } from "@/types/fragments";
-import Link from "next/link";
 
 interface ProcessedContentProps {
   postId: string;
   content: ContentSegment[];
   truncate?: boolean;
+  isExpanded?: boolean;
   wordLimit?: number;
   showExpandButton?: boolean;
 }
@@ -14,11 +15,9 @@ export default function ProcessedContent({
   postId,
   content,
   truncate = false,
+  isExpanded = false,
   wordLimit = 50,
-  showExpandButton = false,
 }: ProcessedContentProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
-
   const processSegmentsWithTruncation = (segments: ContentSegment[]) => {
     if (!truncate || isExpanded) return { segments, wasTruncated: false };
 
@@ -60,8 +59,20 @@ export default function ProcessedContent({
   return (
     <div>
       {processedSegments.map((segment, index) => {
+        console.log(segment);
+
         if (segment.type === "text") {
           return <span key={index}>{segment.content}</span>;
+        } else if (segment.type === "mention") {
+          return (
+            <a
+              key={index}
+              href={segment.url}
+              className={`py-0.5 px-1 bg-primary rounded-md text-light dark:text-dark hover:opacity-65 font-bold transition-all duration-300 ease-in-out`}
+            >
+              {segment.content}
+            </a>
+          );
         }
 
         return (
@@ -75,10 +86,10 @@ export default function ProcessedContent({
         );
       })}
 
-      {truncate && showExpandButton && wasTruncated && (
+      {truncate && wasTruncated && (
         <div>
           <Link
-            href={`/post/${postId}}`}
+            href={`/post/${postId}`}
             className={`mt-5 block text-primary hover:text-primary/65 text-sm font-bold transition-all duration-300 ease-in-out`}
           >
             Read more

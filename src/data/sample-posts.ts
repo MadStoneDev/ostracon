@@ -1,4 +1,6 @@
-﻿const samplePosts = [
+﻿import { PostFragment } from "@/types/fragments";
+
+const samplePosts: PostFragment[] = [
   {
     id: "550e8400-e29b-41d4-a716-446655440000",
     user_id: "a1b2c3d4-e5f6-4321-8765-1a2b3c4d5e6f", // techie_sarah
@@ -12,7 +14,7 @@
     id: "550e8400-e29b-41d4-a716-446655440001",
     user_id: "b2c3d4e5-f6a7-5432-8765-2b3c4d5e6f7a", // adventure_max
     content:
-      "Found this amazing coffee shop in downtown. Their cold brew is life-changing! ☕",
+      "Found this amazing coffee shop @shopMyCoffee in downtown. Their cold brew is life-changing! ☕",
     comments_open: true,
     is_nsfw: false,
     created_at: "2025-01-05T05:22:20.648Z",

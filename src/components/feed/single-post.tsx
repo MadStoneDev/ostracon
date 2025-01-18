@@ -23,6 +23,8 @@ export default function Post({
   content,
   nsfw,
   timestamp,
+  truncate = true,
+  isExpanded = false,
 }: {
   postId: string;
   avatar_url: string;
@@ -30,6 +32,8 @@ export default function Post({
   content: string;
   nsfw: boolean;
   timestamp: string;
+  truncate?: boolean;
+  isExpanded?: boolean;
 }) {
   // States
   const [blurred, setBlurred] = useState(nsfw);
@@ -144,8 +148,8 @@ export default function Post({
           <ProcessedContent
             postId={postId}
             content={processContent(content)}
-            truncate={true}
-            showExpandButton={true}
+            truncate={truncate}
+            isExpanded={isExpanded}
           />
         </article>
 
