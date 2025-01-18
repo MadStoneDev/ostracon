@@ -9,5 +9,5 @@ export default function PrivateLayout({
 }>) {
   const authenticated = true;
 
-  return <div className={`flex-grow flex flex-col`}>{children}</div>;
+  return children;
 }

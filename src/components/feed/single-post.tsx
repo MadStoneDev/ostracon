@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 import { formatTimestamp, processContent } from "@/lib/fragments";
 
@@ -14,6 +15,7 @@ import {
   IconMessageFilled,
   IconX,
 } from "@tabler/icons-react";
+
 import ProcessedContent from "@/components/feed/processed-content";
 
 export default function Post({
@@ -35,6 +37,9 @@ export default function Post({
   truncate?: boolean;
   isExpanded?: boolean;
 }) {
+  // Hooks
+  const router = useRouter();
+
   // States
   const [blurred, setBlurred] = useState(nsfw);
   const [liked, setLiked] = useState(false);
@@ -143,7 +148,12 @@ export default function Post({
         }}
       >
         <article
-          className={`pr-3 ${blurred ? "overflow-hidden" : "overflow-y-auto"}`}
+          className={`${!isExpanded && "cursor-pointer"} pr-3 ${
+            blurred ? "overflow-hidden" : "overflow-y-auto"
+          }`}
+          onClick={() => {
+            !isExpanded && router.push(`/post/${postId}`);
+          }}
         >
           <ProcessedContent
             postId={postId}

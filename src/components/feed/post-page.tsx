@@ -23,12 +23,7 @@ export default function PostPage({
     ?.avatar_url;
 
   return (
-    <main
-      className={`flex-grow relative flex flex-col overflow-y-auto`}
-      style={{
-        marginTop: "60px",
-      }}
-    >
+    <>
       <Post
         postId={postId}
         avatar_url={avatar_url || ""}
@@ -41,6 +36,6 @@ export default function PostPage({
       />
 
       {authenticated && <BottomNav />}
-    </main>
+    </>
   );
 }

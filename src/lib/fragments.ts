@@ -18,7 +18,7 @@ export function processContent(content: string): ContentSegment[] {
       segments.push({
         type: "mention",
         content: mention,
-        url: `/explore/mention/${username}`,
+        url: `/profile/${username}`,
       });
     } else if (hashtag) {
       // Process #hashtag
@@ -26,7 +26,7 @@ export function processContent(content: string): ContentSegment[] {
       segments.push({
         type: "hashtag",
         content: hashtag,
-        url: `/explore/search/#${tag}`,
+        url: `/explore/search/tag/${tag}`,
       });
     } else if (text) {
       // Process regular text

@@ -1,11 +1,10 @@
-﻿import React from "react";
-import BottomNav from "@/components/ui/bottom-nav";
+﻿import BottomNav from "@/components/ui/bottom-nav";
+import React from "react";
 
-export default function PrivateLayout({
+export default function PostLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
-  params: Promise<{ username: string }>;
 }>) {
   const authenticated = true;
 

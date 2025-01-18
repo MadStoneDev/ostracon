@@ -59,8 +59,6 @@ export default function ProcessedContent({
   return (
     <div>
       {processedSegments.map((segment, index) => {
-        console.log(segment);
-
         if (segment.type === "text") {
           return <span key={index}>{segment.content}</span>;
         } else if (segment.type === "mention") {
