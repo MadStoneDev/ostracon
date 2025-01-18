@@ -10,7 +10,7 @@ export async function generateMetadata({
 
   return {
     title: `${username} on Ostracon`,
-    description: `A profile for ${username}`,
+    description: `The profile page for ${username}`,
   };
 }
 

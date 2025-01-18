@@ -1,5 +1,15 @@
 ﻿export const sampleUsers = [
   {
+    id: "f6a7b8c9-d0e1-9876-8465-5f7a8b9c0d2f",
+    created_at: "2024-01-06T13:25:00Z",
+    updated_at: "2024-01-06T13:25:00Z",
+    queued_for_delete: false,
+    settings: {},
+    username: "edmodantes",
+    bio: "The dude working on this thing. Let's smash it out 💪!",
+    avatar_url: "",
+  },
+  {
     id: "a1b2c3d4-e5f6-4321-8765-1a2b3c4d5e6f",
     created_at: "2024-01-01T10:30:00Z",
     updated_at: "2024-01-01T10:30:00Z",

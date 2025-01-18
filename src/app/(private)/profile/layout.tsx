@@ -11,13 +11,16 @@ export default function PrivateLayout({
   const authenticated = true;
 
   return (
-    <div
-      className={`flex-grow flex flex-col`}
-      style={{
-        margin: "70px 0 60px",
-      }}
-    >
-      {children}
+    <div className={`relative flex-grow grid overflow-hidden`}>
+      <div
+        className={`fixed top-0 w-full h-[60px] bg-light dark:bg-dark z-10`}
+      ></div>
+
+      <main
+        className={`relative pt-[100px] pb-[60px] px-[25px] flex-grow overflow-y-auto`}
+      >
+        {children}
+      </main>
 
       {authenticated ? <BottomNav /> : null}
     </div>
