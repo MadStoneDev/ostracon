@@ -53,6 +53,14 @@ export default function Post({
     setBlurred(nsfw);
   }, [nsfw]);
 
+  useEffect(() => {
+    if (showFullScreen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+  }, [showFullScreen]);
+
   return (
     <>
       {/* Header */}
@@ -63,6 +71,7 @@ export default function Post({
         <article
           className={`cursor-pointer shrink-0 h-12 w-12 rounded-full bg-dark dark:bg-light border-[2px] border-dark dark:border-light overflow-hidden`}
         >
+          {/* TODO: Show default avatar if no avatar is provided */}
           {avatar_url ? (
             <img
               src={avatar_url}
@@ -79,7 +88,7 @@ export default function Post({
         {/* Full Screen Image */}
         {showFullScreen && (
           <article
-            className={`fixed top-[70px] left-0 bottom-[60px] right-0 bg-dark overflow-hidden z-30`}
+            className={`fixed top-[60px] left-0 bottom-[60px] right-0 bg-dark overflow-hidden z-30`}
           >
             {fullscreenImage && (
               <img
