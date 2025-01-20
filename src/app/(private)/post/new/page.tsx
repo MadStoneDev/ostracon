@@ -76,13 +76,8 @@ export default function NewPost() {
   }, []);
 
   return (
-    <main
-      className={`flex-grow relative flex flex-col overflow-y-auto`}
-      style={{
-        marginTop: "60px",
-      }}
-    >
-      <div className={`mt-5 relative flex-grow px-[25px] flex flex-col`}>
+    <div className={`flex-grow flex flex-col h-full`}>
+      <div className={`relative flex-grow flex flex-col`}>
         {/* Header */}
         <section className={`relative`}>
           <article className={`pb-4 flex gap-2`}>
@@ -95,7 +90,7 @@ export default function NewPost() {
 
           {/* Send Button */}
           <button
-            className={`absolute top-1 right-[25px] text-dark dark:text-light hover:text-primary dark:hover:text-primary disabled:pointer-events-none disabled:opacity-50 transition-all duration-300 ease-in-out`}
+            className={`absolute top-1 right-0 text-dark dark:text-light hover:text-primary dark:hover:text-primary disabled:pointer-events-none disabled:opacity-50 transition-all duration-300 ease-in-out`}
             disabled={postContent.replace(/(<([^>]+)>)/gi, "").length === 0}
           >
             <IconSend size={24} strokeWidth={2} />
@@ -103,7 +98,7 @@ export default function NewPost() {
         </section>
 
         {/* Post Editor */}
-        <article className={`relative flex-grow flex flex-col text-sm`}>
+        <article className={`relative grow flex flex-col text-sm`}>
           <PostEditor />
         </article>
       </div>
@@ -114,7 +109,7 @@ export default function NewPost() {
 
       {/* Side Bar*/}
       <aside
-        className={`px-1.5 py-3 fixed top-1/2 -translate-y-1/2 right-0 flex flex-col gap-5 bg-dark text-primary dark:bg-light`}
+        className={`px-2 py-3 fixed top-1/2 -translate-y-1/2 right-0 flex flex-col gap-5 bg-dark text-primary dark:bg-light rounded-l-xl`}
       >
         <button
           className={`relative flex-grow flex justify-center items-center h-full`}
@@ -161,7 +156,7 @@ export default function NewPost() {
       </aside>
 
       {/*  Footer*/}
-      <footer className={`py-2 px-[25px] flex flex-col text-xs`}>
+      <footer className={`py-4 flex flex-col text-xs`}>
         {!allowReactions && <p>Reactions have been disabled for this post.</p>}
         {!allowComments && <p>Comments have been disabled for this post.</p>}
         {postNSFW && (
@@ -171,6 +166,6 @@ export default function NewPost() {
           </p>
         )}
       </footer>
-    </main>
+    </div>
   );
 }

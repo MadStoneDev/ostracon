@@ -93,7 +93,7 @@ export default function PostEditor() {
       {/*<LinkPlugin />*/}
       <RichTextPlugin
         contentEditable={
-          <ContentEditable className={`h-full focus:outline-none`} />
+          <ContentEditable className={`pr-4 h-full focus:outline-none`} />
         }
         placeholder={<div className={`absolute`}>Start typing here...</div>}
         ErrorBoundary={LexicalErrorBoundary}
