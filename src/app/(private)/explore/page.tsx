@@ -1,13 +1,27 @@
 import Post from "@/components/feed/single-post";
 import samplePosts from "@/data/sample-posts";
 import { sampleUsers } from "@/data/sample-users";
+import { sampleSettings } from "@/data/sample-settings";
+
+export const metadata = {
+  title: "Explore - Ostracon",
+  description: "Explore page",
+};
 
 export default function Explore() {
-  const listPosts = [...samplePosts].sort((a, b) => {
-    const dateA = a.created_at ? new Date(a.created_at) : new Date(0);
-    const dateB = b.created_at ? new Date(b.created_at) : new Date(0);
-    return dateB.getTime() - dateA.getTime();
-  });
+  const listPosts = [...samplePosts]
+    .sort((a, b) => {
+      const dateA = a.created_at ? new Date(a.created_at) : new Date(0);
+      const dateB = b.created_at ? new Date(b.created_at) : new Date(0);
+      return dateB.getTime() - dateA.getTime();
+    })
+    .filter((post) => {
+      if (post.is_nsfw) {
+        return post.is_nsfw === sampleSettings.allow_sensitive_content;
+      }
+
+      return true;
+    });
 
   return (
     <div className={`grid z-0`}>
@@ -29,6 +43,7 @@ export default function Explore() {
               username={username || "Ghost User"}
               content={post.content}
               nsfw={post.is_nsfw}
+              blur={false}
               timestamp={post.created_at}
             />
           </article>

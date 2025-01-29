@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 import { formatTimestamp, processContent } from "@/lib/fragments";
@@ -9,10 +9,14 @@ import { formatTimestamp, processContent } from "@/lib/fragments";
 import {
   IconChartBarPopular,
   IconClock,
+  IconDotsVertical,
+  IconFlag,
   IconHeart,
   IconHeartFilled,
+  IconMenu,
   IconMessage2,
   IconMessageFilled,
+  IconSkull,
   IconX,
 } from "@tabler/icons-react";
 
@@ -24,6 +28,7 @@ export default function Post({
   username,
   content,
   nsfw,
+  blur = true,
   timestamp,
   truncate = true,
   isExpanded = false,
@@ -33,6 +38,7 @@ export default function Post({
   username: string;
   content: string;
   nsfw: boolean;
+  blur?: boolean;
   timestamp: string;
   truncate?: boolean;
   isExpanded?: boolean;
@@ -41,17 +47,19 @@ export default function Post({
   const router = useRouter();
 
   // States
-  const [blurred, setBlurred] = useState(nsfw);
+  const [blurred, setBlurred] = useState(true);
   const [liked, setLiked] = useState(false);
   const [hasCommented, setHasCommented] = useState(false);
+
+  const [showOptions, setShowOptions] = useState(false);
 
   const [showFullScreen, setShowFullScreen] = useState(false);
   const [fullscreenImage, setFullScreenImage] = useState(``);
 
   // Effects
   useEffect(() => {
-    setBlurred(nsfw);
-  }, [nsfw]);
+    setBlurred(nsfw && blur);
+  }, [nsfw, blur]);
 
   useEffect(() => {
     if (showFullScreen) {
@@ -65,13 +73,12 @@ export default function Post({
     <>
       {/* Header */}
       <section
-        className={`flex justify-between items-center gap-2 text-dark dark:text-light transition-all duration-300 ease-in-out`}
+        className={`py-3 flex justify-between items-center gap-2 text-dark dark:text-light transition-all duration-300 ease-in-out`}
       >
         {/* Avatar */}
         <article
-          className={`cursor-pointer shrink-0 h-12 w-12 rounded-full bg-dark dark:bg-light border-[2px] border-dark dark:border-light overflow-hidden`}
+          className={`cursor-pointer relative shrink-0 h-12 w-12 rounded-full bg-dark dark:bg-light border-[2px] border-dark dark:border-light overflow-hidden`}
         >
-          {/* TODO: Show default avatar if no avatar is provided */}
           {avatar_url ? (
             <img
               src={avatar_url}
@@ -82,7 +89,15 @@ export default function Post({
                 setShowFullScreen(true);
               }}
             />
-          ) : null}
+          ) : (
+            <div
+              className={`absolute left-0 top-0 right-0 bottom-0 grid place-content-center`}
+            >
+              <span className={`text-2xl font-accent text-primary`}>
+                {username.charAt(0).toUpperCase()}
+              </span>
+            </div>
+          )}
         </article>
 
         {/* Full Screen Image */}
@@ -134,6 +149,39 @@ export default function Post({
           <span className={`font-sans text-sm font-bold`}>
             {formatTimestamp(timestamp).label}
           </span>
+        </div>
+
+        {/* Extra Options */}
+        <div
+          className={`shrink-0 flex flex-row-reverse items-center justify-end border-l border-dark dark:border-light/30 text-dark dark:text-light transition-all duration-300 ease-in-out`}
+          title={"See More"}
+        >
+          <div
+            className={`cursor-pointer grid place-content-center w-6 opacity-50 hover:opacity-100 ${
+              showOptions ? "-rotate-90" : ""
+            } transition-all duration-300 ease-in-out`}
+            onClick={() => setShowOptions(!showOptions)}
+          >
+            <IconDotsVertical />
+          </div>
+
+          <div
+            className={`flex gap-2 items-center ${
+              showOptions ? "ml-1 pr-1 max-w-20" : "max-w-0"
+            } overflow-hidden transition-all duration-500 ease-in-out`}
+          >
+            <div
+              className={`grid place-content-center w-6 opacity-50 hover:opacity-100 transition-all duration-300 ease-in-out`}
+            >
+              <IconFlag />
+            </div>
+
+            <div
+              className={`grid place-content-center w-6 opacity-50 hover:opacity-100 transition-all duration-300 ease-in-out`}
+            >
+              <IconSkull />
+            </div>
+          </div>
         </div>
       </section>
 

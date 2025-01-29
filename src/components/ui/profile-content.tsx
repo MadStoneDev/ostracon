@@ -42,31 +42,42 @@ const PostedFeed = ({
     setPosts(samplePosts.filter((post) => post.user_id === userId));
   }, [samplePosts, userId]);
 
+  if (posts.length > 0) {
+    return (
+      <section className={`pb-[70px] transition-all duration-300 ease-in-out`}>
+        {posts.map((post) => {
+          const username = sampleUsers.find((user) => user.id === post.user_id)
+            ?.username;
+
+          const avatar_url = sampleUsers.find(
+            (user) => user.id === post.user_id,
+          )?.avatar_url;
+
+          return (
+            <article
+              key={`feed-post-${post.id}`}
+              className={`border-b last-of-type:border-b-0 border-dark/10 dark:border-light/10 transition-all duration-300 ease-in-out`}
+            >
+              <Post
+                postId={`${post.id}`}
+                avatar_url={avatar_url || ""}
+                username={username || "Ghost User"}
+                content={post.content}
+                nsfw={post.is_nsfw}
+                timestamp={post.created_at}
+              />
+            </article>
+          );
+        })}
+      </section>
+    );
+  }
+
   return (
-    <section className={`grid`}>
-      {posts.map((post) => {
-        const username = sampleUsers.find((user) => user.id === post.user_id)
-          ?.username;
-
-        const avatar_url = sampleUsers.find((user) => user.id === post.user_id)
-          ?.avatar_url;
-
-        return (
-          <article
-            key={`feed-post-${post.id}`}
-            className={`pb-[60px] border-b last-of-type:border-b-0 border-dark/10 dark:border-light/10 transition-all duration-300 ease-in-out`}
-          >
-            <Post
-              postId={`${post.id}`}
-              avatar_url={avatar_url || ""}
-              username={username || "Ghost User"}
-              content={post.content}
-              nsfw={post.is_nsfw}
-              timestamp={post.created_at}
-            />
-          </article>
-        );
-      })}
+    <section
+      className={`my-3 pb-[70px] opacity-50 transition-all duration-300 ease-in-out`}
+    >
+      {username} hasn't posted anything yet.
     </section>
   );
 };
@@ -84,31 +95,42 @@ const LikedFeed = ({
     setPosts(samplePosts.filter((post) => post.user_id === userId));
   }, [samplePosts, userId]);
 
+  if (posts.length > 0) {
+    return (
+      <section className={`pb-[70px] transition-all duration-300 ease-in-out`}>
+        {posts.map((post) => {
+          const username = sampleUsers.find((user) => user.id === post.user_id)
+            ?.username;
+
+          const avatar_url = sampleUsers.find(
+            (user) => user.id === post.user_id,
+          )?.avatar_url;
+
+          return (
+            <article
+              key={`feed-post-${post.id}`}
+              className={`pb-[70px] border-b last-of-type:border-b-0 border-dark/10 dark:border-light/10 transition-all duration-300 ease-in-out`}
+            >
+              <Post
+                postId={`${post.id}`}
+                avatar_url={avatar_url || ""}
+                username={username || "Ghost User"}
+                content={post.content}
+                nsfw={post.is_nsfw}
+                timestamp={post.created_at}
+              />
+            </article>
+          );
+        })}
+      </section>
+    );
+  }
+
   return (
-    <section className={`grid`}>
-      {posts.map((post) => {
-        const username = sampleUsers.find((user) => user.id === post.user_id)
-          ?.username;
-
-        const avatar_url = sampleUsers.find((user) => user.id === post.user_id)
-          ?.avatar_url;
-
-        return (
-          <article
-            key={`feed-post-${post.id}`}
-            className={`pb-[60px] border-b last-of-type:border-b-0 border-dark/10 dark:border-light/10 transition-all duration-300 ease-in-out`}
-          >
-            <Post
-              postId={`${post.id}`}
-              avatar_url={avatar_url || ""}
-              username={username || "Ghost User"}
-              content={post.content}
-              nsfw={post.is_nsfw}
-              timestamp={post.created_at}
-            />
-          </article>
-        );
-      })}
+    <section
+      className={`my-3 pb-[70px] opacity-50 transition-all duration-300 ease-in-out`}
+    >
+      {username} hasn't interacted with any posts yet.
     </section>
   );
 };
@@ -121,7 +143,7 @@ const ListeningFeed = ({
   userId: string;
 }) => {
   return (
-    <section className={`pb-[60px] transition-all duration-300 ease-in-out`}>
+    <section className={`pb-[80px] transition-all duration-300 ease-in-out`}>
       {sampleUsers.map((user) => {
         return (
           <div
@@ -144,7 +166,7 @@ const ListenersFeed = ({
   userId: string;
 }) => {
   return (
-    <section className={`pb-[60px] transition-all duration-300 ease-in-out`}>
+    <section className={`pb-[80px] transition-all duration-300 ease-in-out`}>
       {sampleUsers.map((user) => {
         return (
           <div
@@ -167,7 +189,7 @@ export default function ProfileContent({
   userId: string;
 }) {
   // States
-  const [[activeTab, direction], setActiveTab] = useState(["Posted", 0]);
+  const [[activeTab, direction], setActiveTab] = useState(["Posts", 0]);
   const [prevTab, setPrevTab] = useState("Posted");
 
   // Functions
@@ -203,7 +225,6 @@ export default function ProfileContent({
 
   const avatar_url = thisUser.avatar_url;
   const bio = thisUser.bio;
-  const avatar = thisUser.avatar_url;
 
   return (
     <div className={`grid`}>

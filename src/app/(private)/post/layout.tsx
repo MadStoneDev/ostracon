@@ -9,14 +9,12 @@ export default function PostLayout({
   const authenticated = true;
 
   return (
-    <div className={`relative flex-grow grid overflow-hidden`}>
+    <div className={`relative flex-grow grid h-full overflow-hidden`}>
       <div
         className={`fixed top-0 w-full h-[60px] bg-light dark:bg-dark z-10`}
       ></div>
 
-      <main className={`relative pt-[100px] pb-[60px] px-[25px] flex-grow`}>
-        {children}
-      </main>
+      <div className={`relative`}>{children}</div>
 
       {authenticated ? <BottomNav /> : null}
     </div>

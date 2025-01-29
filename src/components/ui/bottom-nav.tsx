@@ -54,7 +54,7 @@ export default function BottomNav() {
   return (
     <>
       <nav
-        className={`fixed bottom-0 left-0 right-0 px-2 sm:px-[25px] flex items-center justify-between bg-primary text-dark dark:text-light z-50`}
+        className={`m-2 fixed bottom-0 left-0 md:left-1/2 md:-translate-x-1/2 right-0 md:right-auto px-2 flex items-center justify-between bg-dark dark:bg-light text-light dark:text-dark rounded-full z-50`}
         style={{
           minHeight: "60px",
         }}
@@ -62,7 +62,7 @@ export default function BottomNav() {
         <Link
           href={`/explore`}
           className={`flex items-center justify-center ${
-            pathname.includes("/explore") ? "" : ""
+            pathname.includes("/explore") ? "text-primary" : ""
           } w-12 h-12 rounded-full transition-all duration-300 ease-in-out`}
         >
           <IconHome size={24} strokeWidth={2} />
@@ -160,7 +160,7 @@ export default function BottomNav() {
       {/* Overlay */}
       {overlayActive && (
         <div
-          className={`fixed top-0 bottom-0 left-0 right-0 bg-dark/50 dark:bg-dark ${
+          className={`fixed top-0 bottom-0 left-0 right-0 bg-dark/50 dark:bg-light-50 ${
             showMenu ? "opacity-100" : "pointer-events-none opacity-0"
           } z-20 transition-all duration-300 ease-in-out`}
           onClick={() => closeMenu()}
