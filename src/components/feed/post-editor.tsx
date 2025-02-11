@@ -87,20 +87,28 @@ export default function PostEditor() {
   };
 
   return (
-    <LexicalComposer initialConfig={initialConfig}>
-      <AutoFocusPlugin />
-      {/*<AutoLinkPlugin matchers={MATCHERS} />*/}
-      {/*<LinkPlugin />*/}
-      <RichTextPlugin
-        contentEditable={
-          <ContentEditable className={`pr-4 h-full focus:outline-none`} />
-        }
-        placeholder={<div className={`absolute`}>Start typing here...</div>}
-        ErrorBoundary={LexicalErrorBoundary}
-      />
-      {/*<HashtagPlugin />*/}
-      <HistoryPlugin />
-      <MarkdownShortcutPlugin transformers={MY_TRANSFORMERS} />
-    </LexicalComposer>
+    <div className={`relative w-full h-full`}>
+      <LexicalComposer initialConfig={initialConfig}>
+        {/*<AutoLinkPlugin matchers={MATCHERS} />*/}
+        <AutoFocusPlugin />
+        {/*<LinkPlugin />*/}
+        <RichTextPlugin
+          contentEditable={
+            <ContentEditable
+              className={`flex-grow pr-4 w-full min-h-full focus:outline-none`}
+            />
+          }
+          placeholder={
+            <div className={`absolute top-0 pointer-events-none opacity-50`}>
+              Start typing here...
+            </div>
+          }
+          ErrorBoundary={LexicalErrorBoundary}
+        />
+        {/*<HashtagPlugin />*/}
+        <HistoryPlugin />
+        <MarkdownShortcutPlugin transformers={MY_TRANSFORMERS} />
+      </LexicalComposer>
+    </div>
   );
 }

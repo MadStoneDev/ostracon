@@ -54,7 +54,7 @@ export default function BottomNav() {
   return (
     <>
       <nav
-        className={`m-2 fixed bottom-0 left-0 md:left-1/2 md:-translate-x-1/2 right-0 md:right-auto px-2 flex items-center justify-between bg-dark dark:bg-light text-light dark:text-dark rounded-full z-50`}
+        className={`m-2 fixed bottom-0 left-0 md:left-1/2 md:-translate-x-1/2 right-0 md:right-auto px-2 flex items-center justify-between bg-dark dark:bg-light text-light dark:text-dark rounded-full z-40`}
         style={{
           minHeight: "60px",
         }}

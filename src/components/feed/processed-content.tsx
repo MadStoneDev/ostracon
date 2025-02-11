@@ -16,6 +16,7 @@ export default function ProcessedContent({
   content,
   truncate = false,
   isExpanded = false,
+  showExpandButton = true,
   wordLimit = 50,
 }: ProcessedContentProps) {
   const processSegmentsWithTruncation = (segments: ContentSegment[]) => {
@@ -86,12 +87,14 @@ export default function ProcessedContent({
 
       {truncate && wasTruncated && (
         <div>
-          <Link
-            href={`/post/${postId}`}
-            className={`mt-5 block text-primary hover:text-primary/65 text-sm font-bold transition-all duration-300 ease-in-out`}
-          >
-            Read more
-          </Link>
+          {showExpandButton && (
+            <Link
+              href={`/post/${postId}`}
+              className={`mt-5 block text-primary hover:text-primary/65 text-sm font-bold transition-all duration-300 ease-in-out`}
+            >
+              Read more
+            </Link>
+          )}
         </div>
       )}
     </div>

@@ -1,8 +1,8 @@
 ﻿"use client";
 
 import Link from "next/link";
-import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import React, { useState, useEffect } from "react";
 
 import { formatTimestamp, processContent } from "@/lib/fragments";
 
@@ -13,7 +13,6 @@ import {
   IconFlag,
   IconHeart,
   IconHeartFilled,
-  IconMenu,
   IconMessage2,
   IconMessageFilled,
   IconSkull,
@@ -21,6 +20,8 @@ import {
 } from "@tabler/icons-react";
 
 import ProcessedContent from "@/components/feed/processed-content";
+import UserAvatar from "@/components/ui/user-avatar";
+import SinglePostReply from "@/components/ui/single-post-reply";
 
 export default function Post({
   postId,
@@ -56,6 +57,8 @@ export default function Post({
   const [showFullScreen, setShowFullScreen] = useState(false);
   const [fullscreenImage, setFullScreenImage] = useState(``);
 
+  const [startReply, setStartReply] = useState(false);
+
   // Effects
   useEffect(() => {
     setBlurred(nsfw && blur);
@@ -75,30 +78,12 @@ export default function Post({
       <section
         className={`py-3 flex justify-between items-center gap-2 text-dark dark:text-light transition-all duration-300 ease-in-out`}
       >
-        {/* Avatar */}
-        <article
-          className={`cursor-pointer relative shrink-0 h-12 w-12 rounded-full bg-dark dark:bg-light border-[2px] border-dark dark:border-light overflow-hidden`}
-        >
-          {avatar_url ? (
-            <img
-              src={avatar_url}
-              alt={`Avatar photo of ${username}`}
-              className={`h-full w-full object-cover`}
-              onClick={() => {
-                setFullScreenImage(avatar_url);
-                setShowFullScreen(true);
-              }}
-            />
-          ) : (
-            <div
-              className={`absolute left-0 top-0 right-0 bottom-0 grid place-content-center`}
-            >
-              <span className={`text-2xl font-accent text-primary`}>
-                {username.charAt(0).toUpperCase()}
-              </span>
-            </div>
-          )}
-        </article>
+        <UserAvatar
+          avatar_url={avatar_url}
+          username={username}
+          setShowFullScreen={setShowFullScreen}
+          setFullScreenImage={setFullScreenImage}
+        />
 
         {/* Full Screen Image */}
         {showFullScreen && (
@@ -245,55 +230,95 @@ export default function Post({
       <section
         className={`mt-1 py-2 flex flex-nowrap justify-between items-center`}
       >
-        <article className={`flex gap-5`}>
-          <button
-            className={`transition-all duration-300 ease-in-out`}
-            onClick={() => setLiked(!liked)}
-          >
-            {liked ? (
-              <IconHeartFilled size={24} strokeWidth={2} />
-            ) : (
-              <IconHeart size={24} strokeWidth={2} />
-            )}
-          </button>
-          <button
-            className={`transition-all duration-300 ease-in-out`}
-            onClick={() => setHasCommented(!hasCommented)}
-          >
-            {hasCommented ? (
-              <IconMessageFilled size={24} strokeWidth={2} />
-            ) : (
-              <IconMessage2 size={24} strokeWidth={2} />
-            )}
-          </button>
+        <article
+          className={`relative ${
+            blurred && "px-1"
+          } transition-all duration-300 ease-in-out`}
+        >
+          {blurred && (
+            <div
+              className={`absolute top-0 bottom-0 left-0 right-0 grid place-content-center z-10`}
+              style={{
+                backdropFilter: "blur(2.5px)",
+              }}
+            ></div>
+          )}
+          <div className={`flex gap-3`}>
+            <button
+              className={`transition-all duration-300 ease-in-out`}
+              onClick={() => setLiked(!liked)}
+            >
+              {liked ? (
+                <IconHeartFilled size={24} strokeWidth={2} />
+              ) : (
+                <IconHeart size={24} strokeWidth={2} />
+              )}
+            </button>
+            <button
+              className={`transition-all duration-300 ease-in-out`}
+              onClick={() => setStartReply(!startReply)}
+            >
+              {hasCommented ? (
+                <IconMessageFilled size={24} strokeWidth={2} />
+              ) : (
+                <IconMessage2 size={24} strokeWidth={2} />
+              )}
+            </button>
+          </div>
         </article>
 
-        <article className={`flex gap-3 text-dark dark:text-light opacity-30`}>
-          <Link
-            href={`/post/${postId}/likes`}
-            className={`flex items-center gap-1 transition-all duration-300 ease-in-out`}
+        <article className={`flex gap-3 text-dark dark:text-light`}>
+          <div
+            className={`${
+              blurred && "px-1"
+            } relative flex gap-3 transition-all duration-300 ease-in-out`}
           >
-            <IconHeart size={20} strokeWidth={2.5} />
-            <span className={`font-sans text-sm font-bold`}>50</span>
-          </Link>
+            {blurred && (
+              <div
+                className={`absolute top-0 bottom-0 left-0 right-0 grid place-content-center z-10`}
+                style={{
+                  backdropFilter: "blur(2px)",
+                }}
+              ></div>
+            )}
+            <Link
+              href={`/post/${postId}/likes`}
+              className={`flex items-center gap-1 opacity-30 hover:opacity-100 transition-all duration-300 ease-in-out`}
+            >
+              <IconHeart size={20} strokeWidth={2.5} />
+              <span className={`font-sans text-sm font-bold`}>50</span>
+            </Link>
 
-          <Link
-            href={`/post/${postId}`}
-            className={`flex items-center gap-1 transition-all duration-300 ease-in-out`}
-          >
-            <IconMessage2 size={20} strokeWidth={2.5} />
-            <span className={`font-sans text-sm font-bold`}>50</span>
-          </Link>
+            <Link
+              href={`/post/${postId}`}
+              className={`flex items-center gap-1 opacity-30 hover:opacity-100 transition-all duration-300 ease-in-out`}
+            >
+              <IconMessage2 size={20} strokeWidth={2.5} />
+              <span className={`font-sans text-sm font-bold`}>50</span>
+            </Link>
+          </div>
 
           <Link
             href={`/post/${postId}/analytics`}
-            className={`flex items-center gap-1 transition-all duration-300 ease-in-out`}
+            className={`flex items-center gap-1 opacity-30 hover:opacity-100 transition-all duration-300 ease-in-out`}
           >
             <IconChartBarPopular size={20} strokeWidth={2.5} />
             <span className={`font-sans text-sm font-bold`}>50</span>
           </Link>
         </article>
       </section>
+
+      {/* Reply */}
+      <SinglePostReply
+        startReply={startReply}
+        setStartReply={setStartReply}
+        avatarUrl={avatar_url}
+        username={username}
+        postId={postId}
+        content={content}
+        truncate={truncate}
+        isExpanded={isExpanded}
+      />
     </>
   );
 }
