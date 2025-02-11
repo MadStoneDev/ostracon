@@ -15,9 +15,7 @@ export default function PrivateLayout({
         className={`fixed top-0 w-full h-[60px] bg-light dark:bg-dark z-10`}
       ></div>
 
-      <main className={`relative py-[80px] px-[25px] flex-grow`}>
-        {children}
-      </main>
+      <main className={`relative py-[80px] px-4 flex-grow`}>{children}</main>
 
       {authenticated ? <BottomNav /> : null}
     </div>

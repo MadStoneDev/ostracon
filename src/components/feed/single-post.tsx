@@ -54,9 +54,6 @@ export default function Post({
 
   const [showOptions, setShowOptions] = useState(false);
 
-  const [showFullScreen, setShowFullScreen] = useState(false);
-  const [fullscreenImage, setFullScreenImage] = useState(``);
-
   const [startReply, setStartReply] = useState(false);
 
   // Effects
@@ -64,52 +61,13 @@ export default function Post({
     setBlurred(nsfw && blur);
   }, [nsfw, blur]);
 
-  useEffect(() => {
-    if (showFullScreen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "auto";
-    }
-  }, [showFullScreen]);
-
   return (
-    <>
+    <div className={`py-4`}>
       {/* Header */}
       <section
-        className={`py-3 flex justify-between items-center gap-2 text-dark dark:text-light transition-all duration-300 ease-in-out`}
+        className={`flex justify-between items-center gap-2 text-dark dark:text-light transition-all duration-300 ease-in-out`}
       >
-        <UserAvatar
-          avatar_url={avatar_url}
-          username={username}
-          setShowFullScreen={setShowFullScreen}
-          setFullScreenImage={setFullScreenImage}
-        />
-
-        {/* Full Screen Image */}
-        {showFullScreen && (
-          <article
-            className={`fixed top-[60px] left-0 bottom-[60px] right-0 bg-dark overflow-hidden z-30`}
-          >
-            {fullscreenImage && (
-              <img
-                src={fullscreenImage}
-                alt={`Avatar photo of ${username}`}
-                className={`h-full w-full object-contain`}
-              />
-            )}
-
-            <button
-              onClick={() => {
-                setShowFullScreen(false);
-                setFullScreenImage(``);
-              }}
-            >
-              <IconX
-                className={`absolute top-4 right-4 z-10 text-light/50 text-2xl cursor-pointer`}
-              />
-            </button>
-          </article>
-        )}
+        <UserAvatar avatar_url={avatar_url} username={username} />
 
         {/* Username */}
         <div className={`flex-grow inline-flex items-center`}>
@@ -173,16 +131,16 @@ export default function Post({
       {/* Tag */}
       {nsfw && (
         <button
-          className={`my-3 px-1.5 py-0.5 grid place-content-center bg-nsfw font-accent text-light z-10 transition-all duration-300 ease-in-out`}
-          onClick={() => setBlurred(true)}
+          className={`mt-2 px-1.5 py-1 grid place-content-center bg-nsfw rounded-full font-accent text-light z-10 transition-all duration-300 ease-in-out`}
+          onClick={() => setBlurred(!blurred)}
         >
-          <span className={`text-sm text-center`}>nsfw</span>
+          <span className={`text-xs text-center`}>nsfw</span>
         </button>
       )}
 
       {/* Content */}
       <section
-        className={`relative pt-3 pb-5 flex flex-col ${
+        className={`relative mt-2 mb-3 flex flex-col ${
           nsfw && blurred ? "px-3" : "px-0"
         } transition-all duration-300 ease-in-out overflow-x-hidden`}
         style={{
@@ -215,21 +173,8 @@ export default function Post({
         )}
       </section>
 
-      {nsfw && (
-        <div className={`flex justify-end`}>
-          <button
-            className={`font-accent text-nsfw text-sm transition-all duration-300 ease-in-out`}
-            onClick={() => setBlurred(!blurred)}
-          >
-            {blurred ? "Show" : "Hide"} Content
-          </button>
-        </div>
-      )}
-
       {/* Actions */}
-      <section
-        className={`mt-1 py-2 flex flex-nowrap justify-between items-center`}
-      >
+      <section className={`flex flex-nowrap justify-between items-center`}>
         <article
           className={`relative ${
             blurred && "px-1"
@@ -319,6 +264,6 @@ export default function Post({
         truncate={truncate}
         isExpanded={isExpanded}
       />
-    </>
+    </div>
   );
 }

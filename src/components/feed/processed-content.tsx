@@ -90,7 +90,7 @@ export default function ProcessedContent({
           {showExpandButton && (
             <Link
               href={`/post/${postId}`}
-              className={`mt-5 block text-primary hover:text-primary/65 text-sm font-bold transition-all duration-300 ease-in-out`}
+              className={`mt-2 px-2 py-1 inline-block hover:bg-primary text-primary hover:text-light dark:hover:text-dark text-sm font-bold transition-all duration-300 ease-in-out`}
             >
               Read more
             </Link>

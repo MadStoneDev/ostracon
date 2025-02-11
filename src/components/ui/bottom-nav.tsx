@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 
 import {
@@ -53,10 +53,19 @@ export default function BottomNav() {
     }, 10);
   };
 
+  // Effects
+  useEffect(() => {
+    if (showMenu) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+  }, [showMenu]);
+
   return (
     <>
       <nav
-        className={`m-2 fixed bottom-0 left-0 md:left-1/2 md:-translate-x-1/2 right-0 md:right-auto px-2 flex items-center justify-between bg-dark dark:bg-light text-light dark:text-dark rounded-full z-40`}
+        className={`my-2 mx-2 sm:mx-4 fixed bottom-0 left-0 md:left-1/2 md:-translate-x-1/2 right-0 md:right-auto px-2 flex items-center justify-between bg-dark dark:bg-light text-light dark:text-dark rounded-full z-40 transition-all duration-300 ease-in-out`}
         style={{
           minHeight: "60px",
         }}
@@ -73,7 +82,7 @@ export default function BottomNav() {
         <Link
           href={`/search`}
           className={`flex items-center justify-center ${
-            pathname.includes("/groups") ? "" : ""
+            pathname.includes("/search") ? "" : ""
           } w-12 h-12 rounded-full transition-all duration-300 ease-in-out`}
         >
           <IconSearch size={24} strokeWidth={2} />
@@ -91,9 +100,7 @@ export default function BottomNav() {
         {/* Main Button */}
         <Link
           href={`/post/new`}
-          className={`flex items-center justify-center ${
-            pathname.includes("/groups") ? "" : ""
-          } rounded-full transition-all duration-300 ease-in-out`}
+          className={`flex items-center justify-center rounded-full transition-all duration-300 ease-in-out`}
         >
           <IconSquareRoundedPlusFilled size={56} />
         </Link>
@@ -101,7 +108,7 @@ export default function BottomNav() {
         <Link
           href={`/notifications`}
           className={`flex items-center justify-center ${
-            pathname.includes("/notifications") ? "" : ""
+            pathname.includes("/notifications") ? "text-primary" : ""
           } w-12 h-12 rounded-full transition-all duration-300 ease-in-out`}
         >
           <IconBell size={24} strokeWidth={2} />
@@ -110,16 +117,14 @@ export default function BottomNav() {
         <Link
           href={`/messages`}
           className={`flex items-center justify-center ${
-            pathname.includes("/messages") ? "" : ""
+            pathname.includes("/messages") ? "text-primary" : ""
           } w-12 h-12 rounded-full transition-all duration-300 ease-in-out`}
         >
           <IconMail size={24} strokeWidth={2} />
         </Link>
 
         <button
-          className={`flex items-center justify-center ${
-            pathname.includes("/profile") ? "" : ""
-          } w-12 h-12 rounded-full transition-all duration-300 ease-in-out`}
+          className={`flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 ease-in-out`}
           onClick={() => {
             showMenu ? closeMenu() : openMenu();
           }}
@@ -142,13 +147,7 @@ export default function BottomNav() {
           onClick={() => setShowMenu(false)}
           className={`flex items-center gap-5`}
         >
-          <UserAvatar
-            avatar_url={``}
-            username={`test_username`}
-            action={() => {
-              router.push(`/profile`);
-            }}
-          />
+          <UserAvatar avatar_url={``} username={`test_username`} />
           <span>Profile</span>
         </Link>
 

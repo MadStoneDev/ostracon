@@ -31,7 +31,7 @@ const config: Config = {
 
         secondary: "#FDE4DF",
 
-        nsfw: "#934FA5",
+        nsfw: "#EA0A84",
 
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",

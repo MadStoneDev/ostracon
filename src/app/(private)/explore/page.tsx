@@ -35,7 +35,7 @@ export default function Explore() {
         return (
           <article
             key={`feed-post-${post.id}`}
-            className={`mb-5 pb-3 border-b last-of-type:border-b-0 border-dark/10 dark:border-light/10 transition-all duration-300 ease-in-out`}
+            className={`border-b last-of-type:border-b-0 border-dark/10 dark:border-light/10 transition-all duration-300 ease-in-out`}
           >
             <Post
               postId={`${post.id}`}

@@ -1,5 +1,5 @@
-﻿import BottomNav from "@/components/ui/bottom-nav";
-import React from "react";
+﻿import React from "react";
+import BottomNav from "@/components/ui/bottom-nav";
 
 export default function PostLayout({
   children,
