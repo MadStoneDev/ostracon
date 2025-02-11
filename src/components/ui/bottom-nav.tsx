@@ -20,11 +20,13 @@ import {
   IconUser,
   IconX,
 } from "@tabler/icons-react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import UserAvatar from "@/components/ui/user-avatar";
 
 export default function BottomNav() {
   // Hooks
   const pathname = usePathname();
+  const router = useRouter();
 
   // States
   const [showMenu, setShowMenu] = useState(false);
@@ -133,12 +135,20 @@ export default function BottomNav() {
       <section
         className={`fixed px-[25px] py-[100px] top-0 bottom-0 ${
           showMenu ? "right-0" : "-right-full"
-        } w-[220px] flex flex-col gap-5 bg-primary z-30 transition-all duration-300 ease-in-out`}
+        } w-[250px] flex flex-col gap-5 bg-primary z-30 transition-all duration-300 ease-in-out`}
       >
-        <Link href={`/profile`} className={`flex items-center gap-5`}>
-          <div
-            className={`grid place-content-center w-12 h-12 rounded-full border`}
-          ></div>
+        <Link
+          href={`/profile`}
+          onClick={() => setShowMenu(false)}
+          className={`flex items-center gap-5`}
+        >
+          <UserAvatar
+            avatar_url={``}
+            username={`test_username`}
+            action={() => {
+              router.push(`/profile`);
+            }}
+          />
           <span>Profile</span>
         </Link>
 
