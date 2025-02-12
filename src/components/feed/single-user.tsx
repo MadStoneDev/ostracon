@@ -3,7 +3,13 @@ import Link from "next/link";
 
 import { sampleUsers } from "@/data/sample-users";
 
-export default function SingleUser({ userId }: { userId: string }) {
+export default function SingleUser({
+  userId,
+  referenceOnly = false,
+}: {
+  userId: string;
+  referenceOnly?: boolean;
+}) {
   const username = sampleUsers.find((user) => user.id === userId)?.username!;
   const avatar_url = sampleUsers.find((user) => user.id === userId)?.avatar_url;
 
@@ -38,9 +44,11 @@ export default function SingleUser({ userId }: { userId: string }) {
         </Link>
       </div>
 
-      <div>
-        <span className={`font-bold text-xs uppercase`}>Follow</span>
-      </div>
+      {!referenceOnly && (
+        <div>
+          <span className={`font-bold text-xs uppercase`}>Follow</span>
+        </div>
+      )}
     </section>
   );
 }

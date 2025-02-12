@@ -33,6 +33,7 @@ export default function Post({
   timestamp,
   truncate = true,
   isExpanded = false,
+  referenceOnly = false,
 }: {
   postId: string;
   avatar_url: string;
@@ -43,6 +44,7 @@ export default function Post({
   timestamp: string;
   truncate?: boolean;
   isExpanded?: boolean;
+  referenceOnly?: boolean;
 }) {
   // Hooks
   const router = useRouter();
@@ -95,37 +97,43 @@ export default function Post({
         </div>
 
         {/* Extra Options */}
-        <div
-          className={`shrink-0 flex flex-row-reverse items-center justify-end border-l border-dark dark:border-light/30 text-dark dark:text-light transition-all duration-300 ease-in-out`}
-          title={"See More"}
-        >
+        {!referenceOnly && (
           <div
-            className={`cursor-pointer grid place-content-center w-6 opacity-50 hover:opacity-100 ${
-              showOptions ? "-rotate-90" : ""
-            } transition-all duration-300 ease-in-out`}
-            onClick={() => setShowOptions(!showOptions)}
-          >
-            <IconDotsVertical />
-          </div>
-
-          <div
-            className={`flex gap-2 items-center ${
-              showOptions ? "ml-1 pr-1 max-w-20" : "max-w-0"
-            } overflow-hidden transition-all duration-500 ease-in-out`}
+            className={`shrink-0 flex flex-row-reverse items-center justify-end border-l border-dark dark:border-light/30 text-dark dark:text-light transition-all duration-300 ease-in-out`}
+            title={"See More"}
           >
             <div
-              className={`grid place-content-center w-6 opacity-50 hover:opacity-100 transition-all duration-300 ease-in-out`}
+              className={`cursor-pointer grid place-content-center w-6 opacity-50 hover:opacity-100 ${
+                showOptions ? "-rotate-90" : ""
+              } transition-all duration-300 ease-in-out`}
+              onClick={() => setShowOptions(!showOptions)}
             >
-              <IconFlag />
+              <IconDotsVertical />
             </div>
 
             <div
-              className={`grid place-content-center w-6 opacity-50 hover:opacity-100 transition-all duration-300 ease-in-out`}
+              className={`flex gap-2 items-center ${
+                showOptions ? "ml-1 pr-1 max-w-20" : "max-w-0"
+              } overflow-hidden transition-all duration-500 ease-in-out`}
             >
-              <IconSkull />
+              <Link
+                title={`Flag`}
+                href={`/post/${postId}/flag`}
+                className={`grid place-content-center w-6 opacity-50 hover:opacity-100 transition-all duration-300 ease-in-out`}
+              >
+                <IconFlag />
+              </Link>
+
+              <Link
+                href={`/post/${postId}/report`}
+                className={`grid place-content-center w-6 opacity-50 hover:opacity-100 transition-all duration-300 ease-in-out`}
+                title={`Report`}
+              >
+                <IconSkull />
+              </Link>
             </div>
           </div>
-        </div>
+        )}
       </section>
 
       {/* Tag */}
@@ -174,96 +182,100 @@ export default function Post({
       </section>
 
       {/* Actions */}
-      <section className={`flex flex-nowrap justify-between items-center`}>
-        <article
-          className={`relative ${
-            blurred && "px-1"
-          } transition-all duration-300 ease-in-out`}
-        >
-          {blurred && (
-            <div
-              className={`absolute top-0 bottom-0 left-0 right-0 grid place-content-center z-10`}
-              style={{
-                backdropFilter: "blur(2.5px)",
-              }}
-            ></div>
-          )}
-          <div className={`flex gap-3`}>
-            <button
-              className={`transition-all duration-300 ease-in-out`}
-              onClick={() => setLiked(!liked)}
+      {!referenceOnly && (
+        <>
+          <section className={`flex flex-nowrap justify-between items-center`}>
+            <article
+              className={`relative ${
+                blurred && "px-1"
+              } transition-all duration-300 ease-in-out`}
             >
-              {liked ? (
-                <IconHeartFilled size={24} strokeWidth={2} />
-              ) : (
-                <IconHeart size={24} strokeWidth={2} />
+              {blurred && (
+                <div
+                  className={`absolute top-0 bottom-0 left-0 right-0 grid place-content-center z-10`}
+                  style={{
+                    backdropFilter: "blur(2.5px)",
+                  }}
+                ></div>
               )}
-            </button>
-            <button
-              className={`transition-all duration-300 ease-in-out`}
-              onClick={() => setStartReply(!startReply)}
-            >
-              {hasCommented ? (
-                <IconMessageFilled size={24} strokeWidth={2} />
-              ) : (
-                <IconMessage2 size={24} strokeWidth={2} />
-              )}
-            </button>
-          </div>
-        </article>
+              <div className={`flex gap-3`}>
+                <button
+                  className={`transition-all duration-300 ease-in-out`}
+                  onClick={() => setLiked(!liked)}
+                >
+                  {liked ? (
+                    <IconHeartFilled size={24} strokeWidth={2} />
+                  ) : (
+                    <IconHeart size={24} strokeWidth={2} />
+                  )}
+                </button>
+                <button
+                  className={`transition-all duration-300 ease-in-out`}
+                  onClick={() => setStartReply(!startReply)}
+                >
+                  {hasCommented ? (
+                    <IconMessageFilled size={24} strokeWidth={2} />
+                  ) : (
+                    <IconMessage2 size={24} strokeWidth={2} />
+                  )}
+                </button>
+              </div>
+            </article>
 
-        <article className={`flex gap-3 text-dark dark:text-light`}>
-          <div
-            className={`${
-              blurred && "px-1"
-            } relative flex gap-3 transition-all duration-300 ease-in-out`}
-          >
-            {blurred && (
+            <article className={`flex gap-3 text-dark dark:text-light`}>
               <div
-                className={`absolute top-0 bottom-0 left-0 right-0 grid place-content-center z-10`}
-                style={{
-                  backdropFilter: "blur(2px)",
-                }}
-              ></div>
-            )}
-            <Link
-              href={`/post/${postId}/likes`}
-              className={`flex items-center gap-1 opacity-30 hover:opacity-100 transition-all duration-300 ease-in-out`}
-            >
-              <IconHeart size={20} strokeWidth={2.5} />
-              <span className={`font-sans text-sm font-bold`}>50</span>
-            </Link>
+                className={`${
+                  blurred && "px-1"
+                } relative flex gap-3 transition-all duration-300 ease-in-out`}
+              >
+                {blurred && (
+                  <div
+                    className={`absolute top-0 bottom-0 left-0 right-0 grid place-content-center z-10`}
+                    style={{
+                      backdropFilter: "blur(2px)",
+                    }}
+                  ></div>
+                )}
+                <Link
+                  href={`/post/${postId}/likes`}
+                  className={`flex items-center gap-1 opacity-30 hover:opacity-100 transition-all duration-300 ease-in-out`}
+                >
+                  <IconHeart size={20} strokeWidth={2.5} />
+                  <span className={`font-sans text-sm font-bold`}>50</span>
+                </Link>
 
-            <Link
-              href={`/post/${postId}`}
-              className={`flex items-center gap-1 opacity-30 hover:opacity-100 transition-all duration-300 ease-in-out`}
-            >
-              <IconMessage2 size={20} strokeWidth={2.5} />
-              <span className={`font-sans text-sm font-bold`}>50</span>
-            </Link>
-          </div>
+                <Link
+                  href={`/post/${postId}`}
+                  className={`flex items-center gap-1 opacity-30 hover:opacity-100 transition-all duration-300 ease-in-out`}
+                >
+                  <IconMessage2 size={20} strokeWidth={2.5} />
+                  <span className={`font-sans text-sm font-bold`}>50</span>
+                </Link>
+              </div>
 
-          <Link
-            href={`/post/${postId}/analytics`}
-            className={`flex items-center gap-1 opacity-30 hover:opacity-100 transition-all duration-300 ease-in-out`}
-          >
-            <IconChartBarPopular size={20} strokeWidth={2.5} />
-            <span className={`font-sans text-sm font-bold`}>50</span>
-          </Link>
-        </article>
-      </section>
+              <Link
+                href={`/post/${postId}/analytics`}
+                className={`flex items-center gap-1 opacity-30 hover:opacity-100 transition-all duration-300 ease-in-out`}
+              >
+                <IconChartBarPopular size={20} strokeWidth={2.5} />
+                <span className={`font-sans text-sm font-bold`}>50</span>
+              </Link>
+            </article>
+          </section>
 
-      {/* Reply */}
-      <SinglePostReply
-        startReply={startReply}
-        setStartReply={setStartReply}
-        avatarUrl={avatar_url}
-        username={username}
-        postId={postId}
-        content={content}
-        truncate={truncate}
-        isExpanded={isExpanded}
-      />
+          {/* Reply */}
+          <SinglePostReply
+            startReply={startReply}
+            setStartReply={setStartReply}
+            avatarUrl={avatar_url}
+            username={username}
+            postId={postId}
+            content={content}
+            truncate={truncate}
+            isExpanded={isExpanded}
+          />
+        </>
+      )}
     </div>
   );
 }
