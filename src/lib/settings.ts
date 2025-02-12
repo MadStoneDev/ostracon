@@ -1,11 +1,5 @@
 ﻿import { sampleSettings } from "@/data/sample-settings";
-
-export interface UserSettings {
-  allow_sensitive_content: boolean;
-  unblur_sensitive_content: boolean;
-  date_of_birth: string;
-  dark_mode: boolean;
-}
+import { UserSettings } from "@/types/settings.types";
 
 export interface SettingsAPI {
   getUserSettings(): Promise<UserSettings>;
@@ -16,14 +10,28 @@ class LocalStorageSettings implements SettingsAPI {
   private readonly STORAGE_KEY = "ostracon-settings";
 
   async getUserSettings(): Promise<UserSettings> {
-    const stored = localStorage.getItem(this.STORAGE_KEY);
-    return stored ? JSON.parse(stored) : sampleSettings;
+    try {
+      const stored = localStorage.getItem(this.STORAGE_KEY);
+
+      if (!stored) return sampleSettings;
+
+      const parsed = JSON.parse(stored);
+      return { ...sampleSettings, ...parsed };
+    } catch (error) {
+      console.error(error);
+      return sampleSettings;
+    }
   }
 
   async updateUserSettings(settings: Partial<UserSettings>): Promise<void> {
-    const current = await this.getUserSettings();
-    const updated = { ...current, ...settings };
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(updated));
+    try {
+      const current = await this.getUserSettings();
+      const updated = { ...current, ...settings };
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(updated));
+    } catch (error) {
+      console.error(error);
+      throw new Error("Failed to update user settings");
+    }
   }
 }
 
@@ -41,6 +49,12 @@ class SupabaseSettings implements SettingsAPI {
 }
 
 // Export a single instance based on environment
-export const settingsService: SettingsAPI = process.env.NEXT_PUBLIC_USE_SUPABASE
-  ? new SupabaseSettings()
-  : new LocalStorageSettings();
+export const createSettingsService = (): SettingsAPI => {
+  if (process.env.NEXT_PUBLIC_USE_SUPABASE === "true") {
+    return new SupabaseSettings();
+  }
+
+  return new LocalStorageSettings();
+};
+
+export const settingsService = createSettingsService();

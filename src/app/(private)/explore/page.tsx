@@ -33,18 +33,22 @@ export default function Explore() {
         const avatar_url = sampleUsers.find((user) => user.id === post.user_id)
           ?.avatar_url;
 
+        if (post.is_nsfw && sampleSettings.allow_sensitive_content) {
+          return null;
+        }
+
         return (
           <article
             key={`feed-post-${post.id}`}
             className={`border-b last-of-type:border-b-0 border-dark/10 dark:border-light/10 transition-all duration-300 ease-in-out`}
           >
             <Post
-              postId={`${post.id}`}
+              postId={post.id}
               avatar_url={avatar_url || ""}
               username={username || "Ghost User"}
               content={post.content}
               nsfw={post.is_nsfw}
-              blur={false}
+              blur={sampleSettings.blur_sensitive_content}
               timestamp={post.created_at}
             />
           </article>

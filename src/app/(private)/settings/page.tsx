@@ -1,64 +1,77 @@
 ﻿"use client";
 
-import Switch from "@/components/ui/switch";
-import { sampleSettings } from "@/data/sample-settings";
 import { useEffect, useState } from "react";
-import { settingsService, UserSettings } from "@/lib/settings";
+
+import Switch from "@/components/ui/switch";
+
+import { settingsService } from "@/lib/settings";
+import { UserSettings } from "@/types/settings.types";
 
 export default function Settings() {
-  // States
   const [settings, setSettings] = useState<UserSettings | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Effects
   useEffect(() => {
-    settingsService.getUserSettings().then(setSettings);
+    const loadSettings = async () => {
+      try {
+        setLoading(true);
+        const userSettings = await settingsService.getUserSettings();
+        setSettings(userSettings);
+      } catch (err) {
+        setError("Failed to load settings");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadSettings();
   }, []);
 
-  return (
-    <div className={`grid z-0`}>
-      <h1 className={`text-2xl font-bold`}>Settings</h1>
+  const updateSetting = async (key: keyof UserSettings, value: boolean) => {
+    try {
+      await settingsService.updateUserSettings({ [key]: value });
+      setSettings((prev) => (prev ? { ...prev, [key]: value } : null));
+    } catch (err) {
+      setError("Failed to update setting");
+      // Optionally revert the switch state here
+    }
+  };
 
-      {/* TODO: Sprint #3 */}
-      {/*<section className={`mt-[20px]`}>*/}
-      {/*  <h2 className={`text-lg font-bold`}>Security</h2>*/}
-      {/*    */}
-      {/*</section>*/}
+  if (loading) {
+    return <div className="animate-pulse">Loading settings...</div>;
+  }
+
+  if (error) {
+    return <div className="text-red-500">{error}</div>;
+  }
+
+  return (
+    <div className="grid z-0">
+      <h1 className="text-2xl font-bold">Settings</h1>
 
       {/* Privacy Settings */}
-      <section className={`mt-[20px] flex flex-col gap-5`}>
-        <h2 className={`text-lg font-bold`}>Privacy</h2>
+      <section className="mt-[20px] flex flex-col gap-5">
+        <h2 className="text-lg font-bold">Privacy</h2>
 
-        {/*allow_sensitive_content: true,*/}
-        {/*unblur_sensitive_content: true,*/}
-        {/*date_of_birth: "",*/}
-        {/*dark_mode: false,*/}
-
-        <article className={`flex justify-between`}>
+        <article className="flex justify-between items-center">
           <span>Show Sensitive Data</span>
           <Switch
-            checked={settings ? settings.allow_sensitive_content : false}
-            onChange={async (checked) =>
-              await settingsService.updateUserSettings({
-                allow_sensitive_content: checked,
-              })
-            }
-          />
-        </article>
-
-        <article className={`flex justify-between`}>
-          <span>Unblur Sensitive Data by Default</span>
-          <Switch
-            checked={settings ? settings.unblur_sensitive_content : false}
+            checked={settings?.allow_sensitive_content ?? false}
             onChange={(checked) =>
-              settingsService.updateUserSettings({
-                unblur_sensitive_content: checked,
-              })
+              updateSetting("allow_sensitive_content", checked)
             }
           />
         </article>
 
-        <article className={`flex justify-between`}>
-          <span>Show Sensitive Data</span>
+        <article className="flex justify-between items-center">
+          <span>Blur Sensitive Data</span>
+          <Switch
+            checked={settings?.blur_sensitive_content ?? false}
+            onChange={(checked) =>
+              updateSetting("blur_sensitive_content", checked)
+            }
+          />
         </article>
       </section>
     </div>
