@@ -4,7 +4,8 @@ import { sampleUsers } from "@/data/sample-users";
 import { sampleSettings } from "@/data/sample-settings";
 
 export const metadata = {
-  title: "Explore - Ostracon",
+  title: "Explore | Ostracon",
+  // TODO: Add description
   description: "Explore page",
 };
 

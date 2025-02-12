@@ -6,8 +6,9 @@ import BigButton from "@/components/ui/big-button";
 import React from "react";
 
 export const metadata = {
-  title: "Ostracon",
-  description: "Welcome to Ostracon!",
+  title: "Ostracon | Where every voice finds its space",
+  description:
+    "A safe haven for self-expression, where your voice matters and your wellbeing comes first. Share your story with those who understand.",
 };
 
 export default function Home() {

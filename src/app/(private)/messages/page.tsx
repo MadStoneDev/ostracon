@@ -1,7 +1,7 @@
 export default function Messages() {
-    return (
-        <div>
-            <h1>Messages</h1>
-        </div>
-    );
+  return (
+    <div className={`grid z-0`}>
+      <h1 className={`text-2xl font-bold`}>Messages</h1>
+    </div>
+  );
 }
