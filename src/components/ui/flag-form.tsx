@@ -19,6 +19,17 @@ export default function FlagForm() {
     setMoreInfoLength(words);
   }, [moreInfo]);
 
+  // TWITTER X REASONS
+  // Hate
+  // Abuse & Harassment
+  // Violent Speech
+  // Child Safety
+  // Privacy
+  // Suicide or Self-harm
+  // Sensitive or Disturbing Content
+  // Impersonation (Pretending to be someone else, including non-compliant parody/fan accounts)
+  // Violent & Hateful Entities (Violent extremism, terrorism, hate groups)
+
   return (
     <form className={`flex flex-col items-stretch w-full`}>
       <RadioGroup

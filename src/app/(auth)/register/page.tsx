@@ -5,6 +5,11 @@ import { IconArrowRight } from "@tabler/icons-react";
 import BigButton from "@/components/ui/big-button";
 import RegisterForm from "@/components/auth/register-form";
 
+export const metadata = {
+  title: "Register for Ostracon",
+  description: "Create a free account on Ostracon to start posting.",
+};
+
 export default function Register() {
   return (
     <main

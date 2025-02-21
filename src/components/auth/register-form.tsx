@@ -1,20 +1,27 @@
 ﻿"use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import { register } from "@/app/(auth)/register/actions";
+
 import BigButton from "@/components/ui/big-button";
+
 import {
   IconArrowRight,
   IconCheck,
-  IconCross,
   IconEye,
   IconEyeOff,
   IconX,
 } from "@tabler/icons-react";
 
 export default function RegisterForm() {
+  // Hooks
+  const router = useRouter();
+
   // States
   const [showPassword, setShowPassword] = useState(false);
   const [passwordActive, setPasswordActive] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     username: "",
@@ -66,8 +73,70 @@ export default function RegisterForm() {
     }));
   };
 
-  const handleSubmit = () => {
-    console.log(formData);
+  const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    setErrorData((prevState) => ({
+      username: "",
+      email: "",
+      password: "",
+    }));
+
+    if (formData.username.length < 3) {
+      setErrorData((prevState) => ({
+        ...prevState,
+        username: "Username must be at least 3 characters long.",
+      }));
+      setIsLoading(false);
+      return false;
+    }
+
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(formData.email.trim())) {
+      setErrorData((prevState) => ({
+        ...prevState,
+        email: "Please enter a valid email address.",
+      }));
+      setIsLoading(false);
+      return;
+    }
+
+    const isPasswordValid = Object.values(passwordValidation).every(
+      (value) => value,
+    );
+    if (!isPasswordValid) {
+      setErrorData((prevState) => ({
+        ...prevState,
+        password: "Please meet the minimum password requirements.",
+      }));
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const response = await register({
+        username: formData.username.trim(),
+        email: formData.email.trim(),
+        password: formData.password,
+      });
+
+      if (response?.error) {
+        setErrorData((prevState) => ({
+          ...prevState,
+          password: response.error,
+        }));
+      } else {
+        // Redirect handled by register action
+      }
+    } catch (error) {
+      setErrorData((prevState) => ({
+        ...prevState,
+        password: "An error occurred. Please try again later.",
+      }));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

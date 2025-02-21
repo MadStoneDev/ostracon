@@ -1,18 +1,30 @@
 ﻿"use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  loginWithPassword,
+  loginWithMagicLink,
+} from "@/app/(auth)/login/actions";
+
 import BigButton from "@/components/ui/big-button";
+
 import {
   IconArrowRight,
-  IconCheck,
   IconEye,
   IconEyeOff,
-  IconX,
+  IconMail,
 } from "@tabler/icons-react";
 
 export default function LoginForm() {
+  // Hooks
+  const router = useRouter();
+
   // States
   const [showPassword, setShowPassword] = useState(false);
+  const [useMagicLink, setUseMagicLink] = useState(false);
+  const [magicLinkSent, setMagicLinkSent] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     email: "",
@@ -22,6 +34,7 @@ export default function LoginForm() {
   const [errorData, setErrorData] = useState({
     email: "",
     password: "",
+    form: "",
   });
 
   // Functions
@@ -33,13 +46,95 @@ export default function LoginForm() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log(formData);
+    setIsLoading(true);
+    setErrorData((prevState) => ({
+      email: "",
+      password: "",
+      form: "",
+    }));
+
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(formData.email.trim())) {
+      setErrorData((prevState) => ({
+        ...prevState,
+        email: "Please enter a valid email address.",
+      }));
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      if (useMagicLink) {
+        const response = await loginWithMagicLink({
+          email: formData.email.trim(),
+        });
+
+        if (response.success) {
+          setMagicLinkSent(true);
+        } else {
+          setErrorData((prevState) => ({
+            ...prevState,
+            email: response.error || "Failed to send magic link",
+          }));
+        }
+      } else {
+        if (!formData.password) {
+          setErrorData((prevState) => ({
+            ...prevState,
+            password: "Password is required",
+          }));
+          setIsLoading(false);
+          return;
+        }
+
+        const response = await loginWithPassword({
+          email: formData.email.trim(),
+          password: formData.password,
+        });
+
+        if (response?.error) {
+          setErrorData((prevState) => ({
+            ...prevState,
+            password: response.error,
+          }));
+        }
+      }
+    } catch (error) {
+      setErrorData((prevState) => ({
+        ...prevState,
+        password: "An error occurred. Please try again later.",
+      }));
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  if (magicLinkSent) {
+    return (
+      <div className="mt-10 flex flex-col items-center gap-4 text-center">
+        <IconMail size={48} className="text-primary" />
+        <h2 className="text-xl font-semibold">Check your email</h2>
+        <p className="text-dark/70 dark:text-light/70">
+          We've sent you a magic link to {formData.email}
+        </p>
+        <button
+          onClick={() => {
+            setMagicLinkSent(false);
+            setFormData({ email: "", password: "" });
+          }}
+          className="text-primary hover:text-primary/80 transition-colors"
+        >
+          Try another email
+        </button>
+      </div>
+    );
+  }
 
   return (
     <form
+      onSubmit={handleSubmit}
       className={`mt-10 flex flex-col items-start gap-5 max-w-sm transition-all duration-300 ease-in-out`}
     >
       <div
@@ -144,40 +239,60 @@ export default function LoginForm() {
         )}
       </div>
 
-      <div
-        className={`relative flex flex-col gap-2 w-full transition-all duration-300 ease-in-out`}
-      >
-        <input
-          type={showPassword ? "text" : "password"}
-          name={`password`}
-          value={formData.password}
-          placeholder={`Password`}
-          onChange={handleChange}
-          className={`p-2 w-full focus:outline-none focus:ring-none border-b border-primary bg-transparent focus:bg-primary text-dark dark:text-light placeholder:text-dark/30 dark:placeholder:text-light/30 transition-all duration-300 ease-in-out`}
-        />
-
-        <button
-          type={`button`}
-          className={`absolute right-2 top-[10px] focus:outline-none hover:scale-110 text-dark/80 dark:text-light/80 hover:text-dark dark:hover:text-light transition-all duration-300 ease-in-out`}
-          onClick={() => setShowPassword(!showPassword)}
+      {!useMagicLink && (
+        <div
+          className={`relative flex flex-col gap-2 w-full transition-all duration-300 ease-in-out`}
         >
-          {showPassword ? (
-            <IconEyeOff size={24} strokeWidth={1.5} />
-          ) : (
-            <IconEye size={24} strokeWidth={1.5} />
-          )}
-        </button>
+          <input
+            type={showPassword ? "text" : "password"}
+            name={`password`}
+            value={formData.password}
+            placeholder={`Password`}
+            onChange={handleChange}
+            className={`p-2 w-full focus:outline-none focus:ring-none border-b border-primary bg-transparent focus:bg-primary text-dark dark:text-light placeholder:text-dark/30 dark:placeholder:text-light/30 transition-all duration-300 ease-in-out`}
+          />
 
-        <span className={`text-sm text-red-600 dark:text-red-500`}>
-          {errorData.password}
+          <button
+            type={`button`}
+            className={`absolute right-2 top-[10px] focus:outline-none hover:scale-110 text-dark/80 dark:text-light/80 hover:text-dark dark:hover:text-light transition-all duration-300 ease-in-out`}
+            onClick={() => setShowPassword(!showPassword)}
+          >
+            {showPassword ? (
+              <IconEyeOff size={24} strokeWidth={1.5} />
+            ) : (
+              <IconEye size={24} strokeWidth={1.5} />
+            )}
+          </button>
+
+          <span className={`text-sm text-red-600 dark:text-red-500`}>
+            {errorData.password}
+          </span>
+        </div>
+      )}
+
+      <button
+        type="button"
+        onClick={() => setUseMagicLink(!useMagicLink)}
+        className="text-primary hover:text-primary/80 transition-colors text-sm self-end"
+      >
+        {useMagicLink ? "Use password instead" : "Use magic link instead"}
+      </button>
+
+      {errorData.form && (
+        <span className="text-sm text-red-600 dark:text-red-500 w-full text-center">
+          {errorData.form}
         </span>
-      </div>
+      )}
 
       <BigButton
-        title={"Log me in"}
+        title={
+          isLoading ? "Loading" : useMagicLink ? "Send Magic Link" : "Log me in"
+        }
         indicator={<IconArrowRight size={26} strokeWidth={1.5} />}
-        href={`/register`}
-        active={true}
+        active={!isLoading}
+        disabled={isLoading}
+        type={`submit`}
+        onClick={(e) => e.preventDefault()}
         className={`mt-5`}
       />
     </form>

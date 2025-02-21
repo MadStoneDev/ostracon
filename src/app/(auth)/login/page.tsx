@@ -1,7 +1,10 @@
-import BigButton from "@/components/ui/big-button";
-import { IconUserPlus } from "@tabler/icons-react";
 import Link from "next/link";
 import LoginForm from "@/components/auth/login-form";
+
+export const metadata = {
+  title: "Login at Ostracon",
+  description: "Login to your account on Ostracon.",
+};
 
 export default function Login() {
   return (

@@ -1,7 +1,6 @@
 ﻿import React from "react";
 
 import Post from "@/components/feed/single-post";
-import RadioGroup from "@/components/ui/radio-group";
 
 import SamplePosts from "@/data/sample-posts";
 import { sampleUsers } from "@/data/sample-users";
