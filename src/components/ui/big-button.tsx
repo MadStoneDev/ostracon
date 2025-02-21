@@ -9,22 +9,32 @@ interface BaseButtonProps {
   indicator: ReactNode;
   direction?: "left" | "right";
   active?: boolean;
-  type?: "button" | "submit";
   disabled?: boolean;
   className?: string;
 }
 
 interface ButtonAsButtonProps extends BaseButtonProps {
   href?: never;
+  type: "button";
   onClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
+}
+
+interface ButtonAsSubmitProps extends BaseButtonProps {
+  href?: never;
+  type: "submit";
+  onClick?: never;
 }
 
 interface ButtonAsLinkProps extends BaseButtonProps, Omit<LinkProps, "href"> {
   href: string;
+  type?: never;
   onClick?: never;
 }
 
-type ButtonProps = ButtonAsButtonProps | ButtonAsLinkProps;
+type ButtonProps =
+  | ButtonAsButtonProps
+  | ButtonAsSubmitProps
+  | ButtonAsLinkProps;
 
 export default function BigButton({
   title = "Posted",
