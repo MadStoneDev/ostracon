@@ -33,6 +33,7 @@ export default function RegisterForm() {
     username: "",
     email: "",
     password: "",
+    form: "",
   });
 
   const [passwordValidation, setPasswordValidation] = useState({
@@ -73,7 +74,7 @@ export default function RegisterForm() {
     }));
   };
 
-  const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
 
@@ -81,6 +82,7 @@ export default function RegisterForm() {
       username: "",
       email: "",
       password: "",
+      form: "",
     }));
 
     if (formData.username.length < 3) {
@@ -89,7 +91,7 @@ export default function RegisterForm() {
         username: "Username must be at least 3 characters long.",
       }));
       setIsLoading(false);
-      return false;
+      return;
     }
 
     const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -124,7 +126,7 @@ export default function RegisterForm() {
       if (response?.error) {
         setErrorData((prevState) => ({
           ...prevState,
-          password: response.error,
+          password: response.error || "Unknown error occured",
         }));
       } else {
         // Redirect handled by register action
@@ -132,7 +134,7 @@ export default function RegisterForm() {
     } catch (error) {
       setErrorData((prevState) => ({
         ...prevState,
-        password: "An error occurred. Please try again later.",
+        form: "An error occurred. Please try again later.",
       }));
     } finally {
       setIsLoading(false);
@@ -141,7 +143,7 @@ export default function RegisterForm() {
 
   return (
     <form
-      // method={`POST`}
+      onSubmit={handleSubmit}
       className={`mt-10 flex flex-col items-start gap-5 max-w-sm transition-all duration-300 ease-in-out`}
     >
       <div
@@ -376,12 +378,20 @@ export default function RegisterForm() {
         </div>
       </div>
 
+      {errorData.form && (
+        <span className="text-sm text-red-600 dark:text-red-500 w-full text-center">
+          {errorData.form}
+        </span>
+      )}
+
       <BigButton
-        title={"Create Account"}
+        title={isLoading ? "Creating Account..." : "Create Account"}
         indicator={<IconArrowRight size={26} strokeWidth={1.5} />}
-        active={true}
+        active={!isLoading}
+        disabled={isLoading}
+        type="submit"
+        onClick={(e) => e.preventDefault()}
         className={`mt-5`}
-        onClick={handleSubmit}
       />
     </form>
   );
