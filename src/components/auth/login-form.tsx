@@ -292,7 +292,6 @@ export default function LoginForm() {
         active={!isLoading}
         disabled={isLoading}
         type={`submit`}
-        onClick={(e) => e.preventDefault()}
         className={`mt-5`}
       />
     </form>

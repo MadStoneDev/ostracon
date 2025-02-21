@@ -390,7 +390,6 @@ export default function RegisterForm() {
         active={!isLoading}
         disabled={isLoading}
         type="submit"
-        onClick={(e) => e.preventDefault()}
         className={`mt-5`}
       />
     </form>
