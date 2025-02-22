@@ -71,7 +71,8 @@ export async function register(formData: {
           username: formData.username,
           avatar_url: null,
           bio: null,
-          settings: {},
+          queued_for_delete: false,
+          is_moderator: false,
         },
       ]);
 

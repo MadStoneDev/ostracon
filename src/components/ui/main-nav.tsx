@@ -6,6 +6,7 @@ import { useTheme } from "next-themes";
 import {
   IconInfoCircle,
   IconInfoCircleFilled,
+  IconLogout,
   IconSun,
   IconTool,
   IconX,
@@ -67,6 +68,10 @@ export default function MainNav({
           className={`hover:text-primary transition-all duration-300 ease-in-out`}
         >
           <IconSun size={24} strokeWidth={2} />
+        </button>
+
+        <button>
+          <IconLogout size={24} strokeWidth={2} />
         </button>
 
         {authenticated ? (
