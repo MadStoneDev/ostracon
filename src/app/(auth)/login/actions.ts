@@ -2,9 +2,27 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-
 import { createClient } from "@/utils/supabase/server";
 import { authRateLimiter } from "@/utils/rate-limit";
+
+// Helper function to get user-friendly error message
+function getUserFriendlyError(error: any): string {
+  console.error("Authentication error details:", error);
+
+  // Map specific Supabase error codes/messages to user-friendly messages
+  if (error.message?.includes("Invalid login credentials")) {
+    return "Invalid email or password. Please try again.";
+  }
+  if (error.message?.includes("Email not confirmed")) {
+    return "Please verify your email address before logging in.";
+  }
+  if (error.message?.includes("Too many requests")) {
+    return "Too many login attempts. Please try again later.";
+  }
+
+  // Default generic message
+  return "Login failed. Please try again.";
+}
 
 export async function loginWithPassword(formData: {
   email: string;
@@ -25,25 +43,26 @@ export async function loginWithPassword(formData: {
 
     const supabase = await createClient();
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { error, data } = await supabase.auth.signInWithPassword({
       email: formData.email,
       password: formData.password,
     });
 
     if (error) {
       return {
-        error: error.message,
+        error: getUserFriendlyError(error),
         success: false,
       };
     }
 
+    // If we get here, login was successful
     revalidatePath("/");
+    // This will properly handle the redirect
     redirect("/explore");
   } catch (error) {
-    console.error("Login error:", error);
+    console.error("Unexpected login error:", error);
     return {
-      error:
-        error instanceof Error ? error.message : "An unexpected error occurred",
+      error: "An unexpected error occurred. Please try again.",
       success: false,
     };
   }
@@ -73,7 +92,7 @@ export async function loginWithMagicLink(formData: { email: string }) {
 
     if (error) {
       return {
-        error: error.message,
+        error: getUserFriendlyError(error),
         success: false,
       };
     }
@@ -81,12 +100,12 @@ export async function loginWithMagicLink(formData: { email: string }) {
     return {
       error: null,
       success: true,
+      message: "Check your email for the login link.",
     };
   } catch (error) {
-    console.error("Login error:", error);
+    console.error("Unexpected magic link error:", error);
     return {
-      error:
-        error instanceof Error ? error.message : "An unexpected error occurred",
+      error: "Unable to send login link. Please try again.",
       success: false,
     };
   }

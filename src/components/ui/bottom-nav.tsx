@@ -1,32 +1,28 @@
 ﻿"use client";
 
-import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import React, { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 import {
   IconBell,
-  IconCategory,
   IconHome,
   IconInfoCircle,
-  IconLayoutList,
+  IconLogout,
   IconMail,
   IconMenu,
   IconPlug,
   IconSearch,
-  IconSquarePlus,
-  IconSquareRounded,
-  IconSquareRoundedPlus,
   IconSquareRoundedPlusFilled,
-  IconUser,
   IconX,
 } from "@tabler/icons-react";
-import { usePathname, useRouter } from "next/navigation";
 import UserAvatar from "@/components/ui/user-avatar";
+import { createClient } from "@/utils/supabase/client";
 
-export default function BottomNav() {
+export default function BottomNav({ user = null }: { user?: any }) {
   // Hooks
   const pathname = usePathname();
-  const router = useRouter();
+  const supabase = createClient();
 
   // States
   const [showMenu, setShowMenu] = useState(false);
@@ -164,6 +160,16 @@ export default function BottomNav() {
           </div>
           <span>Help</span>
         </Link>
+
+        <button
+          className={`flex items-center gap-5`}
+          onClick={() => supabase.auth.signOut()}
+        >
+          <div className={`grid place-content-center w-12 h-12`}>
+            <IconLogout size={24} strokeWidth={2} />
+          </div>
+          <span>Logout</span>
+        </button>
       </section>
 
       {/* Overlay */}

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useTheme } from "next-themes";
+import { usePathname, useRouter } from "next/navigation";
 
 import {
   IconInfoCircle,
@@ -11,18 +12,13 @@ import {
   IconTool,
   IconX,
 } from "@tabler/icons-react";
-import { usePathname, useRouter } from "next/navigation";
 
-export default function MainNav({
-  authenticated = false,
-}: {
-  authenticated?: boolean;
-}) {
-  const { theme, setTheme } = useTheme();
-
+export default function MainNav({ user = null }: { user?: any }) {
   // Hooks
   const router = useRouter();
   const pathname = usePathname();
+
+  const { theme, setTheme } = useTheme();
 
   return (
     <nav
@@ -52,17 +48,6 @@ export default function MainNav({
       </section>
 
       <section className={`flex-grow flex justify-end items-center gap-4 z-50`}>
-        {authenticated ? null : (
-          <>
-            <Link
-              href={`/info`}
-              className={`hover:text-primary transition-all duration-200`}
-            >
-              <IconInfoCircleFilled size={28} strokeWidth={1.5} />
-            </Link>
-          </>
-        )}
-
         <button
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
           className={`hover:text-primary transition-all duration-300 ease-in-out`}
@@ -70,28 +55,35 @@ export default function MainNav({
           <IconSun size={24} strokeWidth={2} />
         </button>
 
-        <button>
-          <IconLogout size={24} strokeWidth={2} />
-        </button>
+        {user ? (
+          <>
+            {pathname === "/post/new" ? (
+              <button
+                className={`hover:text-primary transition-all duration-300 ease-in-out`}
+                onClick={() => router.back()}
+              >
+                <IconX size={22} strokeWidth={2} />
+              </button>
+            ) : (
+              <Link
+                href={`/settings`}
+                className={`hover:text-primary transition-all duration-300 ease-in-out`}
+              >
+                <IconTool size={22} strokeWidth={2} />
+              </Link>
+            )}
 
-        {authenticated ? (
-          pathname === "/post/new" ? (
-            <button
-              className={`hover:text-primary transition-all duration-300 ease-in-out`}
-              onClick={() => router.back()}
-            >
-              <IconX size={22} strokeWidth={2} />
+            <button>
+              <IconLogout size={24} strokeWidth={2} />
             </button>
-          ) : (
-            <Link
-              href={`/settings`}
-              className={`hover:text-primary transition-all duration-300 ease-in-out`}
-            >
-              <IconTool size={22} strokeWidth={2} />
-            </Link>
-          )
+          </>
         ) : (
-          <IconInfoCircle />
+          <Link
+            href={`/info`}
+            className={`hover:text-primary transition-all duration-200`}
+          >
+            <IconInfoCircleFilled size={28} strokeWidth={1.5} />
+          </Link>
         )}
       </section>
     </nav>

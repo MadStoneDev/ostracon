@@ -49,11 +49,11 @@ export default function LoginForm() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
-    setErrorData((prevState) => ({
+    setErrorData({
       email: "",
       password: "",
       form: "",
-    }));
+    });
 
     const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!emailRegex.test(formData.email.trim())) {
@@ -89,22 +89,35 @@ export default function LoginForm() {
           return;
         }
 
-        const response = await loginWithPassword({
+        const loginResponse = await loginWithPassword({
           email: formData.email.trim(),
           password: formData.password,
         });
 
-        if (response?.error) {
+        // If we get here and there's an error, show it
+        if (loginResponse?.error) {
           setErrorData((prevState) => ({
             ...prevState,
-            password: response.error,
+            form: loginResponse.error,
           }));
+          return;
         }
+
+        // If we get here, something went wrong with the redirect
+        console.error("Login succeeded but redirect failed");
       }
     } catch (error) {
+      // Check if this is a redirect (success case)
+      if (error instanceof Error && error.message.includes("NEXT_REDIRECT")) {
+        // This is actually success - let the redirect happen
+        return;
+      }
+
+      // If we get here, it's a real error
+      console.error("Unexpected error during login:", error);
       setErrorData((prevState) => ({
         ...prevState,
-        password: "An error occurred. Please try again later.",
+        form: "An error occurred. Please try again later.",
       }));
     } finally {
       setIsLoading(false);

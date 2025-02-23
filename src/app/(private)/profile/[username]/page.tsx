@@ -1,5 +1,9 @@
-﻿import ProfileContent from "@/components/ui/profile-content";
+﻿import { redirect } from "next/navigation";
+
 import { sampleUsers } from "@/data/sample-users";
+import ProfileContent from "@/components/ui/profile-content";
+
+import { createClient } from "@/utils/supabase/server";
 
 export async function generateMetadata({
   params,
@@ -21,9 +25,27 @@ export default async function Profile({
 }) {
   // Variables
   const username = (await params).username;
-  const userId = sampleUsers.find((user) => user.username === username)?.id;
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  const currentUser = await supabase
+    .from("users")
+    .select(
+      "id, username, avatar_url, bio, queued_for_delete, is_moderator, settings",
+    )
+    .eq("id", user.id)
+    .single();
 
   return (
-    username && userId && <ProfileContent username={username} userId={userId} />
+    currentUser.data && (
+      <ProfileContent user={currentUser.data} userId={currentUser.data.id} />
+    )
   );
 }

@@ -7,6 +7,7 @@ import ThemeProvider from "@/components/ui/ThemeProvider";
 import { Outfit, Merriweather, Lilita_One } from "next/font/google";
 
 import MainNav from "@/components/ui/main-nav";
+import { createClient } from "@/utils/supabase/server";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -25,12 +26,13 @@ const lilitaOne = Lilita_One({
   variable: "--font-lilita-one",
 });
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const authenticated = true;
+  const supabase = await createClient();
+  const { data: user } = await supabase.auth.getUser();
 
   return (
     <html
@@ -43,7 +45,7 @@ export default function RootLayout({
           <div
             className={`relative grid justify-stretch min-h-dvh dark:bg-dark bg-light dark:text-light text-dark overflow-hidden`}
           >
-            <MainNav authenticated={authenticated} />
+            <MainNav user={user} />
 
             {children}
           </div>

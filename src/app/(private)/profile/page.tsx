@@ -1,17 +1,34 @@
 ﻿import { redirect } from "next/navigation";
 import sampleMe from "@/data/sample-me";
 import { sampleUsers } from "@/data/sample-users";
+import { createClient } from "@/utils/supabase/server";
 
-export default function ProfileRedirect() {
+export default async function ProfileRedirect() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   // TODO: Get logged in user from session
-  const currentUser = sampleMe;
-  const username = sampleUsers.find((user) => user.id === currentUser)
-    ?.username;
+  const currentUser = user ? user.id : null;
 
-  if (!username) {
+  // Get username from Supabase public.users table
+  if (!currentUser) {
+    return <div>No user found</div>;
+  }
+
+  const checkUser = await supabase
+    .from("users")
+    .select("username")
+    .eq("id", currentUser)
+    .single();
+
+  if (!checkUser) {
     // TODO: Fix no user found
     return <div>No user found</div>;
   }
+
+  const username = checkUser.data!.username;
 
   redirect(`/profile/${username}`);
 }

@@ -1,9 +1,11 @@
+import React from "react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 import { IconUserPlus } from "@tabler/icons-react";
 
 import BigButton from "@/components/ui/big-button";
-import React from "react";
+import { createClient } from "@/utils/supabase/server";
 
 export const metadata = {
   title: "Ostracon | Where every voice finds its space",
@@ -11,7 +13,15 @@ export const metadata = {
     "A safe haven for self-expression, where your voice matters and your wellbeing comes first. Share your story with those who understand.",
 };
 
-export default function Home() {
+export default async function Home() {
+  // Authentication
+  const supabase = await createClient();
+  const { data: user } = await supabase.auth.getUser();
+
+  if (user) {
+    redirect("/explore");
+  }
+
   return (
     <main
       className={`flex-grow flex flex-col h-full`}
