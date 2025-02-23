@@ -5,20 +5,29 @@ import { useTheme } from "next-themes";
 import { usePathname, useRouter } from "next/navigation";
 
 import {
-  IconInfoCircle,
   IconInfoCircleFilled,
   IconLogout,
   IconSun,
   IconTool,
   IconX,
 } from "@tabler/icons-react";
+import { createClient } from "@/utils/supabase/client";
 
 export default function MainNav({ user = null }: { user?: any }) {
   // Hooks
   const router = useRouter();
   const pathname = usePathname();
 
+  const supabase = createClient();
+
   const { theme, setTheme } = useTheme();
+
+  // Functions
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.refresh();
+    router.push("/");
+  };
 
   return (
     <nav
@@ -73,7 +82,7 @@ export default function MainNav({ user = null }: { user?: any }) {
               </Link>
             )}
 
-            <button>
+            <button onClick={handleLogout}>
               <IconLogout size={24} strokeWidth={2} />
             </button>
           </>

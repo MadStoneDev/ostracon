@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 import {
   IconBell,
@@ -22,6 +22,7 @@ import { createClient } from "@/utils/supabase/client";
 export default function BottomNav({ user = null }: { user?: any }) {
   // Hooks
   const pathname = usePathname();
+  const router = useRouter();
   const supabase = createClient();
 
   // States
@@ -47,6 +48,12 @@ export default function BottomNav({ user = null }: { user?: any }) {
       setShowOverlay(true);
       setShowMenu(true);
     }, 10);
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.refresh();
+    router.push("/");
   };
 
   // Effects
@@ -161,10 +168,7 @@ export default function BottomNav({ user = null }: { user?: any }) {
           <span>Help</span>
         </Link>
 
-        <button
-          className={`flex items-center gap-5`}
-          onClick={() => supabase.auth.signOut()}
-        >
+        <button className={`flex items-center gap-5`} onClick={handleLogout}>
           <div className={`grid place-content-center w-12 h-12`}>
             <IconLogout size={24} strokeWidth={2} />
           </div>
