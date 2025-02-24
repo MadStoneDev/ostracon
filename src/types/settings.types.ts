@@ -4,7 +4,7 @@
   allow_sensitive_content: boolean;
   blur_sensitive_content: boolean;
 
-  profile_privacy: "public" | "private";
+  make_profile_private: boolean;
   allow_messages: "followers" | "everyone" | "none";
 
   // Notifications

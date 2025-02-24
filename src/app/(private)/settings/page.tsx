@@ -7,6 +7,13 @@ import { UserSettings } from "@/types/settings.types";
 
 import Switch from "@/components/ui/switch";
 import { YearDatePicker } from "@/components/ui/year-date-picker";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function Settings() {
   const [settings, setSettings] = useState<UserSettings | null>(null);
@@ -85,7 +92,7 @@ export default function Settings() {
   return (
     <div className="relative">
       {hasChanges && (
-        <div className="fixed top-4 right-6 z-50">
+        <div className="fixed top-20 right-6 z-50">
           <button
             onClick={saveChanges}
             className="bg-primary text-white px-4 py-2 rounded-md shadow-lg hover:bg-primary/90 transition-colors"
@@ -101,9 +108,9 @@ export default function Settings() {
       <section className="mt-8">
         <h2 className="text-lg font-bold mb-4">Profile</h2>
 
-        <article className="flex justify-between items-center mb-4">
-          <div className="flex flex-col gap-2">
-            <label className="block text-sm font-medium">
+        <article className="flex flex-col mb-4">
+          <div className="flex justify-between items-center gap-2">
+            <label className="shrink-0 block text-sm font-medium">
               Date of Birth
               <span className="text-red-500 ml-1">*</span>
             </label>
@@ -118,17 +125,17 @@ export default function Settings() {
               }
               disabled={!!originalSettings?.date_of_birth}
             />
-            {!!originalSettings?.date_of_birth && (
-              <p className="text-sm text-gray-500">
-                Contact support to update your date of birth
-              </p>
-            )}
-            {!settings.date_of_birth && (
-              <p className="text-sm text-amber-600">
-                Required to enable sensitive content settings
-              </p>
-            )}
           </div>
+          {!!originalSettings?.date_of_birth && (
+            <p className="text-sm text-gray-500">
+              Contact support to update your date of birth
+            </p>
+          )}
+          {!settings.date_of_birth && (
+            <p className="text-sm text-amber-600">
+              Required to enable sensitive content settings
+            </p>
+          )}
         </article>
       </section>
 
@@ -137,9 +144,23 @@ export default function Settings() {
         <h2 className="text-lg font-bold mb-4">Privacy</h2>
 
         <article className="flex justify-between items-center mb-4">
+          <span className={`block`}>Make profile private</span>
+          <Switch
+            checked={settings.make_profile_private}
+            onChange={(checked) =>
+              updateSetting("make_profile_private", checked)
+            }
+          />
+        </article>
+
+        <article className="flex justify-between items-center mb-4">
           <div>
-            <span className="block">Show Sensitive Content</span>
-            <span className="text-sm text-gray-500">
+            <span
+              className={`block ${!settings.date_of_birth && "opacity-30"}`}
+            >
+              Show Sensitive Content
+            </span>
+            <span className="text-sm text-amber-600">
               {!settings.date_of_birth &&
                 "Set your date of birth to enable this setting"}
             </span>
@@ -154,7 +175,11 @@ export default function Settings() {
         </article>
 
         <article className="flex justify-between items-center">
-          <span>Blur Sensitive Content</span>
+          <span
+            className={`${!settings.allow_sensitive_content && "opacity-30"}`}
+          >
+            Blur Sensitive Content
+          </span>
           <Switch
             checked={settings.blur_sensitive_content}
             onChange={(checked) =>
@@ -165,7 +190,60 @@ export default function Settings() {
         </article>
       </section>
 
-      {/* Add more sections here following the same pattern */}
+      {/* Messaging Settings */}
+      <section className="mt-8">
+        <h2 className="text-lg font-bold mb-4">Messaging</h2>
+
+        <article className="flex justify-between items-center">
+          <span>Allow Messages from</span>
+          <Select
+            value={settings.allow_messages}
+            onValueChange={(value) =>
+              updateSetting(
+                "allow_messages",
+                value as "followers" | "everyone" | "none",
+              )
+            }
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Select option" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="followers">Followers only</SelectItem>
+              <SelectItem value="everyone">Everyone</SelectItem>
+              <SelectItem value="none">No one</SelectItem>
+            </SelectContent>
+          </Select>
+        </article>
+      </section>
+
+      {/* Account Tools */}
+      {/*<section className="mt-8">*/}
+      {/*  <h2 className="text-lg font-bold mb-4">Account</h2>*/}
+
+      {/*  <article className="flex justify-between items-center">*/}
+      {/*    <span>Download my Data Archive</span>*/}
+      {/*    <button*/}
+      {/*      className={`text-primary opacity-70 hover:opacity-100 transition-all duration-300 ease-in-out`}*/}
+      {/*    >*/}
+      {/*      Download*/}
+      {/*    </button>*/}
+      {/*  </article>*/}
+      {/*</section>*/}
+
+      {/* Danger Settings */}
+      {/*<section className="mt-8">*/}
+      {/*  <h2 className="text-lg font-bold mb-4">Danger Zone</h2>*/}
+
+      {/*  <article className="flex justify-between items-center">*/}
+      {/*    <span>Delete Account</span>*/}
+      {/*    <button*/}
+      {/*      className={`px-4 py-1 bg-red-500 text-white opacity-70 hover:opacity-100 transition-all duration-300 ease-in-out`}*/}
+      {/*    >*/}
+      {/*      Delete*/}
+      {/*    </button>*/}
+      {/*  </article>*/}
+      {/*</section>*/}
     </div>
   );
 }

@@ -10,7 +10,9 @@
   return (
     <div
       className={`cursor-pointer py-0.5 px-0.5 relative flex items-center rounded-full w-10 ${
-        checked ? "bg-dark" : "bg-dark/40"
+        checked ? "bg-dark dark:bg-light" : "bg-dark/40 dark:bg-light/40"
+      } ${
+        disabled && (checked ? "opacity-15 dark:opacity-10" : "opacity-30")
       } transition-all duration-300 ease-in-out`}
       onClick={() => {
         if (!disabled) {

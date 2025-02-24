@@ -8,7 +8,7 @@ export const defaultSettings: UserSettings = {
   allow_sensitive_content: false,
   blur_sensitive_content: true,
 
-  profile_privacy: "public",
+  make_profile_private: false,
   allow_messages: "followers", // 'everyone', 'followers', 'none'
 
   // Notifications

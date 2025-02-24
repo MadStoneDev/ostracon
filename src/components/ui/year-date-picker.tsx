@@ -41,14 +41,14 @@ export function YearDatePicker({
     <Popover open={isOpen && !disabled} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <button
-          className={`w-full px-4 py-2 text-left border rounded-md focus:outline-none focus:ring-2 focus:ring-primary ${
+          className={`px-4 py-2 text-left border rounded-md focus:outline-none focus:ring-2 focus:ring-primary ${
             disabled
               ? "opacity-50 cursor-not-allowed bg-gray-100"
               : "hover:bg-gray-50"
           }`}
           disabled={disabled}
         >
-          {value ? format(value, "MMMM d, yyyy") : "Select your date of birth"}
+          {value ? format(value, "MMMM d, yyyy") : "Set your date of birth"}
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
