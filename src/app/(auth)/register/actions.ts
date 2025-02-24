@@ -1,7 +1,8 @@
 ﻿"use server";
 
-import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
+
 import { createClient } from "@/utils/supabase/server";
 import { authRateLimiter } from "@/utils/rate-limit";
 
@@ -52,7 +53,6 @@ export async function register(formData: {
       };
     }
 
-    // Signup user
     const { data: authData, error: signUpError } = await supabase.auth.signUp({
       email: formData.email,
       password: formData.password,
@@ -76,7 +76,6 @@ export async function register(formData: {
           case "Unable to validate email address: invalid format":
             return "Please enter a valid email address.";
           default:
-            // Log unknown errors but give generic message to user
             console.error("Unknown signup error:", signUpError);
             return "Unable to create account. Please try again later.";
         }
@@ -92,38 +91,6 @@ export async function register(formData: {
       console.error(`No user data returned from sign up`);
       return {
         error: "Unable to create account. Please try again later.",
-        success: false,
-      };
-    }
-
-    // Create user profile
-    const { error: profileError } = await supabase.from("users").insert([
-      {
-        id: authData.user.id,
-        username: formData.username,
-        avatar_url: null,
-        bio: null,
-        queued_for_delete: false,
-        is_moderator: false,
-      },
-    ]);
-
-    if (profileError) {
-      console.error("Profile creation error:", profileError);
-
-      if (
-        profileError.message.includes("row-level security") ||
-        profileError.message.includes("permission denied")
-      ) {
-        console.error("RLS or permission error:", profileError);
-        return {
-          error: "Unable to complete registration. Please try again later.",
-          success: false,
-        };
-      }
-
-      return {
-        error: `Unable to create profile. Please try again later.`,
         success: false,
       };
     }

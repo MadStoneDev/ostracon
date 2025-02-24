@@ -16,7 +16,9 @@ export const metadata = {
 export default async function Home() {
   // Authentication
   const supabase = await createClient();
-  const { data: user } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (user) {
     redirect("/explore");

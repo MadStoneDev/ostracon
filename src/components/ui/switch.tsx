@@ -1,8 +1,10 @@
 ﻿export default function Switch({
   checked,
+  disabled,
   onChange,
 }: Readonly<{
   checked: boolean;
+  disabled?: boolean;
   onChange: (checked: boolean) => void;
 }>) {
   return (
@@ -11,7 +13,9 @@
         checked ? "bg-dark" : "bg-dark/40"
       } transition-all duration-300 ease-in-out`}
       onClick={() => {
-        onChange(!checked);
+        if (!disabled) {
+          onChange(!checked);
+        }
       }}
     >
       <div

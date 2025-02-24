@@ -55,16 +55,18 @@ export async function loginWithPassword(formData: {
       };
     }
 
-    // If we get here, login was successful
     revalidatePath("/");
-    // This will properly handle the redirect
     redirect("/explore");
   } catch (error) {
-    console.error("Unexpected login error:", error);
-    return {
-      error: "An unexpected error occurred. Please try again.",
-      success: false,
-    };
+    if (error instanceof Error && !error.message.includes("NEXT_REDIRECT")) {
+      console.error("Unexpected login error:", error);
+      return {
+        error: "An unexpected error occurred. Please try again.",
+        success: false,
+      };
+    }
+
+    throw error;
   }
 }
 
@@ -86,6 +88,7 @@ export async function loginWithMagicLink(formData: { email: string }) {
     const { error } = await supabase.auth.signInWithOtp({
       email: formData.email,
       options: {
+        shouldCreateUser: false,
         emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
       },
     });

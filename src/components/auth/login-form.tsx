@@ -94,7 +94,6 @@ export default function LoginForm() {
           password: formData.password,
         });
 
-        // If we get here and there's an error, show it
         if (loginResponse?.error) {
           setErrorData((prevState) => ({
             ...prevState,
@@ -102,18 +101,12 @@ export default function LoginForm() {
           }));
           return;
         }
-
-        // If we get here, something went wrong with the redirect
-        console.error("Login succeeded but redirect failed");
       }
     } catch (error) {
-      // Check if this is a redirect (success case)
       if (error instanceof Error && error.message.includes("NEXT_REDIRECT")) {
-        // This is actually success - let the redirect happen
         return;
       }
 
-      // If we get here, it's a real error
       console.error("Unexpected error during login:", error);
       setErrorData((prevState) => ({
         ...prevState,
@@ -126,21 +119,15 @@ export default function LoginForm() {
 
   if (magicLinkSent) {
     return (
-      <div className="mt-10 flex flex-col items-center gap-4 text-center">
-        <IconMail size={48} className="text-primary" />
-        <h2 className="text-xl font-semibold">Check your email</h2>
+      <div className="mt-10 flex flex-col gap-4">
+        <div className={`flex items-center gap-4`}>
+          <IconMail size={48} className="text-primary" />
+          <h2 className="text-xl font-semibold">Check your email</h2>
+        </div>
         <p className="text-dark/70 dark:text-light/70">
-          We've sent you a magic link to {formData.email}
+          We've sent you a magic link to{" "}
+          <span className={"font-bold"}>{formData.email}</span>
         </p>
-        <button
-          onClick={() => {
-            setMagicLinkSent(false);
-            setFormData({ email: "", password: "" });
-          }}
-          className="text-primary hover:text-primary/80 transition-colors"
-        >
-          Try another email
-        </button>
       </div>
     );
   }
@@ -286,7 +273,7 @@ export default function LoginForm() {
       <button
         type="button"
         onClick={() => setUseMagicLink(!useMagicLink)}
-        className="text-primary hover:text-primary/80 transition-colors text-sm self-end"
+        className="-mt-3 text-primary hover:text-primary/80 transition-colors text-sm self-end"
       >
         {useMagicLink ? "Use password instead" : "Use magic link instead"}
       </button>
