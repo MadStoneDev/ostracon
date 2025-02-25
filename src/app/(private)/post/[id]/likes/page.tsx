@@ -16,7 +16,7 @@ async function getLikedBy(postId: string) {
     return [];
   }
 
-  return likedBy;
+  return likedBy || [];
 }
 
 export default async function Likes({ params }: { params: { id: string } }) {
@@ -30,16 +30,21 @@ export default async function Likes({ params }: { params: { id: string } }) {
       </section>
 
       <section className={`pb-[70px] transition-all duration-300 ease-in-out`}>
-        {likers.map((id) => {
-          return (
-            <div
-              key={`listening-${id}`}
-              className={`py-4 border-b border-dark/5 dark:border-light/5`}
-            >
-              <SingleUser userId={id} />
-            </div>
-          );
-        })}
+        {likers.length === 0 ? (
+          <div className="py-8 text-center text-gray-500">No likes yet</div>
+        ) : (
+          likers.map((liker) => {
+            // Extract the user_id string from the object
+            return (
+              <div
+                key={`liking-${liker.user_id}`}
+                className={`py-4 border-b border-dark/5 dark:border-light/5`}
+              >
+                <SingleUser userId={liker.user_id} />
+              </div>
+            );
+          })
+        )}
       </section>
     </div>
   );
