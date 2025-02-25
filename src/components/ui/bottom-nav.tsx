@@ -30,6 +30,13 @@ export default function BottomNav({ user = null }: { user?: any }) {
   const [showOverlay, setShowOverlay] = useState(false);
   const [overlayActive, setOverlayActive] = useState(false);
 
+  const isCommunityPage = pathname.startsWith("/community");
+  const communityName = isCommunityPage ? pathname.split("/")[2] : "";
+
+  const newPostLink = isCommunityPage
+    ? `/post/new?community=${communityName}`
+    : "/post/new";
+
   // Functions
   const closeMenu = () => {
     setShowMenu(false);
@@ -102,7 +109,7 @@ export default function BottomNav({ user = null }: { user?: any }) {
 
         {/* Main Button */}
         <Link
-          href={`/post/new`}
+          href={newPostLink}
           className={`flex items-center justify-center rounded-full transition-all duration-300 ease-in-out`}
         >
           <IconSquareRoundedPlusFilled size={56} />

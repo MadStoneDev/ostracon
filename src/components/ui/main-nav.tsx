@@ -81,10 +81,6 @@ export default function MainNav({ user = null }: { user?: any }) {
                 <IconTool size={22} strokeWidth={2} />
               </Link>
             )}
-
-            <button onClick={handleLogout}>
-              <IconLogout size={24} strokeWidth={2} />
-            </button>
           </>
         ) : (
           <Link

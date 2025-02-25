@@ -1,14 +1,13 @@
-﻿import {
-  AutoLinkPlugin,
-  createLinkMatcherWithRegExp,
-} from "@lexical/react/LexicalAutoLinkPlugin";
+﻿import { useEffect } from "react";
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import { $convertToMarkdownString, TRANSFORMERS } from "@lexical/markdown";
+
 import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
 import { HashtagPlugin } from "@lexical/react/LexicalHashtagPlugin";
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
 import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
-import { LinkPlugin } from "@lexical/react/LexicalLinkPlugin";
 import { MarkdownShortcutPlugin } from "@lexical/react/LexicalMarkdownShortcutPlugin";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 
@@ -28,7 +27,44 @@ import { AutoLinkNode, LinkNode } from "@lexical/link";
 import { ListNode, ListItemNode } from "@lexical/list";
 import { HeadingNode, QuoteNode } from "@lexical/rich-text";
 
-export default function PostEditor() {
+interface EditorContentPluginProps {
+  onChange: (text: string) => void;
+}
+
+function OnChangePlugin({
+  onChange,
+}: EditorContentPluginProps): React.ReactNode {
+  const [editor] = useLexicalComposerContext();
+
+  useEffect(() => {
+    return editor.registerUpdateListener(({ editorState }) => {
+      editorState.read(() => {
+        // Get plain text for checking if editor is empty
+        const root = editor.getEditorState()._nodeMap.get("root");
+        const plainText = root ? root.getTextContent() : "";
+
+        if (plainText.trim().length === 0) {
+          onChange("");
+          return;
+        }
+
+        // This must be called within the read() callback
+        const markdown = $convertToMarkdownString(TRANSFORMERS);
+        onChange(markdown);
+      });
+    });
+  }, [editor, onChange]);
+
+  return null;
+}
+
+interface PostEditorProps {
+  onChange?: (text: string) => void;
+}
+
+export default function PostEditor({
+  onChange = () => {},
+}: PostEditorProps): React.ReactNode {
   // Lexical Editor
   const initialTheme = {
     text: {
@@ -37,9 +73,9 @@ export default function PostEditor() {
       strikethrough: `line-through`,
     },
     heading: {
-      h1: `text-2xl`,
-      h2: `text-xl`,
-      h3: `text-lg`,
+      h1: `text-3xl font-bold`,
+      h2: `text-2xl font-bold`,
+      h3: `text-lg font-bold`,
     },
     link: `text-primary font-bold`,
     autolink: `text-primary font-bold`,
@@ -61,15 +97,6 @@ export default function PostEditor() {
   const EMAIL_REGEX =
     /(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/;
 
-  const MATCHERS = [
-    createLinkMatcherWithRegExp(URL_REGEX, (text) => {
-      return text;
-    }),
-    createLinkMatcherWithRegExp(EMAIL_REGEX, (text) => {
-      return `mailto:${text}`;
-    }),
-  ];
-
   const initialConfig = {
     namespace: "post",
     theme: initialTheme,
@@ -89,9 +116,7 @@ export default function PostEditor() {
   return (
     <div className={`relative w-full h-full`}>
       <LexicalComposer initialConfig={initialConfig}>
-        {/*<AutoLinkPlugin matchers={MATCHERS} />*/}
         <AutoFocusPlugin />
-        {/*<LinkPlugin />*/}
         <RichTextPlugin
           contentEditable={
             <ContentEditable
@@ -105,9 +130,9 @@ export default function PostEditor() {
           }
           ErrorBoundary={LexicalErrorBoundary}
         />
-        {/*<HashtagPlugin />*/}
         <HistoryPlugin />
         <MarkdownShortcutPlugin transformers={MY_TRANSFORMERS} />
+        <OnChangePlugin onChange={onChange} />
       </LexicalComposer>
     </div>
   );

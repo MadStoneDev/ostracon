@@ -13,10 +13,13 @@ import {
   IconFlag,
   IconHeart,
   IconHeartFilled,
+  IconHeartOff,
   IconMessage2,
+  IconMessage2Off,
   IconMessageFilled,
   IconSkull,
   IconX,
+  IconUsers,
 } from "@tabler/icons-react";
 
 import ProcessedContent from "@/components/feed/processed-content";
@@ -29,6 +32,10 @@ export default function Post({
   username,
   content,
   nsfw,
+  commentsAllowed = true,
+  reactionsAllowed = true,
+  groupId = null,
+  groupName = "",
   blur = true,
   timestamp,
   truncate = true,
@@ -40,7 +47,11 @@ export default function Post({
   username: string;
   content: string;
   nsfw: boolean;
+  commentsAllowed?: boolean;
+  reactionsAllowed?: boolean;
   blur?: boolean;
+  groupId?: string | null;
+  groupName?: string;
   timestamp: string;
   truncate?: boolean;
   isExpanded?: boolean;
@@ -62,6 +73,13 @@ export default function Post({
   useEffect(() => {
     setBlurred(nsfw && blur);
   }, [nsfw, blur]);
+
+  // Ensure start reply is false if comments are not allowed
+  useEffect(() => {
+    if (!commentsAllowed && startReply) {
+      setStartReply(false);
+    }
+  }, [commentsAllowed, startReply]);
 
   return (
     <div className={`py-4`}>
@@ -136,15 +154,31 @@ export default function Post({
         )}
       </section>
 
-      {/* Tag */}
-      {nsfw && (
-        <button
-          className={`mt-2 px-1.5 py-1 grid place-content-center bg-nsfw rounded-full font-accent text-light z-10 transition-all duration-300 ease-in-out`}
-          onClick={() => setBlurred(!blurred)}
-        >
-          <span className={`text-xs text-center`}>nsfw</span>
-        </button>
-      )}
+      {/* Tags */}
+      <div className="mt-2 flex flex-wrap gap-2">
+        {/* NSFW Tag */}
+        {nsfw && (
+          <button
+            className={`px-1.5 py-1 grid place-content-center bg-nsfw rounded-full font-accent text-light z-10 transition-all duration-300 ease-in-out`}
+            onClick={() => setBlurred(!blurred)}
+          >
+            <span className={`text-xs text-center`}>nsfw</span>
+          </button>
+        )}
+
+        {/* Community/Group Tag */}
+        {groupId && (
+          <Link
+            href={`/community/${groupId}`}
+            className={`px-2 py-1 flex items-center gap-1 border border-dark dark:border-light rounded-full text-dark dark:text-light z-10 transition-all duration-300 ease-in-out hover:opacity-80`}
+          >
+            <IconUsers size={14} />
+            <span className={`text-xs text-center`}>
+              {groupName || "Community"}
+            </span>
+          </Link>
+        )}
+      </div>
 
       {/* Content */}
       <section
@@ -199,26 +233,39 @@ export default function Post({
                 ></div>
               )}
               <div className={`flex gap-3`}>
-                <button
-                  className={`transition-all duration-300 ease-in-out`}
-                  onClick={() => setLiked(!liked)}
-                >
-                  {liked ? (
-                    <IconHeartFilled size={24} strokeWidth={2} />
-                  ) : (
-                    <IconHeart size={24} strokeWidth={2} />
-                  )}
-                </button>
-                <button
-                  className={`transition-all duration-300 ease-in-out`}
-                  onClick={() => setStartReply(!startReply)}
-                >
-                  {hasCommented ? (
-                    <IconMessageFilled size={24} strokeWidth={2} />
-                  ) : (
-                    <IconMessage2 size={24} strokeWidth={2} />
-                  )}
-                </button>
+                {reactionsAllowed ? (
+                  <button
+                    className={`transition-all duration-300 ease-in-out`}
+                    onClick={() => setLiked(!liked)}
+                  >
+                    {liked ? (
+                      <IconHeartFilled size={24} strokeWidth={2} />
+                    ) : (
+                      <IconHeart size={24} strokeWidth={2} />
+                    )}
+                  </button>
+                ) : (
+                  <div className="opacity-50 cursor-not-allowed">
+                    <IconHeartOff size={24} strokeWidth={2} />
+                  </div>
+                )}
+
+                {commentsAllowed ? (
+                  <button
+                    className={`transition-all duration-300 ease-in-out`}
+                    onClick={() => setStartReply(!startReply)}
+                  >
+                    {hasCommented ? (
+                      <IconMessageFilled size={24} strokeWidth={2} />
+                    ) : (
+                      <IconMessage2 size={24} strokeWidth={2} />
+                    )}
+                  </button>
+                ) : (
+                  <div className="opacity-50 cursor-not-allowed">
+                    <IconMessage2Off size={24} strokeWidth={2} />
+                  </div>
+                )}
               </div>
             </article>
 
@@ -263,17 +310,19 @@ export default function Post({
             </article>
           </section>
 
-          {/* Reply */}
-          <SinglePostReply
-            startReply={startReply}
-            setStartReply={setStartReply}
-            avatarUrl={avatar_url}
-            username={username}
-            postId={postId}
-            content={content}
-            truncate={truncate}
-            isExpanded={isExpanded}
-          />
+          {/* Reply - Only show if comments are allowed */}
+          {commentsAllowed && (
+            <SinglePostReply
+              startReply={startReply}
+              setStartReply={setStartReply}
+              avatarUrl={avatar_url}
+              username={username}
+              postId={postId}
+              content={content}
+              truncate={truncate}
+              isExpanded={isExpanded}
+            />
+          )}
         </>
       )}
     </div>

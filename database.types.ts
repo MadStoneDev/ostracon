@@ -109,6 +109,7 @@ export type Database = {
           group_id: string | null
           id: string
           is_nsfw: boolean | null
+          reactions_open: boolean | null
           updated_at: string | null
           user_id: string | null
         }
@@ -119,6 +120,7 @@ export type Database = {
           group_id?: string | null
           id?: string
           is_nsfw?: boolean | null
+          reactions_open?: boolean | null
           updated_at?: string | null
           user_id?: string | null
         }
@@ -129,6 +131,7 @@ export type Database = {
           group_id?: string | null
           id?: string
           is_nsfw?: boolean | null
+          reactions_open?: boolean | null
           updated_at?: string | null
           user_id?: string | null
         }

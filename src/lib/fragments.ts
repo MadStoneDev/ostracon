@@ -1,6 +1,8 @@
 ﻿import { ContentSegment } from "@/types/fragments";
 
 export function processContent(content: string): ContentSegment[] {
+  if (!content) return [];
+
   // This regex matches:
   // 1. @mentions can include word chars, dots, and dashes
   // 2. #hashtags that are word characters or dashes
@@ -29,7 +31,7 @@ export function processContent(content: string): ContentSegment[] {
         url: `/explore/search/tag/${tag}`,
       });
     } else if (text) {
-      // Process regular text
+      // Process regular text - this will contain markdown that will be rendered later
       segments.push({
         type: "text",
         content: text,
