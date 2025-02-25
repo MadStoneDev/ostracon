@@ -59,9 +59,6 @@ export default function PostPage({
             userSettings.allow_sensitive_content === true,
         };
 
-        console.log(
-          `PostPage: Settings loaded - blur_sensitive_content: ${sanitizedSettings.blur_sensitive_content}`,
-        );
         setSettings(sanitizedSettings);
       } catch (error) {
         console.error("Failed to load settings:", error);
@@ -75,9 +72,6 @@ export default function PostPage({
 
   // Determine if we should blur content based on settings
   const shouldBlur = settings ? Boolean(settings.blur_sensitive_content) : true;
-  console.log(
-    `PostPage: Should blur content? ${shouldBlur}, Post is NSFW? ${post.is_nsfw}`,
-  );
 
   return (
     <>

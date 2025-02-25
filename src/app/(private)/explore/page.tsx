@@ -99,13 +99,9 @@ async function getExploreFeedData(): Promise<FeedData> {
   // Explicitly ensure blur_sensitive_content is a boolean with correct default value
   settings = {
     ...settings,
-    blur_sensitive_content: settings.blur_sensitive_content !== false, // Default to true if undefined/null
-    allow_sensitive_content: settings.allow_sensitive_content === true, // Default to false if undefined/null
+    blur_sensitive_content: settings.blur_sensitive_content,
+    allow_sensitive_content: settings.allow_sensitive_content,
   };
-
-  console.log(
-    `User settings loaded - blur_sensitive_content: ${settings.blur_sensitive_content}, allow_sensitive_content: ${settings.allow_sensitive_content}`,
-  );
 
   // First, get the list of users the current user follows
   const { data: followingData, error: followingError } = await supabase

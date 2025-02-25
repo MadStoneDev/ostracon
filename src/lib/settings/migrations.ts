@@ -1,5 +1,5 @@
 ﻿import { UserSettings } from "@/types/settings.types";
-import { CURRENT_SETTINGS_VERSION } from "./defaults";
+import { CURRENT_SETTINGS_VERSION } from "@/data/defaults/settings";
 
 type MigrationFunction = (settings: any) => any;
 

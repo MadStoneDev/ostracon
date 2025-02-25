@@ -32,8 +32,12 @@ async function getPostById(postId: string) {
   return post;
 }
 
-export default async function Post({ params }: { params: { id: string } }) {
-  const postId = params.id;
+export default async function Post({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const postId = (await params).id;
   const post = await getPostById(postId);
 
   if (!post) {

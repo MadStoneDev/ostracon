@@ -1,6 +1,6 @@
 ﻿import { UserSettings } from "@/types/settings.types";
 
-const CURRENT_SETTINGS_VERSION = 0;
+export const CURRENT_SETTINGS_VERSION = 0;
 
 export const defaultSettings: UserSettings = {
   // Privacy
