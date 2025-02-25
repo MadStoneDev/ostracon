@@ -5,28 +5,64 @@ import { useEffect, useState } from "react";
 import BottomNav from "@/components/ui/bottom-nav";
 import Post from "@/components/feed/single-post";
 
-import { sampleUsers } from "@/data/sample-users";
-import { PostFragment } from "@/types/fragments";
-
 import { settingsService } from "@/lib/settings";
 import { UserSettings } from "@/types/settings.types";
+import type { Database } from "../../../database.types";
+
+type FragmentRow = Database["public"]["Tables"]["fragments"]["Row"];
+type GroupRow = Database["public"]["Tables"]["groups"]["Row"];
+type FragmentWithUser = FragmentRow & {
+  users?: {
+    username: string;
+    avatar_url?: string;
+  };
+  groups?: Pick<GroupRow, "name"> | null;
+};
 
 export default function PostPage({
   postId,
   post,
 }: {
   postId: string;
-  post: PostFragment;
+  post: FragmentWithUser;
 }) {
   const authenticated = true;
   const [settings, setSettings] = useState<UserSettings | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Update analytics on component mount
+  useEffect(() => {
+    const updateAnalytics = async () => {
+      try {
+        // Call an API route to increment view count
+        await fetch(`/api/analytics/view?postId=${postId}`, {
+          method: "POST",
+        });
+      } catch (error) {
+        console.error("Failed to update analytics:", error);
+      }
+    };
+
+    updateAnalytics();
+  }, [postId]);
+
   useEffect(() => {
     const loadSettings = async () => {
       try {
         const userSettings = await settingsService.getUserSettings();
-        setSettings(userSettings);
+
+        // Ensure boolean values are correctly typed
+        const sanitizedSettings = {
+          ...userSettings,
+          blur_sensitive_content: userSettings.blur_sensitive_content === true,
+          allow_sensitive_content:
+            userSettings.allow_sensitive_content === true,
+        };
+
+        console.log(
+          `PostPage: Settings loaded - blur_sensitive_content: ${sanitizedSettings.blur_sensitive_content}`,
+        );
+        setSettings(sanitizedSettings);
       } catch (error) {
         console.error("Failed to load settings:", error);
       } finally {
@@ -37,22 +73,26 @@ export default function PostPage({
     loadSettings();
   }, []);
 
-  const username = sampleUsers.find((user) => user.id === post.user_id)
-    ?.username;
-
-  const avatar_url = sampleUsers.find((user) => user.id === post.user_id)
-    ?.avatar_url;
+  // Determine if we should blur content based on settings
+  const shouldBlur = settings ? Boolean(settings.blur_sensitive_content) : true;
+  console.log(
+    `PostPage: Should blur content? ${shouldBlur}, Post is NSFW? ${post.is_nsfw}`,
+  );
 
   return (
     <>
       <Post
         postId={postId}
-        avatar_url={avatar_url || ""}
-        username={username || "Ghost User"}
-        content={post.content}
-        nsfw={post.is_nsfw}
-        blur={settings ? !settings.blur_sensitive_content : true}
+        avatar_url={post.users?.avatar_url || ""}
+        username={post.users?.username || "Ghost User"}
+        content={post.content || ""}
+        nsfw={post.is_nsfw || false}
+        commentsAllowed={post.comments_open ?? true}
+        reactionsAllowed={post.reactions_open ?? true}
+        blur={shouldBlur}
         timestamp={post.created_at}
+        groupId={post.group_id}
+        groupName={post.groups?.name || ""}
         truncate={false}
         isExpanded={true}
       />

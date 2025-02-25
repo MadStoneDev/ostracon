@@ -1,8 +1,10 @@
-﻿import Link from "next/link";
-import React from "react";
-import { ContentSegment } from "@/types/fragments";
+﻿import React from "react";
+import Link from "next/link";
+
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+
+import { ContentSegment } from "@/types/fragments";
 
 interface ProcessedContentProps {
   postId: string;

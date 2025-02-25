@@ -1,6 +1,4 @@
 ﻿import { redirect } from "next/navigation";
-import sampleMe from "@/data/sample-me";
-import { sampleUsers } from "@/data/sample-users";
 import { createClient } from "@/utils/supabase/server";
 
 export default async function ProfileRedirect() {

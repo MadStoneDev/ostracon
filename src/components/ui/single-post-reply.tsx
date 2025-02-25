@@ -1,11 +1,11 @@
 ﻿import React, { useState, Dispatch, SetStateAction, useEffect } from "react";
-
+import { createClient } from "@/utils/supabase/client";
 import { IconLoader, IconSend, IconX } from "@tabler/icons-react";
 import UserAvatar from "@/components/ui/user-avatar";
-
 import { processContent } from "@/lib/fragments";
 import PostEditor from "@/components/feed/post-editor";
 import ProcessedContent from "@/components/feed/processed-content";
+import HtmlContent from "@/components/feed/html-content-renderer";
 
 export default function SinglePostReply({
   startReply,
@@ -16,6 +16,7 @@ export default function SinglePostReply({
   content,
   truncate,
   isExpanded,
+  onCommentAdded,
 }: {
   startReply: boolean;
   setStartReply: Dispatch<SetStateAction<boolean>>;
@@ -25,13 +26,18 @@ export default function SinglePostReply({
   content: string;
   truncate: boolean;
   isExpanded: boolean;
+  onCommentAdded?: () => void;
 }) {
+  // Initialize Supabase client
+  const supabase = createClient();
+
   // States
   const [showReply, setShowReply] = useState(false);
   const [fadeIn, setFadeIn] = useState(false);
   const [slideIn, setSlideIn] = useState(false);
-
   const [loading, setLoading] = useState(false);
+  const [replyContent, setReplyContent] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   // Functions
   const handleReply = (show: boolean) => {
@@ -59,6 +65,59 @@ export default function SinglePostReply({
         setShowReply(false);
         documentBody.style.overflow = "auto";
       }, 400);
+    }
+  };
+
+  const handleEditorContentChange = (htmlContent: string) => {
+    setReplyContent(htmlContent);
+  };
+
+  const submitComment = async () => {
+    if (!replyContent.trim()) {
+      setError("Comment cannot be empty");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Get the current user
+      const { data: userData, error: userError } =
+        await supabase.auth.getUser();
+
+      if (userError || !userData.user) {
+        throw new Error("You must be logged in to comment");
+      }
+
+      // Insert the comment
+      const { error: commentError } = await supabase
+        .from("fragment_comments")
+        .insert({
+          fragment_id: postId,
+          user_id: userData.user.id,
+          content: replyContent,
+          reactions_open: true,
+          is_nsfw: false,
+        });
+
+      if (commentError) {
+        throw commentError;
+      }
+
+      // Call the callback if provided
+      if (onCommentAdded) {
+        onCommentAdded();
+      }
+
+      // Close the reply modal
+      setStartReply(false);
+      setReplyContent("");
+    } catch (err) {
+      console.error("Error submitting comment:", err);
+      setError(err instanceof Error ? err.message : "Failed to submit comment");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -94,21 +153,33 @@ export default function SinglePostReply({
             <UserAvatar avatar_url={avatarUrl} username={username} />
 
             <article className={`pr-3 text-sm`}>
-              <ProcessedContent
-                postId={postId}
-                content={processContent(content)}
-                truncate={truncate}
-                isExpanded={isExpanded}
-                showExpandButton={false}
-              />
+              {content.includes("<") ? (
+                <HtmlContent
+                  postId={postId}
+                  content={content}
+                  truncate={truncate}
+                  isExpanded={isExpanded}
+                  maxLines={2}
+                  showExpandButton={false}
+                />
+              ) : (
+                <ProcessedContent
+                  postId={postId}
+                  content={processContent(content)}
+                  truncate={truncate}
+                  isExpanded={isExpanded}
+                  showExpandButton={false}
+                />
+              )}
             </article>
           </div>
         </article>
 
+        {error && <div className="mb-3 text-red-500 text-sm">{error}</div>}
+
         <article className={`flex items-start gap-2 h-[20vh]`}>
           <div className={`flex-grow h-full overflow-y-auto`}>
-            <PostEditor />
-            {/*<input type={`text`} className={`flex-1 py-2 `} />*/}
+            <PostEditor onChange={handleEditorContentChange} />
           </div>
 
           {loading ? (
@@ -119,17 +190,11 @@ export default function SinglePostReply({
             />
           ) : (
             <button
-              className={`hover:text-primary transition-all duration-300 ease-in-out`}
-              onClick={() => {
-                // TODO: Send Reply
-
-                setLoading(true);
-
-                setTimeout(() => {
-                  setStartReply(false);
-                  setLoading(false);
-                }, 1000);
-              }}
+              className={`hover:text-primary transition-all duration-300 ease-in-out ${
+                !replyContent.trim() && "opacity-50 cursor-not-allowed"
+              }`}
+              onClick={submitComment}
+              disabled={!replyContent.trim()}
             >
               <IconSend size={24} strokeWidth={2} />
             </button>

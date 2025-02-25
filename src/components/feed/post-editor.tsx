@@ -1,31 +1,40 @@
 ﻿import { useEffect } from "react";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
-import { $convertToMarkdownString, TRANSFORMERS } from "@lexical/markdown";
+import { $generateHtmlFromNodes } from "@lexical/html";
 
 import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
-import { HashtagPlugin } from "@lexical/react/LexicalHashtagPlugin";
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
 import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
-import { MarkdownShortcutPlugin } from "@lexical/react/LexicalMarkdownShortcutPlugin";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 
+// Import basic markdown transformers
 import {
+  BOLD_ITALIC_STAR,
+  BOLD_ITALIC_UNDERSCORE,
   BOLD_STAR,
-  CODE,
-  CHECK_LIST,
-  HEADING,
+  BOLD_UNDERSCORE,
   INLINE_CODE,
   ITALIC_STAR,
-  STRIKETHROUGH,
+  ITALIC_UNDERSCORE,
 } from "@lexical/markdown";
+import { MarkdownShortcutPlugin } from "@lexical/react/LexicalMarkdownShortcutPlugin";
 
+// Import only the node types we need for basic formatting
+import { TextNode } from "lexical";
 import { CodeNode } from "@lexical/code";
-import { HashtagNode } from "@lexical/hashtag";
-import { AutoLinkNode, LinkNode } from "@lexical/link";
-import { ListNode, ListItemNode } from "@lexical/list";
-import { HeadingNode, QuoteNode } from "@lexical/rich-text";
+
+// Define the basic transformers we want to support
+const BASIC_TRANSFORMERS = [
+  BOLD_STAR,
+  BOLD_UNDERSCORE,
+  ITALIC_STAR,
+  ITALIC_UNDERSCORE,
+  BOLD_ITALIC_STAR,
+  BOLD_ITALIC_UNDERSCORE,
+  INLINE_CODE,
+];
 
 interface EditorContentPluginProps {
   onChange: (text: string) => void;
@@ -38,19 +47,16 @@ function OnChangePlugin({
 
   useEffect(() => {
     return editor.registerUpdateListener(({ editorState }) => {
-      editorState.read(() => {
-        // Get plain text for checking if editor is empty
-        const root = editor.getEditorState()._nodeMap.get("root");
-        const plainText = root ? root.getTextContent() : "";
+      editorState.read(async () => {
+        // Get both plain text (for empty check) and HTML content
+        const rootNode = editor.getEditorState()._nodeMap.get("root");
+        const plainText = rootNode ? rootNode.getTextContent() : "";
 
-        if (plainText.trim().length === 0) {
-          onChange("");
-          return;
-        }
+        // Generate HTML from the editor content
+        const htmlContent = $generateHtmlFromNodes(editor);
 
-        // This must be called within the read() callback
-        const markdown = $convertToMarkdownString(TRANSFORMERS);
-        onChange(markdown);
+        // Send HTML content to parent component
+        onChange(plainText.trim() === "" ? "" : htmlContent);
       });
     });
   }, [editor, onChange]);
@@ -65,51 +71,24 @@ interface PostEditorProps {
 export default function PostEditor({
   onChange = () => {},
 }: PostEditorProps): React.ReactNode {
-  // Lexical Editor
+  // Lexical Editor with simplified theme
   const initialTheme = {
     text: {
       bold: `font-bold`,
       italic: `font-italic`,
-      strikethrough: `line-through`,
+      code: `font-mono bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded`,
     },
-    heading: {
-      h1: `text-3xl font-bold`,
-      h2: `text-2xl font-bold`,
-      h3: `text-lg font-bold`,
-    },
-    link: `text-primary font-bold`,
-    autolink: `text-primary font-bold`,
   };
-
-  const MY_TRANSFORMERS = [
-    BOLD_STAR,
-    CHECK_LIST,
-    CODE,
-    HEADING,
-    INLINE_CODE,
-    ITALIC_STAR,
-    STRIKETHROUGH,
-  ];
-
-  const URL_REGEX =
-    /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/;
-
-  const EMAIL_REGEX =
-    /(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/;
 
   const initialConfig = {
     namespace: "post",
     theme: initialTheme,
-    onError: console.error,
+    onError: (error: Error) => {
+      console.error("Lexical Editor Error:", error);
+    },
     nodes: [
-      AutoLinkNode,
-      CodeNode,
-      HashtagNode,
-      HeadingNode,
-      LinkNode,
-      ListNode,
-      ListItemNode,
-      QuoteNode,
+      TextNode,
+      CodeNode, // Needed for inline code
     ],
   };
 
@@ -131,7 +110,7 @@ export default function PostEditor({
           ErrorBoundary={LexicalErrorBoundary}
         />
         <HistoryPlugin />
-        <MarkdownShortcutPlugin transformers={MY_TRANSFORMERS} />
+        <MarkdownShortcutPlugin transformers={BASIC_TRANSFORMERS} />
         <OnChangePlugin onChange={onChange} />
       </LexicalComposer>
     </div>

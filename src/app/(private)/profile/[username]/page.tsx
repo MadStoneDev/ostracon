@@ -1,8 +1,6 @@
 ﻿import { redirect } from "next/navigation";
 
-import { sampleUsers } from "@/data/sample-users";
 import ProfileContent from "@/components/ui/profile-content";
-
 import { createClient } from "@/utils/supabase/server";
 
 export async function generateMetadata({

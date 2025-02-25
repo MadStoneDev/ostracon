@@ -1,5 +1,5 @@
 import Post from "@/components/feed/single-post";
-import { sampleSettings } from "@/data/sample-settings";
+import { defaultSettings } from "@/data/defaults/settings";
 
 import type { Database } from "../../../../database.types";
 import { createClient } from "@/utils/supabase/server";
@@ -54,6 +54,7 @@ type FragmentWithUser = FragmentRow & {
 interface FeedData {
   posts: FragmentWithUser[];
   settings: UserSettings;
+  currentUserId: string | null;
   error?: string;
 }
 
@@ -72,7 +73,8 @@ async function getExploreFeedData(): Promise<FeedData> {
   if (authError || !user) {
     return {
       posts: [],
-      settings: sampleSettings,
+      settings: defaultSettings,
+      currentUserId: null,
       error: "Please sign in to view your explore feed",
     };
   }
@@ -88,8 +90,22 @@ async function getExploreFeedData(): Promise<FeedData> {
     console.error("Error fetching user settings:", userError);
   }
 
-  // Use fetched settings or fall back to sample settings
-  const settings = (userData?.settings as UserSettings) || sampleSettings;
+  // Use fetched settings or fall back to default settings
+  // If the settings are completely null or undefined
+  let settings = userData?.settings
+    ? (userData.settings as UserSettings)
+    : { ...defaultSettings };
+
+  // Explicitly ensure blur_sensitive_content is a boolean with correct default value
+  settings = {
+    ...settings,
+    blur_sensitive_content: settings.blur_sensitive_content !== false, // Default to true if undefined/null
+    allow_sensitive_content: settings.allow_sensitive_content === true, // Default to false if undefined/null
+  };
+
+  console.log(
+    `User settings loaded - blur_sensitive_content: ${settings.blur_sensitive_content}, allow_sensitive_content: ${settings.allow_sensitive_content}`,
+  );
 
   // First, get the list of users the current user follows
   const { data: followingData, error: followingError } = await supabase
@@ -156,6 +172,7 @@ async function getExploreFeedData(): Promise<FeedData> {
     return {
       posts: [],
       settings,
+      currentUserId: user.id,
       error:
         "No posts available. Follow some users or join communities to see more!",
     };
@@ -167,16 +184,20 @@ async function getExploreFeedData(): Promise<FeedData> {
     console.error("Error fetching posts:", postsError);
     return {
       posts: [],
-      settings,
+      settings: defaultSettings,
+      currentUserId: user.id,
       error: "Something went wrong. Please try again later.",
     };
   }
 
   // Filter NSFW content based on user settings
+  // Allow NSFW content if:
+  // 1. User allows sensitive content OR
+  // 2. The post was created by the current user
   const filteredPosts =
     posts?.filter((post) => {
       if (post.is_nsfw) {
-        return post.is_nsfw === settings.allow_sensitive_content;
+        return settings.allow_sensitive_content || post.user_id === user.id;
       }
       return true;
     }) || [];
@@ -184,6 +205,7 @@ async function getExploreFeedData(): Promise<FeedData> {
   return {
     posts: filteredPosts as FragmentWithUser[],
     settings,
+    currentUserId: user.id,
     error:
       filteredPosts.length === 0
         ? "No posts to show. Try posting something or following more users!"
@@ -192,7 +214,7 @@ async function getExploreFeedData(): Promise<FeedData> {
 }
 
 export default async function Explore() {
-  const { posts, settings, error } = await getExploreFeedData();
+  const { posts, settings, currentUserId, error } = await getExploreFeedData();
 
   if (error) {
     return (
@@ -205,7 +227,15 @@ export default async function Explore() {
   return (
     <div className="grid z-0">
       {posts.map((post) => {
-        if (post.is_nsfw && !settings.allow_sensitive_content) {
+        // This additional check is redundant since we've already filtered in getExploreFeedData
+        // But keeping it for extra safety - only show NSFW content if:
+        // 1. User allows sensitive content OR
+        // 2. The post was created by the current user
+        if (
+          post.is_nsfw &&
+          !settings.allow_sensitive_content &&
+          post.user_id !== currentUserId
+        ) {
           return null;
         }
 

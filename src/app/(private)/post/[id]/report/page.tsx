@@ -1,9 +1,7 @@
 ﻿import React from "react";
 
 import SamplePosts from "@/data/sample-posts";
-import { sampleUsers } from "@/data/sample-users";
 import SingleUser from "@/components/feed/single-user";
-import RadioGroup from "@/components/ui/radio-group";
 import ReportForm from "@/components/ui/report-form";
 
 export default async function ReportPage({

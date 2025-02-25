@@ -1,6 +1,4 @@
-﻿import { sampleUsers } from "@/data/sample-users";
-import SingleUser from "@/components/feed/single-user";
-import React from "react";
+﻿import React from "react";
 
 export default function Analytics() {
   return (
