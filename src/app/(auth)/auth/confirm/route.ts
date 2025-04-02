@@ -20,8 +20,8 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient();
 
     const { error } = await supabase.auth.verifyOtp({
-      type,
       token_hash,
+      type,
     });
     if (!error) {
       redirectTo.searchParams.delete("next");

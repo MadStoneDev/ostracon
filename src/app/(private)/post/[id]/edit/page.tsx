@@ -1,22 +1,20 @@
-﻿import { redirect } from "next/navigation";
+﻿import React from "react";
+import EditPost from "@/components/feed/edit-post";
 import { createClient } from "@/utils/supabase/server";
-import PostAnalyticsPage from "@/components/feed/post-analytics-page";
+import { redirect } from "next/navigation";
 
-export async function generateMetadata({
-  params,
-}: {
+interface PageProps {
   params: Promise<{ id: string }>;
-}) {
-  const postId = (await params).id;
-
-  return {
-    title: `Post Analytics | Ostracon`,
-    description: `View analytics for your post on Ostracon`,
-  };
 }
 
 async function getPostById(postId: string) {
   const supabase = await createClient();
+
+  // First check if the current user is the owner of this post
+  const { data: session } = await supabase.auth.getSession();
+  if (!session.session?.user) {
+    redirect("/login");
+  }
 
   const { data: post, error } = await supabase
     .from("fragments")
@@ -27,6 +25,10 @@ async function getPostById(postId: string) {
         id,
         username,
         avatar_url
+      ),
+      groups:group_id (
+        id,
+        name
       )
     `,
     )
@@ -38,15 +40,17 @@ async function getPostById(postId: string) {
     return null;
   }
 
+  // Check if the current user is the owner of this post
+  if (post.user_id !== session.session.user.id) {
+    redirect(`/post/${postId}`); // Redirect to view page if not the owner
+  }
+
   return post;
 }
 
-export default async function PostAnalytics({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const postId = (await params).id;
+export default async function EditPostPage({ params }: PageProps) {
+  const resolvedParams = await params;
+  const postId = resolvedParams.id;
   const post = await getPostById(postId);
 
   if (!post) {
@@ -60,15 +64,5 @@ export default async function PostAnalytics({
     );
   }
 
-  // Authentication check - we'll leave the detailed permission check to the client component
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/login");
-  }
-
-  return <PostAnalyticsPage postId={postId} post={post} />;
+  return <EditPost postId={postId} post={post} />;
 }

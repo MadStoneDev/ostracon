@@ -90,8 +90,6 @@ async function getExploreFeedData(): Promise<FeedData> {
     console.error("Error fetching user settings:", userError);
   }
 
-  // Use fetched settings or fall back to default settings
-  // If the settings are completely null or undefined
   let settings = userData?.settings
     ? (userData.settings as UserSettings)
     : { ...defaultSettings };

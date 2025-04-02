@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+
 import {
   loginWithPassword,
   loginWithMagicLink,
@@ -17,9 +17,6 @@ import {
 } from "@tabler/icons-react";
 
 export default function LoginForm() {
-  // Hooks
-  const router = useRouter();
-
   // States
   const [showPassword, setShowPassword] = useState(false);
   const [useMagicLink, setUseMagicLink] = useState(false);

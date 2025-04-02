@@ -1,7 +1,6 @@
 ﻿"use client";
 
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
 import { register } from "@/app/(auth)/register/actions";
 
 import BigButton from "@/components/ui/big-button";
@@ -15,9 +14,6 @@ import {
 } from "@tabler/icons-react";
 
 export default function RegisterForm() {
-  // Hooks
-  const router = useRouter();
-
   // States
   const [showPassword, setShowPassword] = useState(false);
   const [passwordActive, setPasswordActive] = useState(false);

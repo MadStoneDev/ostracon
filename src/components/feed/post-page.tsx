@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import BottomNav from "@/components/ui/bottom-nav";
 import Post from "@/components/feed/single-post";
+import PostComments from "@/components/feed/post-comments";
 
 import { settingsService } from "@/lib/settings";
 import { UserSettings } from "@/types/settings.types";
@@ -74,24 +75,34 @@ export default function PostPage({
   const shouldBlur = settings ? Boolean(settings.blur_sensitive_content) : true;
 
   return (
-    <>
-      <Post
-        postId={postId}
-        avatar_url={post.users?.avatar_url || ""}
-        username={post.users?.username || "Ghost User"}
-        content={post.content || ""}
-        nsfw={post.is_nsfw || false}
-        commentsAllowed={post.comments_open ?? true}
-        reactionsAllowed={post.reactions_open ?? true}
-        blur={shouldBlur}
-        timestamp={post.created_at}
-        groupId={post.group_id}
-        groupName={post.groups?.name || ""}
-        truncate={false}
-        isExpanded={true}
-      />
+    <div className="max-w-3xl mx-auto">
+      <div className="post-content">
+        <Post
+          postId={postId}
+          avatar_url={post.users?.avatar_url || ""}
+          username={post.users?.username || "Ghost User"}
+          content={post.content || ""}
+          nsfw={post.is_nsfw || false}
+          commentsAllowed={post.comments_open ?? true}
+          reactionsAllowed={post.reactions_open ?? true}
+          blur={shouldBlur}
+          timestamp={post.created_at}
+          groupId={post.group_id}
+          groupName={post.groups?.name || ""}
+          truncate={false}
+          isExpanded={true}
+        />
+      </div>
+
+      {/* Comments Section - Only show if comments are allowed */}
+      {post.comments_open !== false && (
+        <div className="comments-container mt-4">
+          <div className="h-[1px] bg-dark/20 dark:bg-light/20 my-4"></div>
+          <PostComments postId={postId} />
+        </div>
+      )}
 
       {authenticated && <BottomNav />}
-    </>
+    </div>
   );
 }

@@ -1,6 +1,5 @@
 ﻿import React from "react";
 
-import SamplePosts from "@/data/sample-posts";
 import SingleUser from "@/components/feed/single-user";
 import ReportForm from "@/components/ui/report-form";
 
@@ -10,12 +9,7 @@ export default async function ReportPage({
   params: Promise<{ id: string }>;
 }) {
   // Variables
-  const postId = (await params).id;
-  const post = SamplePosts.find((post) => post.id === postId);
-
-  if (!post) {
-    return <span className={`text-sm italic`}>Post not found</span>;
-  }
+  const userId = (await params).id;
 
   return (
     <div className={`grid z-0`}>
@@ -26,7 +20,7 @@ export default async function ReportPage({
       </section>
 
       <section className={`py-4 scale-90 opacity-70`}>
-        <SingleUser userId={post.user_id} referenceOnly={true} />
+        <SingleUser userId={userId} referenceOnly={true} />
       </section>
 
       <section

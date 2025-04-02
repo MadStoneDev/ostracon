@@ -2,10 +2,9 @@
 import { createClient } from "@/utils/supabase/client";
 import { IconLoader, IconSend, IconX } from "@tabler/icons-react";
 import UserAvatar from "@/components/ui/user-avatar";
-import { processContent } from "@/lib/fragments";
-import PostEditor from "@/components/feed/post-editor";
-import ProcessedContent from "@/components/feed/processed-content";
 import HtmlContent from "@/components/feed/html-content-renderer";
+import PostEditor from "@/components/feed/post-editor";
+import { useRouter } from "next/navigation";
 
 export default function SinglePostReply({
   startReply,
@@ -30,6 +29,7 @@ export default function SinglePostReply({
 }) {
   // Initialize Supabase client
   const supabase = createClient();
+  const router = useRouter();
 
   // States
   const [showReply, setShowReply] = useState(false);
@@ -38,6 +38,28 @@ export default function SinglePostReply({
   const [loading, setLoading] = useState(false);
   const [replyContent, setReplyContent] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [currentUserAvatar, setCurrentUserAvatar] = useState<string>("");
+
+  // Get current user's avatar
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      const { data: userData } = await supabase.auth.getUser();
+
+      if (userData?.user) {
+        const { data: userProfile } = await supabase
+          .from("users")
+          .select("avatar_url")
+          .eq("id", userData.user.id)
+          .single();
+
+        if (userProfile?.avatar_url) {
+          setCurrentUserAvatar(userProfile.avatar_url);
+        }
+      }
+    };
+
+    fetchCurrentUser();
+  }, [supabase]);
 
   // Functions
   const handleReply = (show: boolean) => {
@@ -90,19 +112,42 @@ export default function SinglePostReply({
         throw new Error("You must be logged in to comment");
       }
 
+      console.log("Submitting comment for post:", postId);
+
       // Insert the comment
-      const { error: commentError } = await supabase
+      const { data: insertedComment, error: commentError } = await supabase
         .from("fragment_comments")
         .insert({
           fragment_id: postId,
           user_id: userData.user.id,
           content: replyContent,
-          reactions_open: true,
-          is_nsfw: false,
-        });
+        })
+        .select();
 
       if (commentError) {
+        console.error("Error inserting comment:", commentError);
         throw commentError;
+      }
+
+      console.log("Successfully inserted comment:", insertedComment);
+
+      // Create a notification for the post owner
+      const { data: postData } = await supabase
+        .from("fragments")
+        .select("user_id")
+        .eq("id", postId)
+        .single();
+
+      if (postData && postData.user_id !== userData.user.id) {
+        // Only create notification if the commenter is not the post owner
+        await supabase.from("notifications").insert({
+          user_id: postData.user_id,
+          actor_id: userData.user.id,
+          post_id: postId,
+          type: "comment",
+          read: false,
+          data: { comment_content: replyContent.substring(0, 100) },
+        });
       }
 
       // Call the callback if provided
@@ -110,9 +155,15 @@ export default function SinglePostReply({
         onCommentAdded();
       }
 
-      // Close the reply modal
+      // Close the reply modal and reset content
       setStartReply(false);
       setReplyContent("");
+
+      // Navigate to the post's page to see the comment at the top
+      // Using setTimeout to ensure the modal animations can complete
+      setTimeout(() => {
+        router.push(`/post/${postId}`);
+      }, 500);
     } catch (err) {
       console.error("Error submitting comment:", err);
       setError(err instanceof Error ? err.message : "Failed to submit comment");
@@ -152,25 +203,16 @@ export default function SinglePostReply({
           <div className={`flex gap-3 w-full`}>
             <UserAvatar avatar_url={avatarUrl} username={username} />
 
-            <article className={`pr-3 text-sm`}>
-              {content.includes("<") ? (
-                <HtmlContent
-                  postId={postId}
-                  content={content}
-                  truncate={truncate}
-                  isExpanded={isExpanded}
-                  maxLines={2}
-                  showExpandButton={false}
-                />
-              ) : (
-                <ProcessedContent
-                  postId={postId}
-                  content={processContent(content)}
-                  truncate={truncate}
-                  isExpanded={isExpanded}
-                  showExpandButton={false}
-                />
-              )}
+            <article className={`pr-3 text-sm overflow-hidden`}>
+              <div className="text-sm font-bold mb-1">@{username}</div>
+              <HtmlContent
+                postId={postId}
+                content={content}
+                truncate={true}
+                isExpanded={false}
+                maxLines={2}
+                showExpandButton={false}
+              />
             </article>
           </div>
         </article>
@@ -178,6 +220,9 @@ export default function SinglePostReply({
         {error && <div className="mb-3 text-red-500 text-sm">{error}</div>}
 
         <article className={`flex items-start gap-2 h-[20vh]`}>
+          <div className="flex-shrink-0 mt-2">
+            <UserAvatar avatar_url={currentUserAvatar} username="You" />
+          </div>
           <div className={`flex-grow h-full overflow-y-auto`}>
             <PostEditor onChange={handleEditorContentChange} />
           </div>

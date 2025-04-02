@@ -89,7 +89,7 @@ export async function loginWithMagicLink(formData: { email: string }) {
       email: formData.email,
       options: {
         shouldCreateUser: false,
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/explore`,
       },
     });
 

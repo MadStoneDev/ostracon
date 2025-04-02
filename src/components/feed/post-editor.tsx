@@ -1,6 +1,8 @@
 ﻿import { useEffect } from "react";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { $generateHtmlFromNodes } from "@lexical/html";
+import { $generateNodesFromDOM } from "@lexical/html";
+import { $getRoot, $insertNodes } from "lexical";
 
 import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
@@ -64,12 +66,47 @@ function OnChangePlugin({
   return null;
 }
 
+// Add a plugin to handle initial content
+function InitialContentPlugin({
+  html,
+}: {
+  html: string | null;
+}): React.ReactNode {
+  const [editor] = useLexicalComposerContext();
+
+  useEffect(() => {
+    if (!html) return;
+
+    // Only set the content if it's not empty and not already set
+    editor.update(() => {
+      const root = $getRoot();
+      if (root.getTextContent().trim() !== "") {
+        // Content is already set, don't override
+        return;
+      }
+
+      // Parse the HTML and insert nodes
+      const parser = new DOMParser();
+      const dom = parser.parseFromString(html, "text/html");
+      const nodes = $generateNodesFromDOM(editor, dom);
+
+      // Insert the nodes
+      $getRoot().select();
+      $insertNodes(nodes);
+    });
+  }, [editor, html]);
+
+  return null;
+}
+
 interface PostEditorProps {
   onChange?: (text: string) => void;
+  initialContent?: string | null;
 }
 
 export default function PostEditor({
   onChange = () => {},
+  initialContent = null,
 }: PostEditorProps): React.ReactNode {
   // Lexical Editor with simplified theme
   const initialTheme = {
@@ -112,6 +149,7 @@ export default function PostEditor({
         <HistoryPlugin />
         <MarkdownShortcutPlugin transformers={BASIC_TRANSFORMERS} />
         <OnChangePlugin onChange={onChange} />
+        {initialContent && <InitialContentPlugin html={initialContent} />}
       </LexicalComposer>
     </div>
   );

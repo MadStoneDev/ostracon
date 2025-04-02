@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { updateSession } from "@/utils/supabase/middleware";
+
 import { createClient } from "@/utils/supabase/client";
+import { updateSession } from "@/utils/supabase/middleware";
 
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
@@ -30,9 +31,6 @@ export async function middleware(request: NextRequest) {
   if (publicRoutes.includes(path)) {
     return NextResponse.next();
   }
-
-  // Temporary for development
-  return NextResponse.next();
 
   // Check if user is authenticated
   try {
