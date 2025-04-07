@@ -80,7 +80,7 @@ export default function PostPage({
         <Post
           postId={postId}
           avatar_url={post.users?.avatar_url || ""}
-          username={post.users?.username || "Ghost User"}
+          username={post.users?.username || ""}
           content={post.content || ""}
           nsfw={post.is_nsfw || false}
           commentsAllowed={post.comments_open ?? true}

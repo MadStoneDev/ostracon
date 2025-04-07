@@ -43,7 +43,11 @@ export default async function Profile({
 
   return (
     currentUser.data && (
-      <ProfileContent user={currentUser.data} userId={currentUser.data.id} />
+      <ProfileContent
+        user={currentUser.data}
+        userId={currentUser.data.id}
+        currentUserId={user?.id || ""}
+      />
     )
   );
 }

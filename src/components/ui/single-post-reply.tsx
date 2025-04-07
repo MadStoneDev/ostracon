@@ -197,14 +197,15 @@ export default function SinglePostReply({
         </button>
 
         {/* Reply Header */}
-        <article
-          className={`mb-4 pr-8 pb-5 flex items-center justify-between gap-2 border-b border-dark/20 dark:border-light/20 italic`}
+        <div
+          className={`mb-4 pr-8 pb-5 flex items-center justify-between gap-2 border-b border-dark/20 dark:border-light/20`}
         >
-          <div className={`flex gap-3 w-full`}>
-            <UserAvatar avatar_url={avatarUrl} username={username} />
-
-            <article className={`pr-3 text-sm overflow-hidden`}>
-              <div className="text-sm font-bold mb-1">@{username}</div>
+          <div className={`flex flex-col gap-2 w-full`}>
+            <article className={`flex items-center gap-3 w-full`}>
+              <UserAvatar avatar_url={avatarUrl} username={username} />
+              <div className="text-sm font-bold">@{username}</div>
+            </article>
+            <article className={`pr-3 text-sm italic overflow-hidden`}>
               <HtmlContent
                 postId={postId}
                 content={content}
@@ -215,16 +216,16 @@ export default function SinglePostReply({
               />
             </article>
           </div>
-        </article>
+        </div>
 
-        {error && <div className="mb-3 text-red-500 text-sm">{error}</div>}
+        {error && <div className={`mb-3 text-red-500 text-sm`}>{error}</div>}
 
         <article className={`flex items-start gap-2 h-[20vh]`}>
-          <div className="flex-shrink-0 mt-2">
-            <UserAvatar avatar_url={currentUserAvatar} username="You" />
-          </div>
           <div className={`flex-grow h-full overflow-y-auto`}>
-            <PostEditor onChange={handleEditorContentChange} />
+            <PostEditor
+              onChange={handleEditorContentChange}
+              placeholder={"What's your sassy but meaningful response?"}
+            />
           </div>
 
           {loading ? (

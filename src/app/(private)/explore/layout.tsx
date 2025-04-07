@@ -15,7 +15,9 @@ export default function PrivateLayout({
         className={`fixed top-0 w-full h-[60px] bg-light dark:bg-dark z-10`}
       ></div>
 
-      <main className={`relative flex-grow`}>{children}</main>
+      <main className={`relative flex-grow flex justify-center`}>
+        {children}
+      </main>
 
       {authenticated ? <BottomNav /> : null}
     </div>

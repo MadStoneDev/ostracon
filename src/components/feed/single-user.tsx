@@ -168,7 +168,7 @@ const SingleUserClient = ({
           <h3
             className={`max-w-[150px] xs:max-w-[250px] sm:max-w-full font-sans font-bold truncate`}
           >
-            @{username || "Ghost_User"}
+            @{username || ""}
           </h3>
         </Link>
       </div>

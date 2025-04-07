@@ -12,3 +12,11 @@ export type ContentSegment = {
   content: string;
   url?: string;
 };
+
+type PostState = {
+  liked: boolean;
+  likeCount: number;
+  hasCommented: boolean;
+  commentCount: number;
+  viewCount: number;
+};

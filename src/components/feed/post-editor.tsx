@@ -50,14 +50,12 @@ function OnChangePlugin({
   useEffect(() => {
     return editor.registerUpdateListener(({ editorState }) => {
       editorState.read(async () => {
-        // Get both plain text (for empty check) and HTML content
         const rootNode = editor.getEditorState()._nodeMap.get("root");
         const plainText = rootNode ? rootNode.getTextContent() : "";
 
-        // Generate HTML from the editor content
-        const htmlContent = $generateHtmlFromNodes(editor);
+        let htmlContent = $generateHtmlFromNodes(editor);
+        htmlContent = htmlContent.replace(/^(<p>(<br>)?<\/p>)+/, "");
 
-        // Send HTML content to parent component
         onChange(plainText.trim() === "" ? "" : htmlContent);
       });
     });
@@ -102,11 +100,13 @@ function InitialContentPlugin({
 interface PostEditorProps {
   onChange?: (text: string) => void;
   initialContent?: string | null;
+  placeholder?: string;
 }
 
 export default function PostEditor({
   onChange = () => {},
   initialContent = null,
+  placeholder = "Start typing here...",
 }: PostEditorProps): React.ReactNode {
   // Lexical Editor with simplified theme
   const initialTheme = {
@@ -141,7 +141,7 @@ export default function PostEditor({
           }
           placeholder={
             <div className={`absolute top-0 pointer-events-none opacity-50`}>
-              Start typing here...
+              {placeholder}
             </div>
           }
           ErrorBoundary={LexicalErrorBoundary}
