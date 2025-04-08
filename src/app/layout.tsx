@@ -42,10 +42,16 @@ export default async function RootLayout({
       className={`${outfit.variable} ${merriweather.variable} ${lilitaOne.variable}`}
       suppressHydrationWarning
     >
-      <body>
+      <body
+        className={`bg-primary dark:text-light text-dark`}
+        style={{
+          backgroundImage: `url('/ostracon-logo-background.jpg')`,
+          backgroundRepeat: "repeat",
+        }}
+      >
         <ThemeProvider>
           <div
-            className={`relative grid justify-stretch min-h-dvh dark:bg-dark bg-light dark:text-light text-dark overflow-hidden`}
+            className={`relative mx-auto flex flex-col min-h-dvh w-full max-w-3xl bg-light dark:bg-dark shadow-xl shadow-neutral-900/30`}
           >
             <MainNav user={user} />
 

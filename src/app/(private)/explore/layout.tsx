@@ -11,10 +11,6 @@ export default function PrivateLayout({
 
   return (
     <div className={`relative flex-grow grid overflow-hidden`}>
-      <div
-        className={`fixed top-0 w-full h-[60px] bg-light dark:bg-dark z-10`}
-      ></div>
-
       <main className={`relative flex-grow flex justify-center`}>
         {children}
       </main>

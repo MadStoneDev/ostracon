@@ -9,6 +9,7 @@ import {
   IconChevronRight,
   IconCircleChevronLeftFilled,
   IconCircleChevronRightFilled,
+  IconTrash,
 } from "@tabler/icons-react";
 
 // Define types
@@ -31,7 +32,14 @@ export default function UserPhotosCarousel({
   const [showFullScreen, setShowFullScreen] = useState(false);
   const [fullscreenImage, setFullScreenImage] = useState("");
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [showNavigation, setShowNavigation] = useState(false);
+
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [photoToDelete, setPhotoToDelete] = useState<{
+    id: string;
+    url: string;
+  } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   const carouselRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -88,9 +96,52 @@ export default function UserPhotosCarousel({
       if (!file) return;
 
       try {
-        // Create a folder path with user ID
+        // First, we'll check the image with Sightengine
+        const formData = new FormData();
+        formData.append("media", file);
+        formData.append(
+          "models",
+          "nudity-2.1,weapon,recreational_drug,gore-2.0,violence",
+        );
+        formData.append(
+          "api_user",
+          process.env.NEXT_PUBLIC_SIGHTENGINE_API_USER!,
+        );
+        formData.append(
+          "api_secret",
+          process.env.NEXT_PUBLIC_SIGHTENGINE_API_SECRET!,
+        );
+
+        // Make the API call to Sightengine
+        const moderationResponse = await fetch(
+          "https://api.sightengine.com/1.0/check.json",
+          {
+            method: "POST",
+            body: formData,
+          },
+        );
+
+        const moderationResult = await moderationResponse.json();
+
+        // Check if the image violates content policy
+        // You can adjust these thresholds based on your requirements
+        if (
+          moderationResult.nudity?.raw > 0.6 ||
+          moderationResult.nudity?.partial > 0.6 ||
+          moderationResult.weapon > 0.6 ||
+          moderationResult.drugs > 0.6 ||
+          moderationResult.gore?.prob > 0.6 ||
+          moderationResult.violence > 0.6
+        ) {
+          throw new Error(
+            "This image contains inappropriate content and cannot be uploaded.",
+          );
+        }
+
+        console.log(moderationResult);
+
+        // If image passes moderation, proceed with upload
         const fileExt = file.name.split(".").pop();
-        // Use userId as folder name to match our RLS policies
         const filePath = `${currentUserId}/${Date.now()}.${fileExt}`;
 
         // Upload to Supabase Storage with the correct path
@@ -123,12 +174,82 @@ export default function UserPhotosCarousel({
 
         // Update local state with the new photo
         setPhotos((prevPhotos) => [photoData, ...prevPhotos]);
-      } catch (error) {
+      } catch (error: unknown) {
         console.error("Error uploading photo:", error);
-        // Show error notification to user
-        alert("Failed to upload photo. Please try again.");
+
+        let errorMessage = "Failed to upload photo. Please try again.";
+
+        if (error instanceof Error) {
+          errorMessage = error.message;
+        } else if (
+          typeof error === "object" &&
+          error !== null &&
+          "message" in error
+        ) {
+          errorMessage = (
+            error as {
+              message: string;
+            }
+          ).message;
+        }
+
+        alert(errorMessage);
       }
     };
+  };
+
+  const handleDeletePhoto = async () => {
+    if (!photoToDelete) return;
+
+    setIsDeleting(true);
+    setDeleteError("");
+
+    try {
+      const supabase = createClient();
+
+      // Extract the file path from the URL
+      const filePathMatch = photoToDelete.url.match(/user\.photos\/([^?]+)/);
+      if (!filePathMatch) throw new Error("Could not extract file path");
+
+      const filePath = filePathMatch[1];
+
+      // Delete from storage
+      const { error: storageError } = await supabase.storage
+        .from("user.photos")
+        .remove([filePath]);
+
+      if (storageError) throw storageError;
+
+      // Delete from database
+      const { error: dbError } = await supabase
+        .from("user_photos")
+        .delete()
+        .eq("id", photoToDelete.id);
+
+      if (dbError) throw dbError;
+
+      // Update local state
+      setPhotos(photos.filter((photo) => photo.id !== photoToDelete.id));
+      setShowDeleteConfirm(false);
+      setPhotoToDelete(null);
+    } catch (error: unknown) {
+      console.error("Error deleting photo:", error);
+
+      let errorMessage = "Failed to delete photo. Please try again.";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (
+        typeof error === "object" &&
+        error !== null &&
+        "message" in error
+      ) {
+        errorMessage = (error as { message: string }).message;
+      }
+
+      setDeleteError(errorMessage);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const navigateCarousel = (direction: "left" | "right") => {
@@ -191,7 +312,9 @@ export default function UserPhotosCarousel({
             onClick={handleUploadPhoto}
             className={`group/new flex-shrink-0 w-[80px] sm:w-[90px] md:w-[100px] lg:w-[120px] h-[120px] sm:h-[135px] md:h-[150px] lg:h-[180px] rounded-lg bg-light dark:bg-dark border-2 border-dashed border-dark dark:border-light cursor-pointer flex items-center justify-center transition-all duration-300`}
           >
-            <IconLibraryPhoto className="text-dark dark:text-light w-8 h-8 group-hover/new:scale-110 transition-transform duration-300" />
+            <IconLibraryPhoto
+              className={`w-8 h-8 group-hover/new:scale-110 text-dark dark:text-light transition-all duration-300 ease-in-out`}
+            />
           </div>
         )}
 
@@ -200,13 +323,27 @@ export default function UserPhotosCarousel({
           <div
             key={photo.id}
             onClick={() => showPhotoFullscreen(photo.photo_url, index)}
-            className="flex-shrink-0 w-[80px] sm:w-[90px] md:w-[100px] lg:w-[120px] h-[120px] sm:h-[135px] md:h-[150px] lg:h-[180px] rounded-lg overflow-hidden cursor-pointer border-2 border-transparent hover:border-primary transition-all duration-300"
+            className="group/image relative flex-shrink-0 w-[80px] sm:w-[90px] md:w-[100px] lg:w-[120px] h-[120px] sm:h-[135px] md:h-[150px] lg:h-[180px] rounded-lg overflow-hidden cursor-pointer transition-all duration-300 ease-in-out"
           >
             <img
               src={photo.photo_url}
-              alt="User photo"
-              className="w-full h-full object-cover"
+              alt=""
+              className={`group-hover/image:scale-110 w-full h-full object-cover transition-all duration-300 ease-in-out`}
             />
+
+            {/* Delete button - Only show on own photos */}
+            {isOwnProfile && (
+              <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setPhotoToDelete({ id: photo.id, url: photo.photo_url });
+                  setShowDeleteConfirm(true);
+                }}
+                className="absolute top-2 right-2 opacity-0 group-hover/image:opacity-100 transition-all duration-300 ease-in-out z-10"
+              >
+                <IconTrash className="w-6 h-6 p-1 text-white bg-red-500 hover:bg-red-600 rounded-full shadow-md cursor-pointer" />
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -228,6 +365,50 @@ export default function UserPhotosCarousel({
           >
             <IconCircleChevronRightFilled className="w-10 h-10" />
           </button>
+        </div>
+      )}
+
+      {/* Delete Confirmation Overlay */}
+      {showDeleteConfirm && photoToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark/70">
+          <div className="bg-light dark:bg-dark rounded-lg shadow-xl max-w-sm w-full mx-4">
+            <div className="p-6">
+              <h3 className="text-lg font-bold mb-2 text-dark dark:text-light">
+                Delete Photo
+              </h3>
+              <p className="mb-6 text-dark dark:text-light">
+                Are you sure you want to delete this photo? This action cannot
+                be undone.
+              </p>
+
+              {deleteError && (
+                <div className="mb-4 p-2 text-sm bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-300 rounded">
+                  {deleteError}
+                </div>
+              )}
+
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={() => {
+                    setShowDeleteConfirm(false);
+                    setPhotoToDelete(null);
+                    setDeleteError("");
+                  }}
+                  className="px-4 py-2 rounded-md border border-gray-300 dark:border-gray-600 text-dark dark:text-light hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  disabled={isDeleting}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeletePhoto}
+                  className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors disabled:opacity-50"
+                  disabled={isDeleting}
+                >
+                  {isDeleting ? "Deleting..." : "Delete"}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 

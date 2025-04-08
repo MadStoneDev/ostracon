@@ -2,14 +2,18 @@
 import { IconX } from "@tabler/icons-react";
 
 export default function UserAvatar({
+  username,
   avatar_url,
   avatarSize = `h-10 w-10`,
-  username,
+  letterColour = `text-primary`,
+  textSize = `text-2xl`,
   action,
 }: {
+  username: string;
   avatar_url: string;
   avatarSize?: string;
-  username: string;
+  letterColour?: string;
+  textSize?: string;
   action?: () => void | null;
 }) {
   // States
@@ -46,7 +50,7 @@ export default function UserAvatar({
         <div
           className={`absolute left-0 top-0 right-0 bottom-0 grid place-content-center`}
         >
-          <span className={`text-2xl font-accent text-primary`}>
+          <span className={`${textSize} font-accent ${letterColour}`}>
             {username.charAt(0).toUpperCase()}
           </span>
         </div>

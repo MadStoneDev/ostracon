@@ -10,15 +10,5 @@ export default function PrivateLayout({
 }>) {
   const authenticated = true;
 
-  return (
-    <div className={`relative flex-grow flex flex-col h-full`}>
-      <div
-        className={`fixed top-0 w-full h-[60px] bg-light dark:bg-dark z-10`}
-      ></div>
-
-      {children}
-
-      {authenticated ? <BottomNav /> : null}
-    </div>
-  );
+  return <div className={`flex-grow flex flex-col h-full`}>{children}</div>;
 }

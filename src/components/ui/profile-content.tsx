@@ -5,11 +5,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/utils/supabase/client";
 import { formatCount } from "@/utils/format-count";
 
-// Import separated components
+import UserAvatar from "@/components/ui/user-avatar";
 import PostedFeed from "@/components/profile/posted-feed";
 import LikedFeed from "@/components/profile/liked-feed";
 import { ListeningFeed, ListenersFeed } from "@/components/profile/listen-feed";
 import UserPhotosCarousel from "@/components/profile/user-photos-carousel";
+
+import { IconUserPlus, IconUserOff } from "@tabler/icons-react";
 
 const slideVariants = {
   enter: (direction: number) => ({
@@ -42,28 +44,11 @@ export default function ProfileContent({
   const [followingCount, setFollowingCount] = useState(0);
   const [followersCount, setFollowersCount] = useState(0);
 
-  useEffect(() => {
-    const fetchCounts = async () => {
-      const supabase = createClient();
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [isFollowLoading, setIsFollowLoading] = useState(false);
 
-      // Get following count
-      const { count: following } = await supabase
-        .from("follows")
-        .select("*", { count: "exact", head: true })
-        .eq("follower_id", userId);
-
-      // Get followers count
-      const { count: followers } = await supabase
-        .from("follows")
-        .select("*", { count: "exact", head: true })
-        .eq("following_id", userId);
-
-      setFollowingCount(following || 0);
-      setFollowersCount(followers || 0);
-    };
-
-    fetchCounts();
-  }, [userId]);
+  // Variables
+  const isOwnProfile = userId === currentUserId;
 
   // Functions
   const updateTab = (newTab: string) => {
@@ -101,40 +86,144 @@ export default function ProfileContent({
     }
   };
 
+  const handleListen = async () => {
+    if (isFollowLoading) return;
+
+    setIsFollowLoading(true);
+
+    try {
+      const supabase = createClient();
+
+      if (isFollowing) {
+        // Unfollow: Delete the record
+        const { error } = await supabase
+          .from("follows")
+          .delete()
+          .eq("follower_id", currentUserId)
+          .eq("following_id", userId);
+
+        if (error) throw error;
+
+        // Update local state
+        setIsFollowing(false);
+        setFollowersCount((prev) => Math.max(0, prev - 1));
+      } else {
+        // Follow: Insert a new record
+        const { error } = await supabase.from("follows").insert([
+          {
+            follower_id: currentUserId,
+            following_id: userId,
+          },
+        ]);
+
+        if (error) throw error;
+
+        // Update local state
+        setIsFollowing(true);
+        setFollowersCount((prev) => prev + 1);
+      }
+    } catch (error) {
+      console.error("Error updating follow status:", error);
+      alert("Failed to update listening status. Please try again.");
+    } finally {
+      setIsFollowLoading(false);
+    }
+  };
+
+  // Effects
+  useEffect(() => {
+    const fetchCounts = async () => {
+      const supabase = createClient();
+
+      // Get following count
+      const { count: following } = await supabase
+        .from("follows")
+        .select("*", { count: "exact", head: true })
+        .eq("follower_id", userId);
+
+      // Get followers count
+      const { count: followers } = await supabase
+        .from("follows")
+        .select("*", { count: "exact", head: true })
+        .eq("following_id", userId);
+
+      setFollowingCount(following || 0);
+      setFollowersCount(followers || 0);
+    };
+
+    fetchCounts();
+  }, [userId]);
+
+  useEffect(() => {
+    const checkFollowStatus = async () => {
+      // Don't check if it's the user's own profile
+      if (isOwnProfile) return;
+
+      const supabase = createClient();
+
+      // Check if current user is following the profile user
+      const { data, error } = await supabase
+        .from("follows")
+        .select("*")
+        .eq("follower_id", currentUserId)
+        .eq("following_id", userId)
+        .single();
+
+      if (!error && data) {
+        setIsFollowing(true);
+      } else {
+        setIsFollowing(false);
+      }
+    };
+
+    checkFollowStatus();
+  }, [currentUserId, userId, isOwnProfile]);
+
   const avatar_url = user.avatar_url;
   const bio = user.bio;
 
-  // Check if user is viewing their own profile
-  const isOwnProfile = userId === currentUserId;
-
   return (
-    <div className={`grid`}>
+    <div className={`mx-auto w-full max-w-3xl`}>
+      {/* Follow Button - Only show if not own profile */}
+      {!isOwnProfile && (
+        <button
+          onClick={handleListen}
+          disabled={isFollowLoading}
+          className={`absolute right-4 md:right-6 px-2 py-1 flex items-center gap-1 ${
+            isFollowing
+              ? "bg-dark dark:bg-light text-light dark:text-dark"
+              : "bg-primary text-light"
+          } md:hover:scale-105 rounded-full transition-all duration-300 ease-in-out`}
+        >
+          {isFollowing ? (
+            <>
+              <IconUserOff size={20} />
+              <span>Stop Listening</span>
+            </>
+          ) : (
+            <>
+              <IconUserPlus size={20} />
+              <span>Start Listening</span>
+            </>
+          )}
+        </button>
+      )}
+
       {/* Header */}
       <section>
         {/* Avatar */}
-        <article
-          className={`relative w-32 h-32 rounded-full bg-dark dark:bg-light overflow-hidden`}
-        >
-          {avatar_url ? (
-            <img
-              src={avatar_url}
-              alt={`Avatar photo of ${user.username}`}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div
-              className={`absolute left-0 top-0 right-0 bottom-0 grid place-content-center`}
-            >
-              <span className={`text-6xl font-accent text-primary`}>
-                {user.username.charAt(0).toUpperCase()}
-              </span>
-            </div>
-          )}
-        </article>
+        <UserAvatar
+          username={user.username}
+          avatar_url={user.avatar_url}
+          avatarSize={`w-24 md:w-32 h-24 md:h-32`}
+          textSize={`text-3xl md:text-6xl`}
+        />
 
         {/* User Info */}
         <article className={`mt-2 mb-8 grid gap-3`}>
-          <h1 className={`font-sans text-3xl text-primary font-black`}>
+          <h1
+            className={`font-sans text-2xl md:text-3xl text-primary font-black`}
+          >
             {user.username}
             {isOwnProfile && (
               <span className="ml-2 text-sm opacity-60">(You)</span>

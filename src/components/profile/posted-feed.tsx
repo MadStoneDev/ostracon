@@ -49,15 +49,13 @@ export default function PostedFeed({
       let fragmentsQuery = supabase
         .from("fragments")
         .select()
-        .eq("user_id", userId);
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
 
       // Filter NSFW content if:
       // 1. Current user is not the profile owner
       // 2. Current user has disabled NSFW content
-      if (
-        currentUserId !== userId &&
-        settings.allow_sensitive_content === false
-      ) {
+      if (currentUserId !== userId && !settings.allow_sensitive_content) {
         fragmentsQuery = fragmentsQuery.eq("is_nsfw", false);
       }
 

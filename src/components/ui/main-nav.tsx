@@ -31,7 +31,7 @@ export default function MainNav({ user = null }: { user?: any }) {
 
   return (
     <nav
-      className={`fixed top-0 left-1/2 -translate-x-1/2 px-4 md:px-0 flex justify-between items-stretch gap-10 w-full max-w-3xl z-50 transition-all duration-300 ease-in-out`}
+      className={`sticky px-4 md:px-6 top-0 left-0 right-0 flex justify-between items-stretch gap-10 z-40 transition-all duration-300 ease-in-out`}
       style={{
         height: "70px",
       }}

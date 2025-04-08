@@ -19,7 +19,18 @@ import {
 import UserAvatar from "@/components/ui/user-avatar";
 import { createClient } from "@/utils/supabase/client";
 
-export default function BottomNav({ user = null }: { user?: any }) {
+import { User } from "@supabase/supabase-js";
+import { Tables } from "../../../database.types";
+
+type Profile = Tables<`users`>;
+
+export default function BottomNav({
+  user = null,
+  profile = null,
+}: {
+  user?: User | null;
+  profile?: Profile | null;
+}) {
   // Hooks
   const pathname = usePathname();
   const router = useRouter();
@@ -75,7 +86,7 @@ export default function BottomNav({ user = null }: { user?: any }) {
   return (
     <>
       <nav
-        className={`my-2 mx-2 sm:mx-4 fixed bottom-0 left-0 md:left-1/2 md:-translate-x-1/2 right-0 md:right-auto px-2 flex items-center justify-between bg-dark dark:bg-light text-light dark:text-dark rounded-full z-40 transition-all duration-300 ease-in-out`}
+        className={`my-2 mx-2 sm:mx-4 fixed bottom-0 left-0 md:left-1/2 md:-translate-x-1/2 right-0 md:right-auto px-2 flex items-center justify-between bg-dark dark:bg-light text-light dark:text-dark rounded-full z-50 transition-all duration-300 ease-in-out`}
         style={{
           minHeight: "60px",
         }}
@@ -148,18 +159,27 @@ export default function BottomNav({ user = null }: { user?: any }) {
       </nav>
 
       <section
-        className={`fixed px-[25px] py-[100px] top-0 bottom-0 ${
+        className={`fixed top-0 bottom-0 px-[25px] py-[100px] ${
           showMenu ? "right-0" : "-right-full"
-        } w-[250px] flex flex-col gap-5 bg-primary z-30 transition-all duration-300 ease-in-out`}
+        } w-[250px] flex flex-col gap-5 bg-primary z-40 transition-all duration-300 ease-in-out`}
       >
-        <Link
-          href={`/profile`}
-          onClick={() => setShowMenu(false)}
-          className={`flex items-center gap-5`}
-        >
-          <UserAvatar avatar_url={``} username={`test_username`} />
-          <span>Profile</span>
-        </Link>
+        {profile && (
+          <Link
+            href={`/profile`}
+            onClick={() => setShowMenu(false)}
+            className={`flex items-center gap-5`}
+          >
+            <div className={`h-12 w-12 grid place-content-center`}>
+              <UserAvatar
+                avatar_url={profile.avatar_url || ""}
+                username={profile.username || ""}
+                avatarSize={`h-8 w-8`}
+                letterColour={`text-light dark:text-dark`}
+              />
+            </div>
+            <span>Profile</span>
+          </Link>
+        )}
 
         <Link href={`/search`} className={`flex items-center gap-5`}>
           <div className={`grid place-content-center w-12 h-12`}>

@@ -223,7 +223,7 @@ export default function NewPost(): React.ReactElement {
 
   return (
     <div className={`flex-grow flex flex-col h-full`}>
-      <div className={`relative flex-grow flex flex-col`}>
+      <div className={`flex-grow flex flex-col`}>
         {/* Header */}
         <section className={`relative`}>
           <article className={`pb-4 flex gap-2`}>
@@ -253,7 +253,7 @@ export default function NewPost(): React.ReactElement {
         </section>
 
         {/* Post Editor */}
-        <article className={`relative grow flex flex-col text-sm`}>
+        <article className={`relative flex-grow flex flex-col text-sm`}>
           <PostEditor onChange={handleEditorContentChange} />
         </article>
       </div>
@@ -268,7 +268,7 @@ export default function NewPost(): React.ReactElement {
 
       {/* Side Bar*/}
       <aside
-        className={`px-2 py-3 fixed top-1/2 -translate-y-1/2 right-0 flex flex-col gap-5 bg-dark text-primary dark:bg-light rounded-l-xl`}
+        className={`px-2 py-3 absolute top-1/2 -translate-y-1/2 right-0 flex flex-col gap-5 bg-dark text-primary dark:bg-light rounded-l-xl`}
       >
         <button
           className={`relative flex-grow flex justify-center items-center h-full`}

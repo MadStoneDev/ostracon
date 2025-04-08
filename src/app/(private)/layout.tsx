@@ -20,15 +20,17 @@ export default async function PrivateLayout({
     redirect("/login");
   }
 
+  const { data: profile } = await supabase
+    .from("users")
+    .select("*")
+    .eq("id", user.id)
+    .single();
+
   return (
-    <div className={`relative flex-grow grid overflow-y-auto`}>
-      <div
-        className={`fixed top-0 w-full h-[60px] bg-light dark:bg-dark z-10`}
-      ></div>
+    <div className={`px-4 md:px-6 flex-grow flex flex-col overflow-y-auto`}>
+      <main className={`flex-grow flex flex-col`}>{children}</main>
 
-      <main className={`relative py-[80px] px-4 flex-grow`}>{children}</main>
-
-      {user ? <BottomNav user={user} /> : null}
+      {user ? <BottomNav user={user} profile={profile} /> : null}
     </div>
   );
 }
