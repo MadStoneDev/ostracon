@@ -1,5 +1,5 @@
 ﻿import { Metadata } from "next";
-import AccountSettings from "@/components/profile/user-settings";
+import AccountSettings from "@/components/profile/account-settings";
 
 export const metadata: Metadata = {
   title: "Settings | Ostracon",

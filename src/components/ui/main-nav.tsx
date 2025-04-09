@@ -1,15 +1,16 @@
 ﻿"use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useTheme } from "next-themes";
 import { usePathname, useRouter } from "next/navigation";
 
 import {
   IconInfoCircleFilled,
-  IconLogout,
   IconSun,
   IconTool,
   IconX,
+  IconLock,
 } from "@tabler/icons-react";
 import { createClient } from "@/utils/supabase/client";
 
@@ -17,6 +18,7 @@ export default function MainNav({ user = null }: { user?: any }) {
   // Hooks
   const router = useRouter();
   const pathname = usePathname();
+  const [isLocking, setIsLocking] = useState(false);
 
   const supabase = createClient();
 

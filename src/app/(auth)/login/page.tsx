@@ -1,12 +1,27 @@
 import Link from "next/link";
+import { Metadata } from "next";
+import { redirect } from "next/navigation";
+
+import { createClient } from "@/utils/supabase/server";
 import LoginForm from "@/components/auth/login-form";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Login at Ostracon",
   description: "Login to your account on Ostracon.",
 };
 
-export default function Login() {
+const fetchaUser = async () => {
+  const supabase = await createClient();
+  const { data: user } = await supabase.auth.getUser();
+  return user;
+};
+
+export default async function Login() {
+  const user = await fetchaUser();
+  if (user) {
+    redirect("/explore");
+  }
+
   return (
     <main
       className={`flex-grow flex flex-col h-full`}
