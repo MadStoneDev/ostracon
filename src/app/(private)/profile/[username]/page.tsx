@@ -1,7 +1,5 @@
-﻿import { redirect } from "next/navigation";
-
+﻿import { createClient } from "@/utils/supabase/server";
 import ProfileContent from "@/components/ui/profile-content";
-import { createClient } from "@/utils/supabase/server";
 
 export async function generateMetadata({
   params,
@@ -29,16 +27,12 @@ export default async function Profile({
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    redirect("/login");
-  }
-
   const currentUser = await supabase
     .from("users")
     .select(
       "id, username, avatar_url, bio, queued_for_delete, is_moderator, settings",
     )
-    .eq("id", user.id)
+    .eq("id", user!.id)
     .single();
 
   return (

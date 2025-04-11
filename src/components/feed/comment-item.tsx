@@ -55,7 +55,9 @@ export default function CommentItem({
   }, [comment.user_id, supabase]);
 
   return (
-    <div className="pb-4 border-b border-dark/10 dark:border-light/10">
+    <div
+      className={`pl-2 pt-2 pb-4 border-l-[5px] border-l-primary border-b border-b-dark/10 dark:border-b-light/10`}
+    >
       {/* Comment Header */}
       <div className="flex justify-between items-center mb-2">
         <div className="flex items-center gap-2">

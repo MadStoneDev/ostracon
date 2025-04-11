@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
-import CommentItem from "./comment-item"; // Assuming you have a CommentItem component
+import CommentItem from "./comment-item";
 
 interface Comment {
   id: string;

@@ -11,25 +11,51 @@ import {
   IconTool,
   IconX,
   IconLock,
+  IconLockOpen,
 } from "@tabler/icons-react";
 import { createClient } from "@/utils/supabase/client";
 
 export default function MainNav({ user = null }: { user?: any }) {
+  // States
+  const [userHasPin, setUserHasPin] = useState(false);
+  const [isLocked, setIsLocked] = useState(false);
+
   // Hooks
   const router = useRouter();
   const pathname = usePathname();
-  const [isLocking, setIsLocking] = useState(false);
-
-  const supabase = createClient();
 
   const { theme, setTheme } = useTheme();
 
   // Functions
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.refresh();
-    router.push("/");
+  const handleLock = async () => {
+    setIsLocked(true);
+
+    try {
+      const response = await fetch("/api/pin/lock", {
+        method: "POST",
+      });
+
+      if (response.ok) {
+        window.location.href = "/locked";
+      } else {
+        console.error("Failed to lock account");
+      }
+    } catch (error) {
+      setIsLocked(false);
+      console.error("Error locking account:", error);
+    }
   };
+
+  // Effecs
+  useEffect(() => {
+    const checkPinStatus = async () => {
+      const hasPin = await fetch("/api/pin/check-pin");
+      const { hasPin: userHasPin } = await hasPin.json();
+      setUserHasPin(userHasPin);
+    };
+
+    checkPinStatus();
+  }, []);
 
   return (
     <nav
@@ -65,6 +91,19 @@ export default function MainNav({ user = null }: { user?: any }) {
         >
           <IconSun size={24} strokeWidth={2} />
         </button>
+
+        {userHasPin && (
+          <button
+            onClick={handleLock}
+            className={`hover:text-primary transition-all duration-300 ease-in-out`}
+          >
+            {isLocked ? (
+              <IconLock size={24} strokeWidth={2} />
+            ) : (
+              <IconLockOpen size={24} strokeWidth={2} />
+            )}
+          </button>
+        )}
 
         {user ? (
           <>

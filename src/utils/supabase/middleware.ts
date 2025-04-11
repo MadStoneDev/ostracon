@@ -1,6 +1,8 @@
 ﻿import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+import { isUserLocked } from "@/utils/upstash/redis-lock";
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
@@ -46,6 +48,22 @@ export async function updateSession(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
+  }
+
+  if (user) {
+    const isLocked = await isUserLocked(user.id);
+
+    if (isLocked && !request.nextUrl.pathname.startsWith("/locked")) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/locked";
+      return NextResponse.redirect(url);
+    }
+
+    if (!isLocked && request.nextUrl.pathname.startsWith("/locked")) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/explore";
+      return NextResponse.redirect(url);
+    }
   }
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is. If you're

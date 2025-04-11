@@ -1,12 +1,20 @@
 ﻿"use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 import { settingsService } from "@/lib/settings";
 import { UserSettings } from "@/types/settings.types";
 
 import Switch from "@/components/ui/switch";
 import { YearDatePicker } from "@/components/ui/year-date-picker";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+// Using regular buttons and inputs instead of component library
 
 import {
   Select,
@@ -24,6 +32,28 @@ export default function AccountSettings() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
+  const [hasPin, setHasPin] = useState(false);
+  const [pinDialogOpen, setPinDialogOpen] = useState(false);
+  const [confirmPinDialogOpen, setConfirmPinDialogOpen] = useState(false);
+  const [newPin, setNewPin] = useState(["", "", "", ""]);
+  const [confirmPin, setConfirmPin] = useState(["", "", "", ""]);
+  const [pinError, setPinError] = useState<string | null>(null);
+  const [pinSuccess, setPinSuccess] = useState<string | null>(null);
+
+  // Create refs for each input field
+  const pinInputRefs = [
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+  ];
+
+  const confirmPinInputRefs = [
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+  ];
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -50,6 +80,12 @@ export default function AccountSettings() {
           setSettings(userSettings);
           setOriginalSettings(userSettings);
         }
+
+        // Check if user has a PIN set
+        const pinStatus = await fetch("/api/pin/check-pin");
+        const { hasPin: userHasPin } = await pinStatus.json();
+
+        setHasPin(userHasPin);
       } catch (err) {
         setError("Failed to load settings");
       } finally {
@@ -83,6 +119,185 @@ export default function AccountSettings() {
       setHasChanges(false);
     } catch (err) {
       setError("Failed to save settings");
+    }
+  };
+
+  const handlePinDigitChange = (
+    index: number,
+    value: string,
+    isPinConfirmation: boolean = false,
+  ) => {
+    const digit = value.replace(/\D/g, "").slice(0, 1);
+
+    if (isPinConfirmation) {
+      const newConfirmPin = [...confirmPin];
+      newConfirmPin[index] = digit;
+      setConfirmPin(newConfirmPin);
+
+      if (digit && index < confirmPin.length - 1) {
+        confirmPinInputRefs[index + 1].current?.focus();
+      }
+    } else {
+      const newPinValues = [...newPin];
+      newPinValues[index] = digit;
+      setNewPin(newPinValues);
+
+      if (digit && index < newPin.length - 1) {
+        pinInputRefs[index + 1].current?.focus();
+      }
+    }
+  };
+
+  // Handle backspace and arrow key navigation
+  const handleKeyDown = (
+    index: number,
+    e: React.KeyboardEvent<HTMLInputElement>,
+    isPinConfirmation: boolean = false,
+  ) => {
+    const pinValues = isPinConfirmation ? confirmPin : newPin;
+    const refs = isPinConfirmation ? confirmPinInputRefs : pinInputRefs;
+
+    if (e.key === "Backspace") {
+      if (pinValues[index] === "") {
+        // If current field is empty and backspace is pressed, focus previous field
+        if (index > 0) {
+          refs[index - 1].current?.focus();
+        }
+      } else {
+        // Clear current field
+        if (isPinConfirmation) {
+          const newConfirmPin = [...confirmPin];
+          newConfirmPin[index] = "";
+          setConfirmPin(newConfirmPin);
+        } else {
+          const newPinValues = [...newPin];
+          newPinValues[index] = "";
+          setNewPin(newPinValues);
+        }
+      }
+    } else if (e.key === "ArrowLeft" && index > 0) {
+      refs[index - 1].current?.focus();
+    } else if (e.key === "ArrowRight" && index < pinValues.length - 1) {
+      refs[index + 1].current?.focus();
+    }
+  };
+
+  // Handle pasting of full PIN
+  const handlePaste = (
+    e: React.ClipboardEvent,
+    isPinConfirmation: boolean = false,
+  ) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData
+      .getData("text")
+      .replace(/\D/g, "")
+      .slice(0, 4);
+
+    if (isPinConfirmation) {
+      const newConfirmPin = [...confirmPin];
+      for (let i = 0; i < pastedData.length; i++) {
+        newConfirmPin[i] = pastedData[i];
+      }
+      setConfirmPin(newConfirmPin);
+
+      // Focus the appropriate field after pasting
+      if (pastedData.length < confirmPin.length) {
+        confirmPinInputRefs[pastedData.length].current?.focus();
+      } else {
+        confirmPinInputRefs[confirmPin.length - 1].current?.focus();
+      }
+    } else {
+      const newPinValues = [...newPin];
+      for (let i = 0; i < pastedData.length; i++) {
+        newPinValues[i] = pastedData[i];
+      }
+      setNewPin(newPinValues);
+
+      // Focus the appropriate field after pasting
+      if (pastedData.length < newPin.length) {
+        pinInputRefs[pastedData.length].current?.focus();
+      } else {
+        pinInputRefs[newPin.length - 1].current?.focus();
+      }
+    }
+  };
+
+  const setPinHandler = async () => {
+    const pin = newPin.join("");
+
+    if (pin.length !== 4) {
+      setPinError("Please enter a 4-digit PIN");
+      return;
+    }
+
+    setPinDialogOpen(false);
+    setConfirmPinDialogOpen(true);
+  };
+
+  const confirmPinHandler = async () => {
+    const pin = newPin.join("");
+    const confirmPinValue = confirmPin.join("");
+
+    if (pin !== confirmPinValue) {
+      setConfirmPinDialogOpen(false);
+      setPinDialogOpen(true);
+      setPinError("PINs do not match. Please try again.");
+      setNewPin(["", "", "", ""]);
+      setConfirmPin(["", "", "", ""]);
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/pin/set", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ pin }),
+      });
+
+      if (response.ok) {
+        setHasPin(true);
+        setPinSuccess("PIN successfully set");
+        setConfirmPinDialogOpen(false);
+        setNewPin(["", "", "", ""]);
+        setConfirmPin(["", "", "", ""]);
+
+        setTimeout(() => {
+          window.location.reload();
+        }, 250);
+      } else {
+        const data = await response.json();
+        setPinError(data.error || "Failed to set PIN");
+        setConfirmPinDialogOpen(false);
+        setPinDialogOpen(true);
+      }
+    } catch (err) {
+      setPinError("An error occurred. Please try again.");
+      setConfirmPinDialogOpen(false);
+      setPinDialogOpen(true);
+    }
+  };
+
+  const removePinHandler = async () => {
+    try {
+      const response = await fetch("/api/pin/remove", {
+        method: "POST",
+      });
+
+      if (response.ok) {
+        setHasPin(false);
+        setPinSuccess("PIN successfully removed");
+
+        setTimeout(() => {
+          window.location.reload();
+        }, 250);
+      } else {
+        const data = await response.json();
+        setPinError(data.error || "Failed to remove PIN");
+      }
+    } catch (err) {
+      setPinError("An error occurred. Please try again.");
     }
   };
 
@@ -138,6 +353,141 @@ export default function AccountSettings() {
             </p>
           )}
         </article>
+      </section>
+
+      {/* Security Settings */}
+      <section className="mt-8">
+        <h2 className="text-lg font-bold mb-4">Security</h2>
+
+        <article className="flex justify-between items-center mb-4">
+          <div>
+            <span className="block">App Lock PIN</span>
+            <span className="text-sm text-gray-500">
+              {hasPin
+                ? "PIN protection is enabled"
+                : "Set a PIN to protect your account"}
+            </span>
+          </div>
+          {hasPin ? (
+            <button
+              onClick={removePinHandler}
+              className={`bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition-all duration-300 ease-in-out`}
+            >
+              Remove PIN
+            </button>
+          ) : (
+            <Dialog open={pinDialogOpen} onOpenChange={setPinDialogOpen}>
+              <DialogTrigger asChild>
+                <button className="bg-primary text-white px-4 py-2 rounded-md">
+                  Set PIN
+                </button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Set a 4-digit PIN</DialogTitle>
+                </DialogHeader>
+                <div className="py-4">
+                  <div className="text-sm text-gray-500 mb-4">
+                    This PIN will be required to unlock the app.
+                  </div>
+
+                  <div className="flex justify-center space-x-4 mb-6">
+                    {newPin.map((digit, index) => (
+                      <input
+                        key={index}
+                        ref={pinInputRefs[index]}
+                        type="text"
+                        inputMode="numeric"
+                        autoComplete="off"
+                        maxLength={1}
+                        value={digit}
+                        onChange={(e) =>
+                          handlePinDigitChange(index, e.target.value)
+                        }
+                        onKeyDown={(e) => handleKeyDown(index, e)}
+                        onPaste={
+                          index === 0 ? (e) => handlePaste(e) : undefined
+                        }
+                        className="w-14 h-14 text-center text-2xl border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                        aria-label={`PIN digit ${index + 1}`}
+                      />
+                    ))}
+                  </div>
+
+                  {pinError && (
+                    <div className="text-red-500 text-sm text-center mb-4">
+                      {pinError}
+                    </div>
+                  )}
+
+                  <div className="flex justify-end">
+                    <button
+                      onClick={setPinHandler}
+                      disabled={newPin.some((digit) => digit === "")}
+                      className="bg-primary text-white px-4 py-2 rounded-md disabled:bg-gray-300 disabled:cursor-not-allowed"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+          )}
+        </article>
+
+        {/* PIN Confirmation Dialog */}
+        <Dialog
+          open={confirmPinDialogOpen}
+          onOpenChange={setConfirmPinDialogOpen}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Confirm your PIN</DialogTitle>
+            </DialogHeader>
+            <div className="py-4">
+              <div className="text-sm text-gray-500 mb-4">
+                Please re-enter your PIN to confirm.
+              </div>
+
+              <div className="flex justify-center space-x-4 mb-6">
+                {confirmPin.map((digit, index) => (
+                  <input
+                    key={index}
+                    ref={confirmPinInputRefs[index]}
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="off"
+                    maxLength={1}
+                    value={digit}
+                    onChange={(e) =>
+                      handlePinDigitChange(index, e.target.value, true)
+                    }
+                    onKeyDown={(e) => handleKeyDown(index, e, true)}
+                    onPaste={
+                      index === 0 ? (e) => handlePaste(e, true) : undefined
+                    }
+                    className="w-14 h-14 text-center text-2xl border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                    aria-label={`Confirm PIN digit ${index + 1}`}
+                  />
+                ))}
+              </div>
+
+              <div className="flex justify-end">
+                <button
+                  onClick={confirmPinHandler}
+                  disabled={confirmPin.some((digit) => digit === "")}
+                  className="bg-primary text-white px-4 py-2 rounded-md disabled:bg-gray-300 disabled:cursor-not-allowed"
+                >
+                  Confirm
+                </button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {pinSuccess && (
+          <div className="text-green-500 text-sm mb-4">{pinSuccess}</div>
+        )}
       </section>
 
       {/* Privacy Settings */}

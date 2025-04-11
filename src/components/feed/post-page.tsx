@@ -75,7 +75,7 @@ export default function PostPage({
   const shouldBlur = settings ? Boolean(settings.blur_sensitive_content) : true;
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <>
       <div className="post-content">
         <Post
           postId={postId}
@@ -96,13 +96,13 @@ export default function PostPage({
 
       {/* Comments Section - Only show if comments are allowed */}
       {post.comments_open !== false && (
-        <div className="comments-container mt-4">
-          <div className="h-[1px] bg-dark/20 dark:bg-light/20 my-4"></div>
+        <div className={`comments-container`}>
+          <div className="h-[1px] bg-dark/20 dark:bg-light/20 mt-2 mb-4"></div>
           <PostComments postId={postId} />
         </div>
       )}
 
       {authenticated && <BottomNav />}
-    </div>
+    </>
   );
 }

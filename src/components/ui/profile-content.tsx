@@ -2,9 +2,10 @@
 
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { createClient } from "@/utils/supabase/client";
-import { formatCount } from "@/utils/format-count";
 
+import { createClient } from "@/utils/supabase/client";
+
+import { formatCount } from "@/utils/format-count";
 import UserAvatar from "@/components/ui/user-avatar";
 import PostedFeed from "@/components/profile/posted-feed";
 import LikedFeed from "@/components/profile/liked-feed";
@@ -46,6 +47,8 @@ export default function ProfileContent({
 
   const [isFollowing, setIsFollowing] = useState(false);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
+
+  const supabaseClient = createClient();
 
   // Variables
   const isOwnProfile = userId === currentUserId;
@@ -179,11 +182,8 @@ export default function ProfileContent({
     checkFollowStatus();
   }, [currentUserId, userId, isOwnProfile]);
 
-  const avatar_url = user.avatar_url;
-  const bio = user.bio;
-
   return (
-    <div className={`mx-auto w-full max-w-3xl`}>
+    <div className={`mx-auto w-full`}>
       {/* Follow Button - Only show if not own profile */}
       {!isOwnProfile && (
         <button
@@ -229,7 +229,7 @@ export default function ProfileContent({
               <span className="ml-2 text-sm opacity-60">(You)</span>
             )}
           </h1>
-          <p className={`opacity-75 font-normal`}>{bio}</p>
+          <p className={`opacity-75 font-normal`}>{user.bio}</p>
         </article>
 
         {/* Tabs */}

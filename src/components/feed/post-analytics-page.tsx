@@ -227,7 +227,7 @@ export default function PostAnalyticsPage({
   // }
 
   return (
-    <div className="p-4 max-w-3xl mx-auto">
+    <div className={`p-4 mx-auto`}>
       {/*<div className="flex items-center mb-6">*/}
       {/*  <Link*/}
       {/*    href={`/post/${postId}`}*/}
