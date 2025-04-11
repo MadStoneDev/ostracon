@@ -16,14 +16,10 @@ export default async function PrivateLayout({
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    redirect("/login");
-  }
-
   const { data: profile } = await supabase
     .from("users")
     .select("*")
-    .eq("id", user.id)
+    .eq("id", user!.id)
     .single();
 
   return (

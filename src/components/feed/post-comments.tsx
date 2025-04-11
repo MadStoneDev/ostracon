@@ -1,8 +1,9 @@
 ﻿"use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
 import CommentItem from "./comment-item";
+import { useRouter } from "next/navigation";
 
 interface Comment {
   id: string;
@@ -20,104 +21,25 @@ interface Comment {
   };
 }
 
-export default function PostComments({ postId }: { postId: string }) {
+export default function PostComments({
+  postId,
+  initialComments = [],
+  currentUser = null,
+}: {
+  postId: string;
+  initialComments?: Comment[];
+  currentUser?: any;
+}) {
   const supabase = createClient();
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+  const [comments, setComments] = useState<Comment[]>(initialComments);
+  const [newComment, setNewComment] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Set up real-time subscription for new comments
   useEffect(() => {
-    const fetchComments = async () => {
-      setLoading(true);
-      try {
-        // First, check if the join syntax is causing the issue
-        console.log("Fetching comments for post ID:", postId);
-
-        // Query comments with user information, ordering by created_at descending (newest first)
-        const { data, error } = await supabase
-          .from("fragment_comments")
-          .select(
-            `
-            id,
-            content,
-            created_at,
-            user_id,
-            fragment_id
-          `,
-          )
-          .eq("fragment_id", postId)
-          .order("created_at", { ascending: false }) // Order by newest first
-          .limit(50); // Limit to recent comments, add pagination later if needed
-
-        if (error) {
-          console.error("Database error details:", error);
-          throw error;
-        }
-
-        console.log("Comments data received:", data);
-
-        // Now fetch user data separately for these comments
-        let formattedComments: Comment[] = [];
-
-        if (data && data.length > 0) {
-          // Get unique user IDs
-          const userIds = [...new Set(data.map((comment) => comment.user_id))];
-
-          // Fetch all users in one query
-          const { data: usersData, error: usersError } = await supabase
-            .from("users")
-            .select("id, username, avatar_url")
-            .in("id", userIds);
-
-          if (usersError) {
-            console.error("Error fetching users:", usersError);
-          }
-
-          // Create a map for quick user lookup
-          const userMap: Record<string, any> = {};
-          if (usersData) {
-            usersData.forEach((user) => {
-              userMap[user.id] = user;
-            });
-          }
-
-          // Join the data manually
-          formattedComments = data.map((comment) => ({
-            id: comment.id,
-            content: comment.content,
-            created_at: comment.created_at,
-            user_id: comment.user_id,
-            fragment_id: comment.fragment_id,
-            users: userMap[comment.user_id]
-              ? {
-                  username: userMap[comment.user_id].username,
-                  avatar_url: userMap[comment.user_id].avatar_url,
-                }
-              : { username: "Unknown", avatar_url: "" },
-          }));
-        }
-
-        console.log("Formatted comments:", formattedComments);
-        setComments(formattedComments);
-      } catch (err) {
-        console.error("Error fetching comments:", err);
-        // Log detailed error information to help debug
-        if (err instanceof Error) {
-          console.error("Error name:", err.name);
-          console.error("Error message:", err.message);
-          console.error("Error stack:", err.stack);
-        } else {
-          console.error("Unknown error type:", typeof err, err);
-        }
-        setError("Failed to load comments. Please try again later.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchComments();
-
-    // Set up real-time subscription for new comments
+    // Only set up subscription if we're client-side
     const commentsSubscription = supabase
       .channel("comments-channel")
       .on(
@@ -163,7 +85,13 @@ export default function PostComments({ postId }: { postId: string }) {
               },
             };
 
-            setComments((prevComments) => [newComment, ...prevComments]);
+            // Check if this comment already exists in the list (to avoid duplicates)
+            const exists = comments.some(
+              (comment) => comment.id === newComment.id,
+            );
+            if (!exists) {
+              setComments((prevComments) => [newComment, ...prevComments]);
+            }
           } catch (err) {
             console.error("Error processing new comment:", err);
           }
@@ -175,49 +103,85 @@ export default function PostComments({ postId }: { postId: string }) {
     return () => {
       supabase.removeChannel(commentsSubscription);
     };
-  }, [postId, supabase]);
+  }, [postId, supabase, comments]);
 
-  if (loading) {
-    return (
-      <div className="flex justify-center my-8">
-        <div className="animate-pulse text-dark/50 dark:text-light/50">
-          Loading comments...
-        </div>
-      </div>
-    );
-  }
+  const handleSubmitComment = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-  if (error) {
-    return (
-      <div className="text-red-500 text-center my-4 p-2 border border-red-300 rounded">
-        {error}
-      </div>
-    );
-  }
+    if (!newComment.trim() || isSubmitting) return;
 
-  if (comments.length === 0) {
-    return (
-      <div className="text-center text-dark/50 dark:text-light/50 my-8 p-4">
-        No comments yet. Be the first to comment!
-      </div>
-    );
-  }
+    if (!currentUser) {
+      // Redirect to login if not authenticated
+      return router.push("/login");
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Create FormData for server action
+      const formData = new FormData();
+      formData.append("postId", postId);
+      formData.append("content", newComment);
+
+      // Call the server action (imported from actions file)
+      // For now, we'll continue to use the client API since we don't have the server action defined
+      const { data, error } = await supabase
+        .from("fragment_comments")
+        .insert({
+          fragment_id: postId,
+          user_id: currentUser.id,
+          content: newComment.trim(),
+        })
+        .select();
+
+      if (error) throw error;
+
+      // Optimistically add the comment to the UI
+      // The real-time subscription will eventually update this
+      const optimisticComment: Comment = {
+        id: data?.[0]?.id || `temp-${Date.now()}`,
+        fragment_id: postId,
+        user_id: currentUser.id,
+        content: newComment,
+        created_at: new Date().toISOString(),
+        users: {
+          username: currentUser.username || "You",
+          avatar_url: currentUser.avatar_url || "",
+        },
+      };
+
+      setComments((prevComments) => [optimisticComment, ...prevComments]);
+      setNewComment("");
+    } catch (err) {
+      console.error("Error posting comment:", err);
+      setError("Failed to post comment. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
       <h3 className="text-lg font-bold mb-4">Comments ({comments.length})</h3>
 
-      {comments.map((comment) => (
-        <CommentItem
-          key={comment.id}
-          comment={comment}
-          username={comment.users?.username || "Anonymous"}
-          avatarUrl={comment.users?.avatar_url || ""}
-          content={comment.content}
-          timestamp={comment.created_at}
-          postId={postId}
-        />
-      ))}
+      {comments.length === 0 ? (
+        <div className="text-center text-dark/50 dark:text-light/50 my-8 p-4">
+          No comments yet. Be the first to comment!
+        </div>
+      ) : (
+        comments.map((comment) => (
+          <CommentItem
+            key={comment.id}
+            comment={comment}
+            username={comment.users?.username || "Anonymous"}
+            avatarUrl={comment.users?.avatar_url || ""}
+            content={comment.content}
+            timestamp={comment.created_at}
+            postId={postId}
+            isCurrentUserComment={currentUser?.id === comment.user_id}
+          />
+        ))
+      )}
     </div>
   );
 }

@@ -1,44 +1,22 @@
 import React from "react";
-import PostPage from "@/components/feed/post-page";
-import { createClient } from "@/utils/supabase/server";
 
-async function getPostById(postId: string) {
-  const supabase = await createClient();
+import PostScreen from "@/components/feed/post-screen";
+import {
+  fetchPostById,
+  fetchUserSettings,
+  fetchCurrentUser,
+} from "@/utils/supabase/fetch-supabase";
+import { fetchPostComments } from "@/utils/supabase/comment-actions";
 
-  const { data: post, error } = await supabase
-    .from("fragments")
-    .select(
-      `
-      *,
-      users:user_id (
-        id,
-        username,
-        avatar_url
-      ),
-      groups:group_id (
-        id,
-        name
-      )
-    `,
-    )
-    .eq("id", postId)
-    .single();
-
-  if (error) {
-    console.error("Error fetching post:", error);
-    return null;
-  }
-
-  return post;
-}
-
-export default async function Post({
+export default async function PostPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const postId = (await params).id;
-  const post = await getPostById(postId);
+
+  // Fetch post data server-side
+  const post = await fetchPostById(postId);
 
   if (!post) {
     return (
@@ -51,5 +29,23 @@ export default async function Post({
     );
   }
 
-  return <PostPage postId={postId} post={post} />;
+  // Fetch in parallel for better performance
+  const [userSettings, currentUser, comments] = await Promise.all([
+    fetchUserSettings(),
+    fetchCurrentUser(),
+    fetchPostComments(postId),
+  ]);
+
+  const authenticated = !!currentUser;
+
+  return (
+    <PostScreen
+      postId={postId}
+      post={post}
+      settings={userSettings}
+      authenticated={authenticated}
+      comments={comments}
+      currentUser={currentUser}
+    />
+  );
 }

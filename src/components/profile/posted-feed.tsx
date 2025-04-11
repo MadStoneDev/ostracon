@@ -2,134 +2,98 @@
 
 import { useState, useEffect } from "react";
 import Post from "@/components/feed/single-post";
-import { createClient } from "@/utils/supabase/client";
+
+import { User } from "@supabase/supabase-js";
 import type { Database } from "../../../database.types";
 
 // Types
-type PostFragment = Database["public"]["Tables"]["fragments"]["Row"];
-type User = Database["public"]["Tables"]["users"]["Row"];
+type Profile = Database["public"]["Tables"]["users"]["Row"];
+type Fragment = Database["public"]["Tables"]["fragments"]["Row"] & {
+  likeCount?: number;
+  commentCount?: number;
+  viewCount?: number;
+  userLiked?: boolean;
+  userCommented?: boolean;
+};
 
 export default function PostedFeed({
-  userId,
-  username,
-  currentUserId,
+  currentUser,
+  user,
+  postedFeed,
+  settings,
+  userProfiles,
 }: {
-  userId: string;
-  username: string;
-  currentUserId: string;
+  currentUser: User;
+  user: Profile;
+  postedFeed: Fragment[] | null;
+  settings: any;
+  userProfiles: Record<string, Profile>;
 }) {
-  const [posts, setPosts] = useState<PostFragment[]>([]);
-  const [users, setUsers] = useState<Record<string, User>>({});
-  const [settings, setSettings] = useState<{
-    blur_sensitive_content: boolean;
-    allow_sensitive_content: boolean;
-  }>({
-    blur_sensitive_content: true,
-    allow_sensitive_content: true,
-  });
+  const [posts, setPosts] = useState<Fragment[]>([]);
+
+  // Check if current user is the profile owner
+  const isViewingOwnProfile = currentUser.id === user.id;
 
   useEffect(() => {
-    const fetchData = async () => {
-      const supabase = createClient();
+    if (!postedFeed) return;
 
-      // Fetch user settings if viewing someone else's profile
-      if (currentUserId && currentUserId !== userId) {
-        const { data: userSettings } = await supabase
-          .from("users")
-          .select("settings")
-          .eq("id", currentUserId)
-          .single();
-
-        if (userSettings?.settings) {
-          setSettings(userSettings.settings as any);
-        }
+    const filteredFragments = postedFeed.filter((post) => {
+      // Show all posts if profile is of the current user
+      if (currentUser.id === user.id) {
+        return true;
       }
 
-      // Get all fragments for this user
-      let fragmentsQuery = supabase
-        .from("fragments")
-        .select()
-        .eq("user_id", userId)
-        .order("created_at", { ascending: false });
+      // Filter out NSFW posts if user has disabled sensitive content
+      return !(!settings?.allow_sensitive_content && post.is_nsfw);
+    });
 
-      // Filter NSFW content if:
-      // 1. Current user is not the profile owner
-      // 2. Current user has disabled NSFW content
-      if (currentUserId !== userId && !settings.allow_sensitive_content) {
-        fragmentsQuery = fragmentsQuery.eq("is_nsfw", false);
-      }
+    setPosts(filteredFragments);
+  }, [postedFeed, currentUser.id, user.id, settings?.allow_sensitive_content]);
 
-      const { data: fragments } = await fragmentsQuery;
-
-      if (fragments) {
-        setPosts(fragments);
-
-        // Get unique user IDs from fragments
-        const userIds = [
-          ...new Set(fragments.map((fragment) => fragment.user_id)),
-        ];
-
-        // Fetch user data for all unique users
-        const { data: userData } = await supabase
-          .from("users")
-          .select()
-          .in("id", userIds);
-
-        if (userData) {
-          // Create a map of user_id to user data for efficient lookups
-          const userMap = userData.reduce(
-            (acc, user) => {
-              acc[user.id] = user;
-              return acc;
-            },
-            {} as Record<string, User>,
-          );
-
-          setUsers(userMap);
-        }
-      }
-    };
-
-    fetchData();
-  }, [userId, currentUserId, settings.allow_sensitive_content]);
-
-  if (posts.length > 0) {
+  if (posts.length === 0) {
     return (
-      <section className={`pb-[70px] transition-all duration-300 ease-in-out`}>
-        {posts.map((post) => {
-          const postUser = post.user_id ? users[post.user_id] : undefined;
-          const isViewingOwnProfile = currentUserId === userId;
-
-          return (
-            <article
-              key={`feed-post-${post.id}`}
-              className={`border-b last-of-type:border-b-0 border-dark/10 dark:border-light/10 transition-all duration-300 ease-in-out`}
-            >
-              <Post
-                postId={post.id}
-                avatar_url={postUser?.avatar_url || ""}
-                username={postUser?.username || ""}
-                content={post.content || ""}
-                nsfw={post.is_nsfw || false}
-                commentsAllowed={post.comments_open ?? true}
-                reactionsAllowed={post.reactions_open ?? true}
-                // Never blur your own posts when viewing your profile
-                blur={!isViewingOwnProfile && settings.blur_sensitive_content}
-                timestamp={post.created_at}
-                userId={post.user_id || ""}
-              />
-            </article>
-          );
-        })}
+      <section
+        className={`my-3 pb-[70px] opacity-50 transition-all duration-300 ease-in-out`}
+      >
+        {user.username} hasn't posted anything yet.
       </section>
     );
   }
 
   return (
-    <section
-      className={`my-3 pb-[70px] opacity-50 transition-all duration-300 ease-in-out`}
-    >
-      {username} hasn't posted anything yet.
+    <section className={`pb-[70px] transition-all duration-300 ease-in-out`}>
+      {posts.map((post) => {
+        const postUser = userProfiles[post.user_id || ""];
+
+        if (!postUser) return null;
+
+        return (
+          <article
+            key={`feed-post-${post.id}`}
+            className={`border-b last-of-type:border-b-0 border-dark/10 dark:border-light/10 transition-all duration-300 ease-in-out`}
+          >
+            <Post
+              postId={post.id}
+              avatar_url={postUser?.avatar_url || ""}
+              username={postUser?.username || ""}
+              content={post.content || ""}
+              nsfw={post.is_nsfw || false}
+              commentsAllowed={post.comments_open ?? true}
+              reactionsAllowed={post.reactions_open ?? true}
+              // Never blur your own posts when viewing your profile
+              blur={!isViewingOwnProfile && settings?.blur_sensitive_content}
+              timestamp={post.created_at}
+              userId={post.user_id || ""}
+              // Pass pre-fetched data to avoid loading delay
+              initialLikeCount={post.likeCount || 0}
+              initialCommentCount={post.commentCount || 0}
+              initialViewCount={post.viewCount || 0}
+              initialUserLiked={post.userLiked || false}
+              initialUserCommented={post.userCommented || false}
+            />
+          </article>
+        );
+      })}
     </section>
   );
 }

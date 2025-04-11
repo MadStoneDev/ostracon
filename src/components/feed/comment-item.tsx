@@ -1,10 +1,12 @@
-﻿import React, { useState, useEffect } from "react";
+﻿"use client";
+
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { IconDotsVertical, IconFlag, IconTrash } from "@tabler/icons-react";
 import { formatTimestamp } from "@/lib/fragments";
 import UserAvatar from "@/components/ui/user-avatar";
 import HtmlContent from "@/components/feed/html-content-renderer";
-import { createClient } from "@/utils/supabase/client";
+import { deleteComment } from "@/utils/supabase/comment-actions";
 
 interface CommentItemProps {
   comment: any;
@@ -13,6 +15,7 @@ interface CommentItemProps {
   content: string;
   timestamp: string;
   postId: string;
+  isCurrentUserComment?: boolean; // Passed from parent instead of determining here
 }
 
 export default function CommentItem({
@@ -22,10 +25,9 @@ export default function CommentItem({
   content,
   timestamp,
   postId,
+  isCurrentUserComment = false,
 }: CommentItemProps) {
   const [showOptions, setShowOptions] = useState(false);
-  const [isCurrentUserComment, setIsCurrentUserComment] = useState(false);
-  const supabase = createClient();
 
   // Close options when clicking outside
   useEffect(() => {
@@ -41,18 +43,6 @@ export default function CommentItem({
       return () => document.removeEventListener("click", handleClickOutside);
     }
   }, [showOptions]);
-
-  // Check if this is the current user's comment
-  useEffect(() => {
-    const checkOwnership = async () => {
-      const { data } = await supabase.auth.getUser();
-      if (data?.user) {
-        setIsCurrentUserComment(data.user.id === comment.user_id);
-      }
-    };
-
-    checkOwnership();
-  }, [comment.user_id, supabase]);
 
   return (
     <div
@@ -75,7 +65,7 @@ export default function CommentItem({
           </div>
         </div>
 
-        <div className="shrink-0 flex flex-row-reverse items-center justify-end border-l border-dark dark:border-light/30 text-dark dark:text-light transition-all duration-300 ease-in-out">
+        <div className="options-container shrink-0 flex flex-row-reverse items-center justify-end border-l border-dark dark:border-light/30 text-dark dark:text-light transition-all duration-300 ease-in-out">
           <div
             className={`cursor-pointer grid place-content-center w-6 opacity-50 hover:opacity-100 ${
               showOptions ? "-rotate-90" : ""
@@ -94,13 +84,13 @@ export default function CommentItem({
             } overflow-hidden transition-all duration-500 ease-in-out`}
           >
             {isCurrentUserComment ? (
-              <Link
-                href={`/comment/${comment.id}/delete`}
+              <button
+                onClick={async () => await deleteComment(comment.id)}
                 className="grid place-content-center w-6 opacity-50 hover:opacity-100 transition-all duration-300 ease-in-out text-red-600"
                 title="Delete Comment"
               >
                 <IconTrash />
-              </Link>
+              </button>
             ) : (
               <Link
                 href={`/comment/${comment.id}/report`}

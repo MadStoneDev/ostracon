@@ -1,12 +1,8 @@
 ﻿"use client";
 
-import { useEffect, useState } from "react";
-
 import BottomNav from "@/components/ui/bottom-nav";
 import Post from "@/components/feed/single-post";
 import PostComments from "@/components/feed/post-comments";
-
-import { settingsService } from "@/lib/settings";
 import { UserSettings } from "@/types/settings.types";
 import type { Database } from "../../../database.types";
 
@@ -20,59 +16,32 @@ type FragmentWithUser = FragmentRow & {
   groups?: Pick<GroupRow, "name"> | null;
 };
 
-export default function PostPage({
+export default function PostScreen({
   postId,
   post,
+  settings,
+  authenticated,
+  comments,
+  currentUser,
 }: {
   postId: string;
   post: FragmentWithUser;
+  settings: any;
+  authenticated: boolean;
+  comments: any[];
+  currentUser: any | null;
 }) {
-  const authenticated = true;
-  const [settings, setSettings] = useState<UserSettings | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  // Update analytics on component mount
-  useEffect(() => {
-    const updateAnalytics = async () => {
-      try {
-        // Call an API route to increment view count
-        await fetch(`/api/analytics/view?postId=${postId}`, {
-          method: "POST",
-        });
-      } catch (error) {
-        console.error("Failed to update analytics:", error);
-      }
-    };
-
-    updateAnalytics();
-  }, [postId]);
-
-  useEffect(() => {
-    const loadSettings = async () => {
-      try {
-        const userSettings = await settingsService.getUserSettings();
-
-        // Ensure boolean values are correctly typed
-        const sanitizedSettings = {
-          ...userSettings,
-          blur_sensitive_content: userSettings.blur_sensitive_content === true,
-          allow_sensitive_content:
-            userSettings.allow_sensitive_content === true,
-        };
-
-        setSettings(sanitizedSettings);
-      } catch (error) {
-        console.error("Failed to load settings:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadSettings();
-  }, []);
-
   // Determine if we should blur content based on settings
   const shouldBlur = settings ? Boolean(settings.blur_sensitive_content) : true;
+
+  // Extract stats for Post component
+  const initialLikeCount = 0; // You could prefetch this data too
+  const initialCommentCount = comments?.length || 0;
+  const initialViewCount = 0; // You could prefetch this data too
+  const initialUserLiked = false; // You could prefetch this data too
+  const initialUserCommented = comments
+    ? comments.some((comment) => comment.user_id === currentUser?.id)
+    : false;
 
   return (
     <>
@@ -91,6 +60,13 @@ export default function PostPage({
           groupName={post.groups?.name || ""}
           truncate={false}
           isExpanded={true}
+          userId={post.user_id || ""}
+          // Pass pre-fetched stats to Post component
+          initialLikeCount={initialLikeCount}
+          initialCommentCount={initialCommentCount}
+          initialViewCount={initialViewCount}
+          initialUserLiked={initialUserLiked}
+          initialUserCommented={initialUserCommented}
         />
       </div>
 
@@ -98,7 +74,11 @@ export default function PostPage({
       {post.comments_open !== false && (
         <div className={`comments-container`}>
           <div className="h-[1px] bg-dark/20 dark:bg-light/20 mt-2 mb-4"></div>
-          <PostComments postId={postId} />
+          <PostComments
+            postId={postId}
+            initialComments={comments}
+            currentUser={currentUser}
+          />
         </div>
       )}
 

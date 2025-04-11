@@ -13,7 +13,6 @@ import {
   IconLock,
   IconLockOpen,
 } from "@tabler/icons-react";
-import { createClient } from "@/utils/supabase/client";
 
 export default function MainNav({ user = null }: { user?: any }) {
   // States

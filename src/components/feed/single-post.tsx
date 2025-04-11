@@ -34,7 +34,13 @@ type PostProps = {
   isExpanded?: boolean;
   referenceOnly?: boolean;
   userId?: string;
-  onDelete?: (postId: string) => void; // New callback prop for optimistic deletion
+  onDelete?: (postId: string) => void;
+  // Pre-fetched data props
+  initialLikeCount?: number;
+  initialCommentCount?: number;
+  initialViewCount?: number;
+  initialUserLiked?: boolean;
+  initialUserCommented?: boolean;
 };
 
 export default function Post({
@@ -54,6 +60,12 @@ export default function Post({
   referenceOnly = false,
   userId = "",
   onDelete,
+  // Default values for pre-fetched data
+  initialLikeCount = 0,
+  initialCommentCount = 0,
+  initialViewCount = 0,
+  initialUserLiked = false,
+  initialUserCommented = false,
 }: PostProps) {
   // Hooks
   const router = useRouter();
@@ -67,15 +79,16 @@ export default function Post({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
-  const [isDeleted, setIsDeleted] = useState(false); // Track if this post has been deleted
+  const [isDeleted, setIsDeleted] = useState(false);
+  const [isDataLoading, setIsDataLoading] = useState(false);
 
-  // Base states with initial values
+  // Initialize state with pre-fetched data
   const [baseState, setBaseState] = useState<PostState>({
-    liked: false,
-    likeCount: 0,
-    hasCommented: false,
-    commentCount: 0,
-    viewCount: 0,
+    liked: initialUserLiked,
+    likeCount: initialLikeCount,
+    hasCommented: initialUserCommented,
+    commentCount: initialCommentCount,
+    viewCount: initialViewCount,
   });
 
   // Add transition for wrapping optimistic updates
@@ -164,91 +177,150 @@ export default function Post({
     checkIfCurrentUserPost();
   }, [supabase, username, userId]);
 
-  // Fetch reaction, comment counts, and user interactions in a single effect
+  // Only fetch post data if not provided through props
   useEffect(() => {
+    // If we have pre-fetched data for all metrics, no need to fetch again
+    const hasAllPreFetchedData =
+      initialLikeCount !== undefined &&
+      initialCommentCount !== undefined &&
+      initialViewCount !== undefined &&
+      initialUserLiked !== undefined &&
+      initialUserCommented !== undefined;
+
+    if (hasAllPreFetchedData) {
+      return;
+    }
+
     const fetchPostData = async () => {
+      setIsDataLoading(true);
       try {
         const { data: userData } = await supabase.auth.getUser();
         const isLoggedIn = !!userData?.user;
 
-        // Prepare all queries
-        const likesCountQuery = supabase
-          .from("fragment_reactions")
-          .select("*", { count: "exact", head: true })
-          .eq("fragment_id", postId)
-          .eq("type", "like");
-
-        const commentsCountQuery = supabase
-          .from("fragment_comments")
-          .select("*", { count: "exact", head: true })
-          .eq("fragment_id", postId);
-
-        const analyticsQuery = supabase
-          .from("fragment_analytics")
-          .select("views")
-          .eq("fragment_id", postId)
-          .maybeSingle();
-
-        // Execute base queries
+        // Execute all queries in parallel for better performance
         const [likesResult, commentsResult, analyticsResult] =
           await Promise.all([
-            likesCountQuery,
-            commentsCountQuery,
-            analyticsQuery,
+            // Only fetch likes if not provided
+            initialLikeCount === undefined || initialUserLiked === undefined
+              ? supabase
+                  .from("fragment_reactions")
+                  .select("*", { count: "exact", head: true })
+                  .eq("fragment_id", postId)
+                  .eq("type", "like")
+              : Promise.resolve(null),
+
+            // Only fetch comments if not provided
+            initialCommentCount === undefined ||
+            initialUserCommented === undefined
+              ? supabase
+                  .from("fragment_comments")
+                  .select("*", { count: "exact", head: true })
+                  .eq("fragment_id", postId)
+              : Promise.resolve(null),
+
+            // Only fetch views if not provided
+            initialViewCount === undefined
+              ? supabase
+                  .from("fragment_analytics")
+                  .select("views")
+                  .eq("fragment_id", postId)
+                  .maybeSingle()
+              : Promise.resolve(null),
           ]);
 
-        // Prepare update object
-        const stateUpdate: PostState = {
-          likeCount: likesResult.error ? 0 : likesResult.count || 0,
-          commentCount: commentsResult.error ? 0 : commentsResult.count || 0,
-          viewCount:
-            analyticsResult.error || !analyticsResult.data
-              ? 0
-              : analyticsResult.data.views,
-          liked: false,
-          hasCommented: false,
-        };
+        // Prepare updated state
+        const stateUpdate: Partial<PostState> = {};
 
-        // If logged in, check for user interactions
-        if (isLoggedIn) {
-          const userId = userData.user.id;
-
-          // Important: Check if user has EVER commented on this post
-          const userCommentedQuery = supabase
-            .from("fragment_comments")
-            .select("id")
-            .eq("fragment_id", postId)
-            .eq("user_id", userId)
-            .limit(1) // We only need to know if at least one exists
-            .maybeSingle();
-
-          const userLikedQuery = supabase
-            .from("fragment_reactions")
-            .select("id")
-            .eq("fragment_id", postId)
-            .eq("user_id", userId)
-            .eq("type", "like")
-            .maybeSingle();
-
-          const [userLikedResult, userCommentedResult] = await Promise.all([
-            userLikedQuery,
-            userCommentedQuery,
-          ]);
-
-          stateUpdate.liked = !userLikedResult.error && !!userLikedResult.data;
-          stateUpdate.hasCommented =
-            !userCommentedResult.error && !!userCommentedResult.data;
+        // Only update if we needed to fetch
+        if (likesResult) {
+          stateUpdate.likeCount = likesResult.error
+            ? 0
+            : likesResult.count || 0;
         }
 
-        // Update state at once
-        setBaseState(stateUpdate);
+        if (commentsResult) {
+          stateUpdate.commentCount = commentsResult.error
+            ? 0
+            : commentsResult.count || 0;
+        }
+
+        if (analyticsResult) {
+          stateUpdate.viewCount =
+            analyticsResult.error || !analyticsResult.data
+              ? 0
+              : analyticsResult.data.views;
+        }
+
+        // Check the user's interactions only if logged in and not provided
+        if (
+          isLoggedIn &&
+          (initialUserLiked === undefined || initialUserCommented === undefined)
+        ) {
+          const userId = userData.user.id;
+          const interactions = await Promise.all([
+            // Only fetch user liked status if not provided
+            initialUserLiked === undefined
+              ? supabase
+                  .from("fragment_reactions")
+                  .select("id")
+                  .eq("fragment_id", postId)
+                  .eq("user_id", userId)
+                  .eq("type", "like")
+                  .maybeSingle()
+              : Promise.resolve(null),
+
+            // Only fetch user commented status if not provided
+            initialUserCommented === undefined
+              ? supabase
+                  .from("fragment_comments")
+                  .select("id")
+                  .eq("fragment_id", postId)
+                  .eq("user_id", userId)
+                  .limit(1)
+                  .maybeSingle()
+              : Promise.resolve(null),
+          ]);
+
+          const [userLikedResult, userCommentedResult] = interactions;
+
+          if (userLikedResult) {
+            stateUpdate.liked =
+              !userLikedResult.error && !!userLikedResult.data;
+          }
+
+          if (userCommentedResult) {
+            stateUpdate.hasCommented =
+              !userCommentedResult.error && !!userCommentedResult.data;
+          }
+        }
+
+        // Only update state if we have changes
+        if (Object.keys(stateUpdate).length > 0) {
+          setBaseState((prev) => ({
+            ...prev,
+            ...stateUpdate,
+          }));
+        }
       } catch (error) {
         console.error("Error fetching post data:", error);
+      } finally {
+        setIsDataLoading(false);
       }
     };
 
-    fetchPostData();
-  }, [postId, supabase]);
+    // Only run the fetch if we're missing some data
+    if (!hasAllPreFetchedData) {
+      fetchPostData();
+    }
+  }, [
+    postId,
+    supabase,
+    initialLikeCount,
+    initialCommentCount,
+    initialViewCount,
+    initialUserLiked,
+    initialUserCommented,
+  ]);
 
   // Update blurred state when nsfw or blur props change
   useEffect(() => {
@@ -277,7 +349,7 @@ export default function Post({
     const newLikedState = !optimisticState.liked;
     const newLikeCount = optimisticState.likeCount + (newLikedState ? 1 : -1);
 
-    // Update optimistic state
+    // Update optimistic state immediately
     startTransition(() => {
       updateOptimisticState({
         liked: newLikedState,
@@ -291,7 +363,7 @@ export default function Post({
       likeCount: baseState.likeCount,
     };
 
-    // Update base state to prevent flickering
+    // Update base state immediately to prevent flickering
     setBaseState((prev) => ({
       ...prev,
       liked: newLikedState,
@@ -355,7 +427,7 @@ export default function Post({
     startTransition(() => {
       updateOptimisticState({
         hasCommented: true,
-        commentCount: baseState.commentCount + 1,
+        commentCount: optimisticState.commentCount + 1,
       });
     });
 
@@ -364,7 +436,7 @@ export default function Post({
       hasCommented: true,
       commentCount: prev.commentCount + 1,
     }));
-  }, [isPending, updateOptimisticState, baseState.commentCount]);
+  }, [isPending, updateOptimisticState, optimisticState.commentCount]);
 
   // If this post has been deleted, don't render it
   if (isDeleted) {
@@ -453,6 +525,7 @@ export default function Post({
             setStartReply={setStartReply}
             startReply={startReply}
             postId={postId}
+            isLoading={isDataLoading}
           />
 
           {commentsAllowed && (

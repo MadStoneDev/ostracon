@@ -1,10 +1,15 @@
-﻿import React, { useState, Dispatch, SetStateAction, useEffect } from "react";
+﻿"use client";
+
+import React, { useState, Dispatch, SetStateAction, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { IconLoader, IconSend, IconX } from "@tabler/icons-react";
 import UserAvatar from "@/components/ui/user-avatar";
 import HtmlContent from "@/components/feed/html-content-renderer";
 import PostEditor from "@/components/feed/post-editor";
 import { useRouter } from "next/navigation";
+
+// Import the server action
+import { addComment } from "@/utils/supabase/comment-actions";
 
 export default function SinglePostReply({
   startReply,
@@ -104,7 +109,7 @@ export default function SinglePostReply({
     setError(null);
 
     try {
-      // Get the current user
+      // First check if user is logged in
       const { data: userData, error: userError } =
         await supabase.auth.getUser();
 
@@ -112,43 +117,19 @@ export default function SinglePostReply({
         throw new Error("You must be logged in to comment");
       }
 
-      console.log("Submitting comment for post:", postId);
+      // Create FormData for the server action
+      const formData = new FormData();
+      formData.append("postId", postId);
+      formData.append("content", replyContent);
 
-      // Insert the comment
-      const { data: insertedComment, error: commentError } = await supabase
-        .from("fragment_comments")
-        .insert({
-          fragment_id: postId,
-          user_id: userData.user.id,
-          content: replyContent,
-        })
-        .select();
+      // Use the server action
+      const result = await addComment(formData);
 
-      if (commentError) {
-        console.error("Error inserting comment:", commentError);
-        throw commentError;
+      if (!result.success) {
+        throw new Error(result.error as string);
       }
 
-      console.log("Successfully inserted comment:", insertedComment);
-
-      // Create a notification for the post owner
-      const { data: postData } = await supabase
-        .from("fragments")
-        .select("user_id")
-        .eq("id", postId)
-        .single();
-
-      if (postData && postData.user_id !== userData.user.id) {
-        // Only create notification if the commenter is not the post owner
-        await supabase.from("notifications").insert({
-          user_id: postData.user_id,
-          actor_id: userData.user.id,
-          post_id: postId,
-          type: "comment",
-          read: false,
-          data: { comment_content: replyContent.substring(0, 100) },
-        });
-      }
+      console.log("Successfully added comment");
 
       // Call the callback if provided
       if (onCommentAdded) {
@@ -163,6 +144,7 @@ export default function SinglePostReply({
       // Using setTimeout to ensure the modal animations can complete
       setTimeout(() => {
         router.push(`/post/${postId}`);
+        router.refresh(); // Refresh to get the server-side data
       }, 500);
     } catch (err) {
       console.error("Error submitting comment:", err);

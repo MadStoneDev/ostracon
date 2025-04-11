@@ -22,6 +22,7 @@ type PostActionsProps = {
   setStartReply: (value: boolean) => void;
   startReply: boolean;
   postId: string;
+  isLoading?: boolean; // Add the isLoading prop
 };
 
 export const PostActions = React.memo(
@@ -35,6 +36,7 @@ export const PostActions = React.memo(
     setStartReply,
     startReply,
     postId,
+    isLoading = false, // Default to false
   }: PostActionsProps) => (
     <section className="flex flex-nowrap justify-between items-center">
       <article
@@ -52,10 +54,10 @@ export const PostActions = React.memo(
           {reactionsAllowed ? (
             <button
               className={`transition-all duration-300 ease-in-out ${
-                isPending ? "opacity-70 pointer-events-none" : ""
+                isPending || isLoading ? "opacity-70 pointer-events-none" : ""
               }`}
               onClick={handleLike}
-              disabled={isPending}
+              disabled={isPending || isLoading}
               aria-label={optimisticState.liked ? "Unlike" : "Like"}
               title={optimisticState.liked ? "Unlike" : "Like"}
             >
@@ -73,8 +75,11 @@ export const PostActions = React.memo(
 
           {commentsAllowed ? (
             <button
-              className="transition-all duration-300 ease-in-out"
+              className={`transition-all duration-300 ease-in-out ${
+                isLoading ? "opacity-70 pointer-events-none" : ""
+              }`}
               onClick={() => setStartReply(!startReply)}
+              disabled={isLoading}
               aria-label="Comment"
               title="Comment"
             >
@@ -111,7 +116,7 @@ export const PostActions = React.memo(
               <IconHeart size={20} strokeWidth={2.5} />
             )}
             <span className="font-sans text-sm font-bold">
-              {optimisticState.likeCount}
+              {isLoading ? "..." : optimisticState.likeCount}
             </span>
           </Link>
 
@@ -125,17 +130,20 @@ export const PostActions = React.memo(
               <IconMessage size={20} strokeWidth={2.5} />
             )}
             <span className="font-sans text-sm font-bold">
-              {optimisticState.commentCount}
+              {isLoading ? "..." : optimisticState.commentCount}
             </span>
           </Link>
         </div>
 
-        <Link
-          href={`/post/${postId}/analytics`}
-          className="flex items-center gap-1 opacity-30 hover:opacity-100 transition-all duration-300 ease-in-out"
-        >
-          <IconChartBarPopular size={20} strokeWidth={2.5} />
-        </Link>
+        {/*<Link*/}
+        {/*  href={`/post/${postId}/analytics`}*/}
+        {/*  className="flex items-center gap-1 opacity-30 hover:opacity-100 transition-all duration-300 ease-in-out"*/}
+        {/*>*/}
+        {/*  <IconChartBarPopular size={20} strokeWidth={2.5} />*/}
+        {/*  <span className="font-sans text-sm font-bold">*/}
+        {/*    {isLoading ? "..." : optimisticState.viewCount}*/}
+        {/*  </span>*/}
+        {/*</Link>*/}
       </article>
     </section>
   ),

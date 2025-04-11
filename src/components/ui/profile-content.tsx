@@ -3,16 +3,23 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
+import { formatCount } from "@/utils/format-count";
 import { createClient } from "@/utils/supabase/client";
 
-import { formatCount } from "@/utils/format-count";
 import UserAvatar from "@/components/ui/user-avatar";
-import PostedFeed from "@/components/profile/posted-feed";
 import LikedFeed from "@/components/profile/liked-feed";
-import { ListeningFeed, ListenersFeed } from "@/components/profile/listen-feed";
+import PostedFeed from "@/components/profile/posted-feed";
 import UserPhotosCarousel from "@/components/profile/user-photos-carousel";
+import { ListeningFeed, ListenersFeed } from "@/components/profile/listen-feed";
 
 import { IconUserPlus, IconUserOff } from "@tabler/icons-react";
+
+import { User } from "@supabase/supabase-js";
+import { Database } from "../../../database.types";
+
+// Types
+type Profile = Database["public"]["Tables"]["users"]["Row"];
+type Fragment = Database["public"]["Tables"]["fragments"]["Row"];
 
 const slideVariants = {
   enter: (direction: number) => ({
@@ -32,26 +39,43 @@ const slideVariants = {
 };
 
 export default function ProfileContent({
-  user,
-  userId,
-  currentUserId,
+  currentUser,
+  profile,
+  postedFeed,
+  likedFeed,
+  followStats,
+  followers,
+  following,
+  settings,
+  userProfiles,
 }: {
-  user?: any;
-  userId: string;
-  currentUserId: string;
+  currentUser: User;
+  profile: Profile;
+  postedFeed: Fragment[] | null;
+  likedFeed: Fragment[] | null;
+  followStats: {
+    followersCount: number;
+    followingCount: number;
+  };
+  followers: Profile[] | null;
+  following: Profile[] | null;
+  settings: any;
+  userProfiles: Record<string, Profile>;
 }) {
   // States
   const [[activeTab, direction], setActiveTab] = useState(["Posts", 0]);
-  const [followingCount, setFollowingCount] = useState(0);
-  const [followersCount, setFollowersCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(
+    followStats.followingCount,
+  );
+  const [followersCount, setFollowersCount] = useState(
+    followStats.followersCount,
+  );
 
   const [isFollowing, setIsFollowing] = useState(false);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
 
-  const supabaseClient = createClient();
-
   // Variables
-  const isOwnProfile = userId === currentUserId;
+  const isOwnProfile = currentUser.id === profile.id;
 
   // Functions
   const updateTab = (newTab: string) => {
@@ -68,22 +92,26 @@ export default function ProfileContent({
       case "Likes":
         return (
           <LikedFeed
-            userId={userId}
-            username={user.username}
-            currentUserId={currentUserId}
+            currentUser={currentUser}
+            user={profile}
+            likedFeed={likedFeed}
+            settings={settings}
+            userProfiles={userProfiles}
           />
         );
       case "Listening":
-        return <ListeningFeed userId={userId} username={user.username} />;
+        return <ListeningFeed user={profile} following={following} />;
       case "Listeners":
-        return <ListenersFeed userId={userId} username={user.username} />;
+        return <ListenersFeed user={profile} followers={followers} />;
       case "Posts":
       default:
         return (
           <PostedFeed
-            userId={userId}
-            username={user.username}
-            currentUserId={currentUserId}
+            currentUser={currentUser}
+            user={profile}
+            postedFeed={postedFeed}
+            settings={settings}
+            userProfiles={userProfiles}
           />
         );
     }
@@ -102,8 +130,8 @@ export default function ProfileContent({
         const { error } = await supabase
           .from("follows")
           .delete()
-          .eq("follower_id", currentUserId)
-          .eq("following_id", userId);
+          .eq("follower_id", currentUser.id)
+          .eq("following_id", profile.id);
 
         if (error) throw error;
 
@@ -114,8 +142,8 @@ export default function ProfileContent({
         // Follow: Insert a new record
         const { error } = await supabase.from("follows").insert([
           {
-            follower_id: currentUserId,
-            following_id: userId,
+            follower_id: currentUser.id,
+            following_id: profile.id,
           },
         ]);
 
@@ -135,31 +163,7 @@ export default function ProfileContent({
 
   // Effects
   useEffect(() => {
-    const fetchCounts = async () => {
-      const supabase = createClient();
-
-      // Get following count
-      const { count: following } = await supabase
-        .from("follows")
-        .select("*", { count: "exact", head: true })
-        .eq("follower_id", userId);
-
-      // Get followers count
-      const { count: followers } = await supabase
-        .from("follows")
-        .select("*", { count: "exact", head: true })
-        .eq("following_id", userId);
-
-      setFollowingCount(following || 0);
-      setFollowersCount(followers || 0);
-    };
-
-    fetchCounts();
-  }, [userId]);
-
-  useEffect(() => {
     const checkFollowStatus = async () => {
-      // Don't check if it's the user's own profile
       if (isOwnProfile) return;
 
       const supabase = createClient();
@@ -168,8 +172,8 @@ export default function ProfileContent({
       const { data, error } = await supabase
         .from("follows")
         .select("*")
-        .eq("follower_id", currentUserId)
-        .eq("following_id", userId)
+        .eq("follower_id", currentUser.id)
+        .eq("following_id", profile.id)
         .single();
 
       if (!error && data) {
@@ -180,7 +184,7 @@ export default function ProfileContent({
     };
 
     checkFollowStatus();
-  }, [currentUserId, userId, isOwnProfile]);
+  }, [currentUser.id, profile.id, isOwnProfile]);
 
   return (
     <div className={`mx-auto w-full`}>
@@ -213,8 +217,8 @@ export default function ProfileContent({
       <section>
         {/* Avatar */}
         <UserAvatar
-          username={user.username}
-          avatar_url={user.avatar_url}
+          username={profile.username}
+          avatar_url={profile.avatar_url || ""}
           avatarSize={`w-24 md:w-32 h-24 md:h-32`}
           textSize={`text-3xl md:text-6xl`}
         />
@@ -224,12 +228,12 @@ export default function ProfileContent({
           <h1
             className={`font-sans text-2xl md:text-3xl text-primary font-black`}
           >
-            {user.username}
+            {profile.username}
             {isOwnProfile && (
               <span className="ml-2 text-sm opacity-60">(You)</span>
             )}
           </h1>
-          <p className={`opacity-75 font-normal`}>{user.bio}</p>
+          <p className={`opacity-75 font-normal`}>{profile.bio}</p>
         </article>
 
         {/* Tabs */}
@@ -314,7 +318,7 @@ export default function ProfileContent({
       <section className={`mt-8 h-[1px] bg-dark/50 dark:bg-light/50`}></section>
 
       {/* Photo Carousel */}
-      <UserPhotosCarousel userId={userId} currentUserId={currentUserId} />
+      {/*<UserPhotosCarousel profile.id={profile.id} currentUser.id={currentUser.id} />*/}
 
       {/* Second Separator */}
       <section className={`h-[1px] bg-dark/50 dark:bg-light/50`}></section>

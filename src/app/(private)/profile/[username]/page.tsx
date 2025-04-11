@@ -1,5 +1,16 @@
-﻿import { createClient } from "@/utils/supabase/server";
-import ProfileContent from "@/components/ui/profile-content";
+﻿import ProfileContent from "@/components/ui/profile-content";
+
+import {
+  fetchCurrentUser,
+  fetchProfileByUsername,
+  fetchPostedFeedWithInteractions,
+  fetchLikedFeedWithInteractions,
+  fetchFollowers,
+  fetchFollowing,
+  fetchFollowStats,
+  fetchUserSettings,
+  fetchUserProfilesByIds,
+} from "@/utils/supabase/fetch-supabase";
 
 export async function generateMetadata({
   params,
@@ -19,28 +30,59 @@ export default async function Profile({
 }: {
   params: Promise<{ username: string }>;
 }) {
-  // Variables
   const username = (await params).username;
+  const profileData = await fetchProfileByUsername(username);
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Get current user first, as we need their ID for interaction data
+  const currentUser = await fetchCurrentUser();
+  const currentUserId = currentUser?.id;
 
-  const currentUser = await supabase
-    .from("users")
-    .select(
-      "id, username, avatar_url, bio, queued_for_delete, is_moderator, settings",
-    )
-    .eq("id", user!.id)
-    .single();
+  // Use parallel fetching for better performance
+  const [
+    postedFeedWithInteractions,
+    likedFeedWithInteractions,
+    followStats,
+    followers,
+    following,
+    settings,
+  ] = await Promise.all([
+    fetchPostedFeedWithInteractions(profileData.id, currentUserId),
+    fetchLikedFeedWithInteractions(profileData.id, currentUserId),
+    fetchFollowStats(profileData.id),
+    fetchFollowers(profileData.id),
+    fetchFollowing(profileData.id),
+    fetchUserSettings(),
+  ]);
+
+  // Extract user IDs, filtering out nulls
+  const userIds =
+    postedFeedWithInteractions
+      ?.map((post) => post.user_id)
+      .filter((id): id is string => id !== null && id !== undefined) || [];
+
+  const likedUserIds =
+    likedFeedWithInteractions
+      ?.map((post) => post.user_id)
+      .filter((id): id is string => id !== null && id !== undefined) || [];
+
+  // Combine and deduplicate IDs
+  const allUserIds = [...new Set([...userIds, ...likedUserIds])];
+
+  // Now allUserIds is guaranteed to be string[]
+  const userProfiles = await fetchUserProfilesByIds(allUserIds);
 
   return (
-    currentUser.data && (
+    currentUser && (
       <ProfileContent
-        user={currentUser.data}
-        userId={currentUser.data.id}
-        currentUserId={user?.id || ""}
+        currentUser={currentUser}
+        profile={profileData}
+        postedFeed={postedFeedWithInteractions}
+        likedFeed={likedFeedWithInteractions}
+        followStats={followStats}
+        followers={followers}
+        following={following}
+        settings={settings}
+        userProfiles={userProfiles}
       />
     )
   );
