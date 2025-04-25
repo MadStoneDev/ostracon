@@ -8,6 +8,7 @@ import { Outfit, Merriweather, Lilita_One } from "next/font/google";
 
 import MainNav from "@/components/ui/main-nav";
 import { createClient } from "@/utils/supabase/server";
+import { Toaster } from "@/components/ui/toaster";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -51,11 +52,12 @@ export default async function RootLayout({
       >
         <ThemeProvider>
           <div
-            className={`relative mx-auto flex flex-col min-h-dvh w-full max-w-3xl bg-light dark:bg-dark shadow-xl shadow-neutral-900/30`}
+            className={`relative mx-auto flex flex-col min-h-dvh w-full max-w-4xl bg-light dark:bg-dark shadow-xl shadow-neutral-900/30`}
           >
             <MainNav user={user} />
 
             {children}
+            <Toaster />
           </div>
         </ThemeProvider>
       </body>

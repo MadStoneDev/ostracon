@@ -3,17 +3,23 @@
 import BottomNav from "@/components/ui/bottom-nav";
 import Post from "@/components/feed/single-post";
 import PostComments from "@/components/feed/post-comments";
-import { UserSettings } from "@/types/settings.types";
+
 import type { Database } from "../../../database.types";
 
 type FragmentRow = Database["public"]["Tables"]["fragments"]["Row"];
 type GroupRow = Database["public"]["Tables"]["groups"]["Row"];
-type FragmentWithUser = FragmentRow & {
+type EnhancedFragment = FragmentRow & {
   users?: {
     username: string;
     avatar_url?: string;
+    id?: string;
   };
-  groups?: Pick<GroupRow, "name"> | null;
+  groups?: Pick<GroupRow, "name" | "id"> | null;
+  likeCount: number;
+  commentCount: number;
+  viewCount: number;
+  userLiked: boolean;
+  userCommented: boolean;
 };
 
 export default function PostScreen({
@@ -25,7 +31,7 @@ export default function PostScreen({
   currentUser,
 }: {
   postId: string;
-  post: FragmentWithUser;
+  post: EnhancedFragment;
   settings: any;
   authenticated: boolean;
   comments: any[];
@@ -34,15 +40,6 @@ export default function PostScreen({
   // Determine if we should blur content based on settings
   const shouldBlur = settings ? Boolean(settings.blur_sensitive_content) : true;
 
-  // Extract stats for Post component
-  const initialLikeCount = 0; // You could prefetch this data too
-  const initialCommentCount = comments?.length || 0;
-  const initialViewCount = 0; // You could prefetch this data too
-  const initialUserLiked = false; // You could prefetch this data too
-  const initialUserCommented = comments
-    ? comments.some((comment) => comment.user_id === currentUser?.id)
-    : false;
-
   return (
     <>
       <div className="post-content">
@@ -50,6 +47,7 @@ export default function PostScreen({
           postId={postId}
           avatar_url={post.users?.avatar_url || ""}
           username={post.users?.username || ""}
+          title={post.title || ""}
           content={post.content || ""}
           nsfw={post.is_nsfw || false}
           commentsAllowed={post.comments_open ?? true}
@@ -61,12 +59,12 @@ export default function PostScreen({
           truncate={false}
           isExpanded={true}
           userId={post.user_id || ""}
-          // Pass pre-fetched stats to Post component
-          initialLikeCount={initialLikeCount}
-          initialCommentCount={initialCommentCount}
-          initialViewCount={initialViewCount}
-          initialUserLiked={initialUserLiked}
-          initialUserCommented={initialUserCommented}
+          // Pass interaction data from enhanced post
+          initialLikeCount={post.likeCount}
+          initialCommentCount={post.commentCount || comments?.length || 0}
+          initialViewCount={post.viewCount}
+          initialUserLiked={post.userLiked}
+          initialUserCommented={post.userCommented}
         />
       </div>
 

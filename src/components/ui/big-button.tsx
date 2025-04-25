@@ -47,7 +47,7 @@ export default function BigButton({
   href,
   onClick,
 }: ButtonProps) {
-  const baseClassName = `group inline-flex ${
+  const baseClassName = `group cursor-pointer inline-flex ${
     direction === "left" ? "flex-row-reverse" : "flex-row"
   } items-center h-10 ${
     active ? "bg-primary text-dark" : "text-light hover:bg-primary/50"

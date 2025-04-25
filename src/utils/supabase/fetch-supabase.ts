@@ -387,3 +387,56 @@ export async function fetchPostComments(postId: string) {
 
   return data || [];
 }
+
+export async function fetchSinglePostWithInteractions(
+  postId: string,
+  currentUserId?: string,
+): Promise<EnhancedFragment | null> {
+  const supabase = await createClient();
+
+  // Fetch the basic post data first with related user and group data
+  const { data: post, error } = await supabase
+    .from("fragments")
+    .select(
+      `
+      *,
+      users:user_id (
+        id,
+        username,
+        avatar_url
+      ),
+      groups:group_id (
+        id,
+        name
+      )
+    `,
+    )
+    .eq("id", postId)
+    .single();
+
+  if (error || !post) {
+    console.error("Error fetching post:", error);
+    return null;
+  }
+
+  // Use the existing helper to get interaction data for this single post
+  const {
+    likeCountMap,
+    commentCountMap,
+    viewCountMap,
+    userLikedMap,
+    userCommentedMap,
+  } = await fetchInteractionData([postId], currentUserId);
+
+  // Combine the data
+  const enhancedPost: EnhancedFragment = {
+    ...post,
+    likeCount: likeCountMap[postId] || 0,
+    commentCount: commentCountMap[postId] || 0,
+    viewCount: viewCountMap[postId] || 0,
+    userLiked: userLikedMap[postId] || false,
+    userCommented: userCommentedMap[postId] || false,
+  };
+
+  return enhancedPost;
+}

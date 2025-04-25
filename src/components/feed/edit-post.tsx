@@ -7,7 +7,6 @@ import { createClient } from "@/utils/supabase/client";
 import PostEditor from "@/components/feed/post-editor";
 
 import {
-  IconEyeOff,
   IconHeart,
   IconHeartFilled,
   IconMessage,
@@ -15,6 +14,7 @@ import {
   IconSend,
   IconX,
 } from "@tabler/icons-react";
+import { Drama } from "lucide-react";
 import CommunitySelector from "@/components/ui/community-selector";
 import type { Database } from "../../../database.types";
 
@@ -304,7 +304,7 @@ export default function EditPost({
           } transition-all duration-300 ease-in-out`}
           onClick={() => handleDefaultSettings("postNSFW")}
         >
-          <IconEyeOff size={24} strokeWidth={2} />
+          <Drama size={24} strokeWidth={2} />
         </button>
       </aside>
 

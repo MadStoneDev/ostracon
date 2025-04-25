@@ -8,6 +8,7 @@ type PostContentProps = {
   isExpanded?: boolean;
   router: ReturnType<typeof useRouter>;
   postId: string;
+  title?: string;
   content: string;
   truncate?: boolean;
 };
@@ -19,6 +20,7 @@ export const PostContent = React.memo(
     isExpanded,
     router,
     postId,
+    title = "",
     content,
     truncate,
   }: PostContentProps) => (
@@ -37,6 +39,7 @@ export const PostContent = React.memo(
           }
         }}
       >
+        <h3 className={`text-lg font-bold mb-2`}>{title || ""}</h3>
         <HtmlContent
           postId={postId}
           content={content}

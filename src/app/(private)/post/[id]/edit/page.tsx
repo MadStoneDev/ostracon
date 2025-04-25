@@ -1,7 +1,8 @@
 ﻿import React from "react";
-import EditPost from "@/components/feed/edit-post";
-import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
+import { createClient } from "@/utils/supabase/server";
+
+import PostForm from "@/components/feed/post/post-form";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -64,5 +65,5 @@ export default async function EditPostPage({ params }: PageProps) {
     );
   }
 
-  return <EditPost postId={postId} post={post} />;
+  return <PostForm postId={postId} post={post} isEditing={true} />;
 }

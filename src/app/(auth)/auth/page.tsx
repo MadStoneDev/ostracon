@@ -1,16 +1,12 @@
 import Link from "next/link";
-
-import { IconArrowRight } from "@tabler/icons-react";
-
-import BigButton from "@/components/ui/big-button";
-import RegisterForm from "@/components/auth/register-form";
+import AuthForm from "@/components/auth/auth-form";
 
 export const metadata = {
-  title: "Register for Ostracon",
+  title: "Portal for Ostracon",
   description: "Create a free account on Ostracon to start posting.",
 };
 
-export default function Register() {
+export default function AuthPage() {
   return (
     <main
       className={`flex-grow flex flex-col h-full`}
@@ -22,11 +18,9 @@ export default function Register() {
       <section className={`flex-grow px-[25px] grid grid-cols-1 items-center`}>
         <article>
           <h1 className={`font-serif text-5xl font-black`}>Start Creating</h1>
-          <h2 className={`font-serif text-xl`}>
-            Let's set up your new account
-          </h2>
+          <h2 className={`font-serif text-xl`}>Enter your email to continue</h2>
 
-          <RegisterForm />
+          <AuthForm />
 
           <div className={`mt-2 max-w-sm`}>
             <span
@@ -35,13 +29,13 @@ export default function Register() {
                 lineHeight: "1rem",
               }}
             >
-              By signing up, you confirm that you are 16 years of age or older
+              By continuing, you confirm that you are 16 years of age or older
               and agree to Ostracon's{" "}
               <a href={`/terms-of-service`} className="text-primary font-bold">
                 Terms of Service
               </a>{" "}
               and{" "}
-              <a href={`privacy-policy`} className="text-primary font-bold">
+              <a href={`/privacy-policy`} className="text-primary font-bold">
                 Privacy Policy
               </a>
               .
@@ -55,9 +49,9 @@ export default function Register() {
         className={`px-[25px] pb-4 flex flex-col justify-center items-start h-fit`}
       >
         <p>
-          Already have an account?{" "}
-          <Link href={`/login`} className={`text-primary font-bold`}>
-            Log in here.
+          Issues logging in?{" "}
+          <Link href={`/help`} className={`text-primary font-bold`}>
+            Get help here.
           </Link>
         </p>
 

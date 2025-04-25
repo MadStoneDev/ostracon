@@ -22,6 +22,7 @@ type PostProps = {
   postId: string;
   avatar_url: string;
   username: string;
+  title?: string;
   content: string;
   nsfw: boolean;
   commentsAllowed?: boolean;
@@ -47,6 +48,7 @@ export default function Post({
   postId,
   avatar_url,
   username,
+  title,
   content,
   nsfw,
   commentsAllowed = true,
@@ -91,22 +93,18 @@ export default function Post({
     viewCount: initialViewCount,
   });
 
-  // Add transition for wrapping optimistic updates
   const [isPending, startTransition] = useTransition();
 
-  // Optimistic state updates
   const [optimisticState, updateOptimisticState] = useOptimistic<
     PostState,
     Partial<PostState>
   >(baseState, (state, update) => ({ ...state, ...update }));
 
-  // Handle post deletion
   const handleDeletePost = async () => {
     setIsDeleting(true);
     setDeleteError(null);
 
     try {
-      // Verify the user is authenticated
       const { data: userData, error: authError } =
         await supabase.auth.getUser();
 
@@ -114,20 +112,16 @@ export default function Post({
         throw new Error("You must be logged in to delete this post.");
       }
 
-      // Verify this is the user's post
       if (userData.user.id !== userId) {
         throw new Error("You can only delete your own posts.");
       }
 
-      // Optimistically mark as deleted
       setIsDeleted(true);
 
-      // Notify parent feed about the deletion
       if (onDelete) {
         onDelete(postId);
       }
 
-      // Delete the post in the database
       const { error: deleteError } = await supabase
         .from("fragments")
         .delete()
@@ -135,7 +129,6 @@ export default function Post({
 
       if (deleteError) throw deleteError;
 
-      // If we're on the individual post page, redirect to explore
       if (isExpanded) {
         router.push("/explore");
         router.refresh();
@@ -228,6 +221,8 @@ export default function Post({
               : Promise.resolve(null),
           ]);
 
+        console.log(likesResult);
+
         // Prepare updated state
         const stateUpdate: Partial<PostState> = {};
 
@@ -310,6 +305,7 @@ export default function Post({
 
     // Only run the fetch if we're missing some data
     if (!hasAllPreFetchedData) {
+      console.log("Fetching post data...");
       fetchPostData();
     }
   }, [
@@ -509,6 +505,7 @@ export default function Post({
         isExpanded={isExpanded}
         router={router}
         postId={postId}
+        title={title}
         content={content}
         truncate={truncate}
       />

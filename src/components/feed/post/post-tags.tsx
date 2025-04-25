@@ -1,6 +1,7 @@
 ﻿import React from "react";
 import Link from "next/link";
 import { IconUsers } from "@tabler/icons-react";
+import { Drama } from "lucide-react";
 
 type PostTagsProps = {
   nsfw: boolean;
@@ -15,10 +16,12 @@ export const PostTags = React.memo(
     <div className="mt-2 flex flex-wrap gap-2">
       {nsfw && (
         <button
-          className="px-1.5 py-1 grid place-content-center bg-nsfw rounded-full font-accent text-light z-10 transition-all duration-300 ease-in-out"
+          className={`px-1.5 py-1 grid place-content-center text-red-600 aspect-square rounded-full font-accent z-10 transition-all duration-300 ease-in-out`}
           onClick={() => setBlurred(!blurred)}
         >
-          <span className="text-xs text-center">nsfw</span>
+          <span className={`flex flex-col items-center text-xs text-center`}>
+            <Drama /> NSFW
+          </span>
         </button>
       )}
 

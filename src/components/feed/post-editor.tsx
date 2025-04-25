@@ -130,17 +130,19 @@ export default function PostEditor({
   };
 
   return (
-    <div className={`relative w-full h-full`}>
+    <div className={`flex-grow relative flex w-full`}>
       <LexicalComposer initialConfig={initialConfig}>
         <AutoFocusPlugin />
         <RichTextPlugin
           contentEditable={
             <ContentEditable
-              className={`flex-grow pr-4 w-full min-h-full focus:outline-none`}
+              className={`flex-grow p-4 w-full min-h-full bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-900 focus:outline-none focus:border-primary transition-all duration-300 ease-in-out`}
             />
           }
           placeholder={
-            <div className={`absolute top-0 pointer-events-none opacity-50`}>
+            <div
+              className={`absolute top-4 left-4 pointer-events-none opacity-50`}
+            >
               {placeholder}
             </div>
           }

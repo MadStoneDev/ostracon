@@ -2,11 +2,27 @@ import React from "react";
 
 import PostScreen from "@/components/feed/post-screen";
 import {
-  fetchPostById,
+  fetchSinglePostWithInteractions,
   fetchUserSettings,
   fetchCurrentUser,
 } from "@/utils/supabase/fetch-supabase";
 import { fetchPostComments } from "@/utils/supabase/comment-actions";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const postId = (await params).id;
+
+  // Fetch post data server-side
+  const post = await fetchSinglePostWithInteractions(postId);
+
+  return {
+    title: `${post?.title || "Post"} | Ostracon`,
+    description: post?.content?.slice(0, 150) || "",
+  };
+}
 
 export default async function PostPage({
   params,
@@ -15,8 +31,12 @@ export default async function PostPage({
 }) {
   const postId = (await params).id;
 
-  // Fetch post data server-side
-  const post = await fetchPostById(postId);
+  // Fetch current user first as we need the ID for interactions
+  const currentUser = await fetchCurrentUser();
+  const currentUserId = currentUser?.id;
+
+  // Fetch post data with interaction metrics
+  const post = await fetchSinglePostWithInteractions(postId, currentUserId);
 
   if (!post) {
     return (
@@ -29,10 +49,9 @@ export default async function PostPage({
     );
   }
 
-  // Fetch in parallel for better performance
-  const [userSettings, currentUser, comments] = await Promise.all([
+  // Fetch remaining data in parallel for better performance
+  const [userSettings, comments] = await Promise.all([
     fetchUserSettings(),
-    fetchCurrentUser(),
     fetchPostComments(postId),
   ]);
 

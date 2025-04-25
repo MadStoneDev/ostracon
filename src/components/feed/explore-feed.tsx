@@ -17,6 +17,15 @@ type FragmentWithUser = FragmentRow & {
   groups?: Pick<GroupRow, "name"> | null;
 };
 
+// Define EnhancedFragment with interaction data
+type EnhancedFragment = FragmentWithUser & {
+  likeCount: number;
+  commentCount: number;
+  viewCount: number;
+  userLiked: boolean;
+  userCommented: boolean;
+};
+
 // Define UserSettings type
 interface UserSettings {
   blur_sensitive_content: boolean;
@@ -27,7 +36,7 @@ interface UserSettings {
 
 // Loading skeleton for posts
 const PostSkeleton = () => (
-  <div className="w-full max-w-3xl border-b border-dark/10 dark:border-light/10 py-4 animate-pulse">
+  <div className="w-full border-b border-dark/10 dark:border-light/10 py-4 animate-pulse">
     <div className="flex items-center space-x-3">
       <div className="rounded-full bg-gray-200 dark:bg-gray-700 h-10 w-10"></div>
       <div className="flex-1 space-y-2">
@@ -54,7 +63,7 @@ export default function ExploreFeed() {
   // Memoize the supabase client to prevent recreation on every render
   const supabase = useMemo(() => createClient(), []);
 
-  const [posts, setPosts] = useState<FragmentWithUser[]>([]);
+  const [posts, setPosts] = useState<EnhancedFragment[]>([]);
   const [settings, setSettings] = useState<UserSettings>(defaultSettings);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -79,7 +88,6 @@ export default function ExploreFeed() {
   }, []);
 
   // Setup intersection observer for infinite scrolling
-  // Make sure to conditionally reset the observer only when necessary
   useEffect(() => {
     if (!loadingRef.current || !hasMore) return;
 
@@ -201,8 +209,98 @@ export default function ExploreFeed() {
         throw postsError;
       }
 
-      // Cast the result to our type
-      const typedPosts = newPosts as FragmentWithUser[];
+      // Fetch interaction data for these posts
+      const postIds = newPosts?.map((post) => post.id) || [];
+
+      // Fetch interactions for all the posts we just loaded
+      const [likesData, commentsData, viewsData] = await Promise.all([
+        // Fetch like counts
+        supabase
+          .from("fragment_reactions")
+          .select("fragment_id, user_id")
+          .eq("type", "like")
+          .in("fragment_id", postIds),
+
+        // Fetch comment counts
+        supabase
+          .from("fragment_comments")
+          .select("fragment_id, user_id")
+          .in("fragment_id", postIds),
+
+        // Fetch view counts
+        supabase
+          .from("fragment_analytics")
+          .select("fragment_id, views")
+          .in("fragment_id", postIds),
+      ]);
+
+      // Process likes data
+      const likeCountMap: Record<string, number> = {};
+      const userLikedMap: Record<string, boolean> = {};
+
+      if (likesData.data && likesData.data.length > 0) {
+        for (const like of likesData.data) {
+          if (like.fragment_id) {
+            // Count likes per post
+            likeCountMap[like.fragment_id] =
+              (likeCountMap[like.fragment_id] || 0) + 1;
+
+            // Check if current user liked this post
+            if (userId === like.user_id) {
+              userLikedMap[like.fragment_id] = true;
+            }
+          }
+        }
+      }
+
+      // Process comments data
+      const commentCountMap: Record<string, number> = {};
+      const userCommentedMap: Record<string, boolean> = {};
+
+      if (commentsData.data && commentsData.data.length > 0) {
+        const userCommentedPosts = new Set<string>();
+
+        for (const comment of commentsData.data) {
+          if (comment.fragment_id) {
+            // Count comments per post
+            commentCountMap[comment.fragment_id] =
+              (commentCountMap[comment.fragment_id] || 0) + 1;
+
+            // Check if current user commented on this post
+            if (
+              userId === comment.user_id &&
+              !userCommentedPosts.has(comment.fragment_id)
+            ) {
+              userCommentedMap[comment.fragment_id] = true;
+              userCommentedPosts.add(comment.fragment_id);
+            }
+          }
+        }
+      }
+
+      // Process views data
+      const viewCountMap: Record<string, number> = {};
+
+      if (viewsData.data && viewsData.data.length > 0) {
+        for (const view of viewsData.data) {
+          if (view.fragment_id) {
+            viewCountMap[view.fragment_id] = view.views || 0;
+          }
+        }
+      }
+
+      // Cast the result to our type and enhance with interaction data
+      const typedPosts = (newPosts || []).map(
+        (post) =>
+          ({
+            ...post,
+            likeCount: likeCountMap[post.id] || 0,
+            commentCount: commentCountMap[post.id] || 0,
+            viewCount: viewCountMap[post.id] || 0,
+            userLiked: userLikedMap[post.id] || false,
+            userCommented: userCommentedMap[post.id] || false,
+          }) as EnhancedFragment,
+      );
 
       // Filter NSFW content based on user settings
       const filteredPosts =
@@ -279,12 +377,13 @@ export default function ExploreFeed() {
         posts.map((post) => (
           <article
             key={`feed-post-${post.id}`}
-            className={`w-full max-w-3xl border-b last-of-type:border-b-0 border-dark/10 dark:border-light/10 transition-all duration-300 ease-in-out`}
+            className={`w-full border-b last-of-type:border-b-0 border-dark/10 dark:border-light/10 transition-all duration-300 ease-in-out`}
           >
             <Post
               postId={post.id}
               avatar_url={post.users?.avatar_url || ""}
               username={post.users?.username || ""}
+              title={post.title || ""}
               content={post.content || ""}
               nsfw={post.is_nsfw || false}
               commentsAllowed={post.comments_open ?? true}
@@ -295,6 +394,11 @@ export default function ExploreFeed() {
               groupName={post.groups?.name || ""}
               userId={post.user_id || ""}
               onDelete={handleDeletePost}
+              initialLikeCount={post.likeCount}
+              initialCommentCount={post.commentCount}
+              initialViewCount={post.viewCount}
+              initialUserLiked={post.userLiked}
+              initialUserCommented={post.userCommented}
             />
           </article>
         ))}

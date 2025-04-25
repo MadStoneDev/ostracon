@@ -76,6 +76,7 @@ export default function LikedFeed({
               postId={post.id}
               avatar_url={postUser?.avatar_url || ""}
               username={postUser?.username || ""}
+              title={post.title || ""}
               content={post.content || ""}
               nsfw={post.is_nsfw || false}
               commentsAllowed={post.comments_open ?? true}
