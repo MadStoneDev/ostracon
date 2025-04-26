@@ -203,7 +203,7 @@ export default function SinglePostReply({
         {error && <div className={`mb-3 text-red-500 text-sm`}>{error}</div>}
 
         <article className={`flex items-start gap-2 h-[20vh]`}>
-          <div className={`flex-grow h-full overflow-y-auto`}>
+          <div className={`flex-grow flex h-full overflow-y-auto`}>
             <PostEditor
               onChange={handleEditorContentChange}
               placeholder={"What's your sassy but meaningful response?"}
@@ -214,11 +214,11 @@ export default function SinglePostReply({
             <IconLoader
               size={24}
               strokeWidth={2}
-              className={`text-primary animate-[spin_2s_linear_infinite]`}
+              className={`my-4 text-primary animate-[spin_2s_linear_infinite]`}
             />
           ) : (
             <button
-              className={`hover:text-primary transition-all duration-300 ease-in-out ${
+              className={`my-4 hover:text-primary transition-all duration-300 ease-in-out ${
                 !replyContent.trim() && "opacity-50 cursor-not-allowed"
               }`}
               onClick={submitComment}
