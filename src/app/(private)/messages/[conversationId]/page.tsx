@@ -7,9 +7,9 @@ import ConversationContent from "@/components/messages/conversation-content";
 export default async function ConversationPage({
   params,
 }: {
-  params: { conversationId: string };
+  params: Promise<{ conversationId: string }>;
 }) {
-  const { conversationId } = params;
+  const { conversationId } = await params;
   const supabase = await createClient();
 
   // Get current user
