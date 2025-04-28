@@ -19,9 +19,6 @@ export default function PrivateLayout({
     >
       <main className={`flex-grow overflow-y-auto`}>{children}</main>
 
-      <OstraconAction />
-
-      {authenticated ? <BottomNav /> : null}
     </div>
   );
 }

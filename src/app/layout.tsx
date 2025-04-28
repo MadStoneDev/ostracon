@@ -51,9 +51,9 @@ export default async function RootLayout({
         }}
       >
         <ThemeProvider>
-          <div
-            className={`absolute top-0 right-0 bottom-0 left-0 bg-transparent dark:bg-neutral-900/40 transition-all duration-300 ease-in-out z-10`}
-          ></div>
+          {/*<div*/}
+          {/*  className={`absolute top-0 right-0 bottom-0 left-0 bg-transparent dark:bg-neutral-900/40 transition-all duration-300 ease-in-out z-10`}*/}
+          {/*></div>*/}
           <div
             className={`relative mx-auto flex flex-col min-h-dvh w-full max-w-4xl bg-light dark:bg-dark shadow-xl shadow-neutral-900/30 z-20`}
           >

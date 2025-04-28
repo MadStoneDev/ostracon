@@ -13,6 +13,8 @@ import {
   IconMenu,
   IconPlug,
   IconSearch,
+  IconSend,
+  IconSquareRoundedArrowRightFilled,
   IconSquareRoundedPlusFilled,
   IconX,
 } from "@tabler/icons-react";
@@ -41,12 +43,14 @@ export default function BottomNav({
   const [showOverlay, setShowOverlay] = useState(false);
   const [overlayActive, setOverlayActive] = useState(false);
 
-  const isCommunityPage = pathname.startsWith("/community");
+  const isCommunityPage = pathname.startsWith("/connect");
   const communityName = isCommunityPage ? pathname.split("/")[2] : "";
 
   const newPostLink = isCommunityPage
     ? `/post/new?community=${communityName}`
     : "/post/new";
+
+  const newMessageLink = "/messages/new";
 
   // Functions
   const closeMenu = () => {
@@ -94,7 +98,7 @@ export default function BottomNav({
         <Link
           href={`/explore`}
           className={`flex items-center justify-center ${
-            pathname.includes("/explore") ? "text-primary" : ""
+            pathname.includes("/explore") ? "bg-primary rounded-full" : ""
           } w-12 h-12 rounded-full transition-all duration-300 ease-in-out`}
         >
           <IconHome size={24} strokeWidth={2} />
@@ -103,7 +107,7 @@ export default function BottomNav({
         <Link
           href={`/search`}
           className={`flex items-center justify-center ${
-            pathname.includes("/search") ? "" : ""
+            pathname.includes("/search") ? "bg-primary rounded-full" : ""
           } w-12 h-12 rounded-full transition-all duration-300 ease-in-out`}
         >
           <IconSearch size={24} strokeWidth={2} />
@@ -112,24 +116,33 @@ export default function BottomNav({
         <Link
           href={`/connect`}
           className={`flex items-center justify-center ${
-            pathname.includes("/groups") ? "bg-secondary/50" : ""
+            pathname.includes("/connect") ? "bg-primary rounded-full" : ""
           } w-12 h-12 rounded-full transition-all duration-300 ease-in-out`}
         >
           <IconPlug size={24} strokeWidth={2} />
         </Link>
 
         {/* Main Button */}
-        <Link
-          href={newPostLink}
-          className={`flex items-center justify-center rounded-full transition-all duration-300 ease-in-out`}
-        >
-          <IconSquareRoundedPlusFilled size={56} />
-        </Link>
+        {pathname === "/messages" ? (
+          <Link
+            href={newMessageLink}
+            className={`flex items-center justify-center rounded-full transition-all duration-300 ease-in-out`}
+          >
+            <IconSquareRoundedPlusFilled size={56} />
+          </Link>
+        ) : (
+          <Link
+            href={newPostLink}
+            className={`flex items-center justify-center rounded-full transition-all duration-300 ease-in-out`}
+          >
+            <IconSquareRoundedPlusFilled size={56} />
+          </Link>
+        )}
 
         <Link
           href={`/notifications`}
           className={`flex items-center justify-center ${
-            pathname.includes("/notifications") ? "text-primary" : ""
+            pathname.includes("/notifications") ? "bg-primary rounded-full" : ""
           } w-12 h-12 rounded-full transition-all duration-300 ease-in-out`}
         >
           <IconBell size={24} strokeWidth={2} />
@@ -138,7 +151,7 @@ export default function BottomNav({
         <Link
           href={`/messages`}
           className={`flex items-center justify-center ${
-            pathname.includes("/messages") ? "text-primary" : ""
+            pathname.includes("/messages") ? "bg-primary rounded-full" : ""
           } w-12 h-12 rounded-full transition-all duration-300 ease-in-out`}
         >
           <IconMail size={24} strokeWidth={2} />

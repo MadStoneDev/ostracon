@@ -7,15 +7,11 @@ export default function PrivateLayout({
   children: React.ReactNode;
   params: Promise<{ username: string }>;
 }>) {
-  const authenticated = true;
-
   return (
     <div className={`relative flex-grow grid overflow-hidden`}>
       <main className={`relative flex-grow flex justify-center`}>
         {children}
       </main>
-
-      {authenticated ? <BottomNav /> : null}
     </div>
   );
 }

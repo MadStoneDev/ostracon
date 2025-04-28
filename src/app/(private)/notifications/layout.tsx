@@ -16,13 +16,7 @@ export default function PrivateLayout({
 
   return (
     <div className={`relative flex-grow grid h-full overflow-hidden`}>
-      <div
-        className={`fixed top-0 w-full h-[60px] bg-light dark:bg-dark z-10`}
-      ></div>
-
       <div className={`relative`}>{children}</div>
-
-      {authenticated ? <BottomNav /> : null}
     </div>
   );
 }
