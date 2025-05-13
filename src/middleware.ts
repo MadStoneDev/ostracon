@@ -6,14 +6,15 @@ import { updateSession } from "@/utils/supabase/middleware";
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
-  // Public Routes
-  const publicRoutes = [
+  // Public Routes prefixes - these and all their subdirectories are public
+  const publicRoutesPrefixes = [
     "/",
     "/login",
     "/register",
     "/info",
+    "/support",
     "/privacy-policy",
-    "/terms-and-conditions",
+    "/terms-of-service",
     "/cookies-policy",
     "/error",
   ];
@@ -27,8 +28,16 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Check if the path starts with any of the public route prefixes
+  // Special handling for root path "/" to prevent it from matching everything
+  const isPublicRoute = publicRoutesPrefixes.some((prefix) =>
+    prefix === "/"
+      ? path === "/"
+      : path === prefix || path.startsWith(`${prefix}/`),
+  );
+
   // Skip for public routes
-  if (publicRoutes.includes(path)) {
+  if (isPublicRoute) {
     return NextResponse.next();
   }
 

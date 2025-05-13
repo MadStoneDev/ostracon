@@ -9,7 +9,9 @@ export const metadata = {
 
 export default function ContactPage() {
   return (
-    <main className={`flex-grow flex flex-col h-full`}>
+    <main
+      className={`flex-grow flex flex-col h-full bg-light dark:bg-dark shadow-xl shadow-neutral-900/30`}
+    >
       <section className={`flex-grow px-[25px] grid grid-cols-1 items-center`}>
         <article>
           <h1 className={`font-serif text-5xl font-black`}>Contact Us</h1>

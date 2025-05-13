@@ -1,5 +1,4 @@
 ﻿import React from "react";
-import BottomNav from "@/components/ui/bottom-nav";
 
 export const metadata = {
   title: "Notifications | Ostracon",
@@ -7,13 +6,11 @@ export const metadata = {
   description: "Notifications page",
 };
 
-export default function PrivateLayout({
+export default function NotificationsLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const authenticated = true;
-
   return (
     <div className={`relative flex-grow grid h-full overflow-hidden`}>
       <div className={`relative`}>{children}</div>

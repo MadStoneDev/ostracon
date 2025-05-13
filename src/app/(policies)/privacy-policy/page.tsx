@@ -3,20 +3,8 @@ import BottomNav from "@/components/ui/bottom-nav";
 import Link from "next/link";
 
 export default function PrivacyPolicy() {
-  const authenticated = true;
-
   return (
-    <main
-      className={`relative flex-grow flex flex-col h-full`}
-      style={{
-        paddingTop: "60px",
-        paddingBottom: "60px",
-      }}
-    >
-      <div
-        className={`fixed top-0 w-full h-[70px] bg-light dark:bg-dark z-10`}
-      ></div>
-
+    <main className={`relative flex-grow flex flex-col h-full`}>
       {/* Main Content */}
       <div
         className={`mt-4 flex-grow px-[25px] grid grid-cols-1 items-center max-w-md lg:max-w-xl`}
@@ -232,7 +220,9 @@ export default function PrivacyPolicy() {
 
         <section className="mb-8">
           <h2 className="text-xl font-serif mb-4">10. Contact Us</h2>
-          <p>Coming Soon</p>
+          <Link href={`/support/contact`} className={`text-primary font-bold`}>
+            Go to our support page to contact us.
+          </Link>
         </section>
       </div>
 
@@ -251,8 +241,6 @@ export default function PrivacyPolicy() {
           </Link>
         </div>
       </footer>
-
-      {authenticated ? <BottomNav /> : null}
     </main>
   );
 }

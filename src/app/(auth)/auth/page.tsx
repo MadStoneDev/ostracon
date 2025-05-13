@@ -9,7 +9,7 @@ export const metadata = {
 export default function AuthPage() {
   return (
     <main
-      className={`flex-grow flex flex-col h-full`}
+      className={`flex-grow flex flex-col h-full bg-light dark:bg-dark shadow-xl shadow-neutral-900/30`}
       style={{
         paddingTop: "60px",
       }}
@@ -50,7 +50,7 @@ export default function AuthPage() {
       >
         <p>
           Issues logging in?{" "}
-          <Link href={`/help`} className={`text-primary font-bold`}>
+          <Link href={`/support/contact`} className={`text-primary font-bold`}>
             Get help here.
           </Link>
         </p>

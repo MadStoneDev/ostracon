@@ -26,7 +26,7 @@ export default async function Home() {
 
   return (
     <main
-      className={`flex-grow flex flex-col h-full`}
+      className={`flex-grow flex flex-col h-full bg-light dark:bg-dark shadow-xl shadow-neutral-900/30`}
       style={{
         paddingTop: "60px",
       }}

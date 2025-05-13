@@ -3,17 +3,8 @@ import React from "react";
 import Link from "next/link";
 
 export default function TermsOfService() {
-  const authenticated = true;
-
   return (
-    <main
-      className={`relative flex-grow flex flex-col h-full`}
-      style={{
-        paddingTop: "60px",
-        paddingBottom: "60px",
-      }}
-    >
-      <div className="fixed top-0 w-full h-[70px] bg-light dark:bg-dark z-10"></div>
+    <main className={`relative flex-grow flex flex-col h-full`}>
       {/* Main Content */}
       <div className="mt-4 flex-grow px-[25px] grid grid-cols-1 items-center max-w-md lg:max-w-xl">
         <h1 className="text-4xl font-serif mb-4">Terms of Service</h1>
@@ -239,8 +230,6 @@ export default function TermsOfService() {
           </Link>
         </div>
       </footer>
-
-      {authenticated ? <BottomNav /> : null}
     </main>
   );
 }
