@@ -1,0 +1,303 @@
+|   .env
+|   .env.example
+|   .env.local
+|   .gitignore
+|   bak-components.json
+|   components.json
+|   database.types.ts
+|   directory_structure.txt
+|   identifier.sqlite
+|   next-env.d.ts
+|   next.config.ts
+|   package-lock.json
+|   package.json
+|   postcss.config.mjs
+|   README.md
+|   tailwind.config.ts
+|   tsconfig.json
+|   
++---public
+|       file.svg
+|       globe.svg
+|       next.svg
+|       ostracon-logo-background.jpg
+|       ostracon-logo-dark.svg
+|       ostracon-logo-light.svg
+|       ostracon-symbol.svg
+|       vercel.svg
+|       window.svg
+|       
++---src
+|   |   middleware.ts
+|   |   
+|   +---app
+|   |   |   favicon.ico
+|   |   |   globals.css
+|   |   |   layout.tsx
+|   |   |   page.tsx
+|   |   |   
+|   |   +---(auth)
+|   |   |   \---auth
+|   |   |       |   actions.ts
+|   |   |       |   page.tsx
+|   |   |       |   
+|   |   |       +---check-email
+|   |   |       |       page.tsx
+|   |   |       |       
+|   |   |       \---confirm
+|   |   |               route.ts
+|   |   |               
+|   |   +---(policies)
+|   |   |   |   layout.tsx
+|   |   |   |   
+|   |   |   +---privacy-policy
+|   |   |   |       page.tsx
+|   |   |   |       
+|   |   |   \---terms-of-service
+|   |   |           page.tsx
+|   |   |           
+|   |   +---(private)
+|   |   |   |   layout.tsx
+|   |   |   |   
+|   |   |   +---connect
+|   |   |   |   |   layout.tsx
+|   |   |   |   |   page.tsx
+|   |   |   |   |   
+|   |   |   |   \---[name]
+|   |   |   |       |   page.tsx
+|   |   |   |       |   
+|   |   |   |       \---settings
+|   |   |   |               page.tsx
+|   |   |   |               
+|   |   |   +---explore
+|   |   |   |       layout.tsx
+|   |   |   |       page.tsx
+|   |   |   |       
+|   |   |   +---locked
+|   |   |   |       page.tsx
+|   |   |   |       
+|   |   |   +---messages
+|   |   |   |   |   layout.tsx
+|   |   |   |   |   page.tsx
+|   |   |   |   |   
+|   |   |   |   +---new
+|   |   |   |   |       page.tsx
+|   |   |   |   |       
+|   |   |   |   \---[conversationId]
+|   |   |   |           layout.tsx
+|   |   |   |           page.tsx
+|   |   |   |           
+|   |   |   +---notifications
+|   |   |   |       layout.tsx
+|   |   |   |       page.tsx
+|   |   |   |       
+|   |   |   +---post
+|   |   |   |   |   layout.tsx
+|   |   |   |   |   
+|   |   |   |   +---new
+|   |   |   |   |       page.tsx
+|   |   |   |   |       
+|   |   |   |   \---[id]
+|   |   |   |       |   page.tsx
+|   |   |   |       |   
+|   |   |   |       +---analytics
+|   |   |   |       |       page.tsx
+|   |   |   |       |       
+|   |   |   |       +---edit
+|   |   |   |       |       page.tsx
+|   |   |   |       |       
+|   |   |   |       +---flag
+|   |   |   |       |       page.tsx
+|   |   |   |       |       
+|   |   |   |       +---likes
+|   |   |   |       |       page.tsx
+|   |   |   |       |       
+|   |   |   |       \---report
+|   |   |   |               page.tsx
+|   |   |   |               
+|   |   |   +---profile
+|   |   |   |   |   layout.tsx
+|   |   |   |   |   page.tsx
+|   |   |   |   |   
+|   |   |   |   +---edit
+|   |   |   |   |       page.tsx
+|   |   |   |   |       
+|   |   |   |   +---setup
+|   |   |   |   |       actions.ts
+|   |   |   |   |       page.tsx
+|   |   |   |   |       
+|   |   |   |   \---[username]
+|   |   |   |       |   page.tsx
+|   |   |   |       |   
+|   |   |   |       \---admin
+|   |   |   |               page.tsx
+|   |   |   |               
+|   |   |   +---search
+|   |   |   |       page.tsx
+|   |   |   |       
+|   |   |   \---settings
+|   |   |           page.tsx
+|   |   |           
+|   |   +---api
+|   |   |   +---analytics
+|   |   |   |   \---view
+|   |   |   |           route.ts
+|   |   |   |           
+|   |   |   +---check-username
+|   |   |   |       route.ts
+|   |   |   |       
+|   |   |   +---messages
+|   |   |   \---pin
+|   |   |       +---check-lock
+|   |   |       |       route.ts
+|   |   |       |       
+|   |   |       +---check-pin
+|   |   |       |       route.ts
+|   |   |       |       
+|   |   |       +---lock
+|   |   |       |       route.ts
+|   |   |       |       
+|   |   |       +---remove
+|   |   |       |       route.ts
+|   |   |       |       
+|   |   |       +---set
+|   |   |       |       route.ts
+|   |   |       |       
+|   |   |       \---unlock
+|   |   |               route.ts
+|   |   |               
+|   |   +---error
+|   |   |       page.tsx
+|   |   |       
+|   |   +---fonts
+|   |   |       GeistMonoVF.woff
+|   |   |       GeistVF.woff
+|   |   |       
+|   |   +---info
+|   |   |       page.tsx
+|   |   |       
+|   |   \---support
+|   |       \---contact
+|   |               page.tsx
+|   |               
+|   +---components
+|   |   |   locked-panel.tsx
+|   |   |   moderation-dashboard.tsx
+|   |   |   moderation-guard.tsx
+|   |   |   moderation-link.tsx
+|   |   |   profile-setup-form.tsx
+|   |   |   report-button.tsx
+|   |   |   
+|   |   +---auth
+|   |   |       auth-form.tsx
+|   |   |       contact-form.tsx
+|   |   |       
+|   |   +---feed
+|   |   |   |   comment-item.tsx
+|   |   |   |   edit-post.tsx
+|   |   |   |   explore-feed.tsx
+|   |   |   |   html-content-renderer.tsx
+|   |   |   |   post-analytics-page.tsx
+|   |   |   |   post-comments.tsx
+|   |   |   |   post-editor.tsx
+|   |   |   |   post-screen.tsx
+|   |   |   |   processed-content.tsx
+|   |   |   |   single-post.tsx
+|   |   |   |   single-user.tsx
+|   |   |   |   
+|   |   |   \---post
+|   |   |           post-actions.tsx
+|   |   |           post-content.tsx
+|   |   |           post-form.tsx
+|   |   |           post-header.tsx
+|   |   |           post-tags.tsx
+|   |   |           
+|   |   +---messages
+|   |   |       conversation-content.tsx
+|   |   |       conversations-list.tsx
+|   |   |       message-input.tsx
+|   |   |       new-conversation-form.tsx
+|   |   |       
+|   |   +---notifications
+|   |   +---profile
+|   |   |       account-settings.tsx
+|   |   |       liked-feed.tsx
+|   |   |       listen-feed.tsx
+|   |   |       posted-feed.tsx
+|   |   |       user-photos-carousel.tsx
+|   |   |       
+|   |   \---ui
+|   |           big-button.tsx
+|   |           bottom-nav.tsx
+|   |           button.tsx
+|   |           calendar.tsx
+|   |           command.tsx
+|   |           community-selector.tsx
+|   |           contact-reason-combobox.tsx
+|   |           dialog.tsx
+|   |           flag-form.tsx
+|   |           main-nav.tsx
+|   |           ostracon-action.tsx
+|   |           popover.tsx
+|   |           profile-content.tsx
+|   |           radio-group.tsx
+|   |           report-form.tsx
+|   |           select.tsx
+|   |           single-post-reply.tsx
+|   |           switch.tsx
+|   |           ThemeProvider.tsx
+|   |           toast.tsx
+|   |           toaster.tsx
+|   |           user-avatar.tsx
+|   |           year-date-picker.tsx
+|   |           
+|   +---data
+|   |   \---defaults
+|   |           settings.ts
+|   |           
+|   +---hooks
+|   |       use-moderation-permissions.ts
+|   |       use-toast.ts
+|   |       
+|   +---lib
+|   |   |   fragments.ts
+|   |   |   post-general.ts
+|   |   |   settings.ts
+|   |   |   utils.ts
+|   |   |   
+|   |   +---messages
+|   |   \---settings
+|   |           defaults.ts
+|   |           migrations.ts
+|   |           
+|   +---types
+|   |       fragments.d.ts
+|   |       message.ts
+|   |       settings.types.ts
+|   |       
+|   \---utils
+|       |   account.tsx
+|       |   format-count.ts
+|       |   format-time.ts
+|       |   moderation-api.ts
+|       |   moderation.ts
+|       |   rate-limit.ts
+|       |   
+|       +---supabase
+|       |       client.ts
+|       |       comment-actions.ts
+|       |       fetch-supabase.ts
+|       |       middleware.ts
+|       |       server-actions.ts
+|       |       server.ts
+|       |       
+|       \---upstash
+|               redis-lock.ts
+|               
+\---supabase
+    |   .gitignore
+    |   config.toml
+    |   
+    \---.temp
+            cli-latest
+            

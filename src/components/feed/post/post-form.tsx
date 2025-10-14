@@ -29,14 +29,14 @@ type PostSettings = {
 type SettingKey = keyof PostSettings;
 
 type FragmentRow = Database["public"]["Tables"]["fragments"]["Row"];
-type GroupRow = Database["public"]["Tables"]["groups"]["Row"];
+type CommunityRow = Database["public"]["Tables"]["communities"]["Row"];
 type FragmentWithUser = FragmentRow & {
   users?: {
     username: string;
     avatar_url?: string;
     id?: string;
   };
-  groups?: Pick<GroupRow, "name" | "id"> | null;
+  groups?: Pick<CommunityRow, "name" | "id"> | null;
 };
 
 interface PostFormProps {
@@ -69,7 +69,7 @@ export default function PostForm({
   const [postNSFW, setPostNSFW] = useState(post?.is_nsfw || false);
 
   const [selectedCommunity, setSelectedCommunity] = useState<string | null>(
-    post?.group_id || null,
+    post?.community_id || null,
   );
   const [isCommunityValidated, setIsCommunityValidated] = useState(true);
 
@@ -184,7 +184,7 @@ export default function PostForm({
             .single();
 
           if (communityData?.name) {
-            router.push(`/community/${communityData.name}`);
+            router.push(`/connect/${communityData.name}`);
           } else {
             router.push(`/post/${postId}`);
           }
@@ -218,7 +218,7 @@ export default function PostForm({
             .single();
 
           if (communityData?.name) {
-            router.push(`/community/${communityData.name}`);
+            router.push(`/connect/${communityData.name}`);
           } else {
             router.push(`/explore`);
           }

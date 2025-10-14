@@ -28,7 +28,7 @@ export const PostTags = React.memo(
 
         {groupId && (
           <Link
-            href={`/community/${groupName}`}
+            href={`/${groupName}`}
             className="px-2 py-1 flex items-center gap-1 border border-dark dark:border-light rounded-full text-dark dark:text-light z-10 transition-all duration-300 ease-in-out hover:opacity-80"
           >
             <IconUsers size={14} />

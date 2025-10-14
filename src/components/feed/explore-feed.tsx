@@ -8,13 +8,13 @@ import type { Database } from "../../../database.types";
 
 // Define types using the Database type
 type FragmentRow = Database["public"]["Tables"]["fragments"]["Row"];
-type GroupRow = Database["public"]["Tables"]["groups"]["Row"];
+type CommunityRow = Database["public"]["Tables"]["communities"]["Row"];
 type FragmentWithUser = FragmentRow & {
   users?: {
     username: string;
     avatar_url?: string;
   };
-  groups?: Pick<GroupRow, "name"> | null;
+  groups?: Pick<CommunityRow, "name"> | null;
 };
 
 // Define EnhancedFragment with interaction data
@@ -389,8 +389,8 @@ export default function ExploreFeed() {
               commentsAllowed={post.comments_open ?? true}
               reactionsAllowed={post.reactions_open ?? true}
               blur={settings.blur_sensitive_content}
-              timestamp={post.created_at}
-              groupId={post.group_id}
+              timestamp={post.published_at || ""}
+              groupId={post.community_id}
               groupName={post.groups?.name || ""}
               userId={post.user_id || ""}
               onDelete={handleDeletePost}

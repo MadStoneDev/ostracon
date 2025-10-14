@@ -7,14 +7,14 @@ import PostComments from "@/components/feed/post-comments";
 import type { Database } from "../../../database.types";
 
 type FragmentRow = Database["public"]["Tables"]["fragments"]["Row"];
-type GroupRow = Database["public"]["Tables"]["groups"]["Row"];
+type CommunityRow = Database["public"]["Tables"]["communities"]["Row"];
 type EnhancedFragment = FragmentRow & {
   users?: {
     username: string;
     avatar_url?: string;
     id?: string;
   };
-  groups?: Pick<GroupRow, "name" | "id"> | null;
+  groups?: Pick<CommunityRow, "name" | "id"> | null;
   likeCount: number;
   commentCount: number;
   viewCount: number;
@@ -53,8 +53,8 @@ export default function PostScreen({
           commentsAllowed={post.comments_open ?? true}
           reactionsAllowed={post.reactions_open ?? true}
           blur={shouldBlur}
-          timestamp={post.created_at}
-          groupId={post.group_id}
+          timestamp={post.published_at || ""}
+          groupId={post.community_id}
           groupName={post.groups?.name || ""}
           truncate={false}
           isExpanded={true}
