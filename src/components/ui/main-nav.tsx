@@ -12,6 +12,8 @@ import {
   IconX,
   IconLock,
   IconLockOpen,
+  IconMoonStars,
+  IconMoon,
 } from "@tabler/icons-react";
 
 export default function MainNav({ user = null }: { user?: any }) {
@@ -88,7 +90,11 @@ export default function MainNav({ user = null }: { user?: any }) {
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
           className={`hover:text-primary transition-all duration-300 ease-in-out`}
         >
-          <IconSun size={24} strokeWidth={2} />
+          {theme === "dark" ? (
+            <IconSun size={24} strokeWidth={2} />
+          ) : (
+            <IconMoon size={24} strokeWidth={2} />
+          )}
         </button>
 
         {userHasPin && (

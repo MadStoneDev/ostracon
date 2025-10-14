@@ -440,7 +440,7 @@ export default function Post({
   }
 
   return (
-    <div className="py-4 relative">
+    <div className="p-4 relative bg-neutral-200/70 dark:bg-neutral-50/10 rounded-lg transition-all duration-300 ease-in-out">
       {/* Delete Confirmation Overlay */}
       {showDeleteConfirm && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-neutral-50/90 dark:bg-neutral-800/90 rounded-md">

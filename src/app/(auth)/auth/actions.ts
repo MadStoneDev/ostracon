@@ -148,19 +148,19 @@ export async function verifyOTP(formData: { email: string; otp: string }) {
     );
 
     // First try to get the user's profile
-    console.log("🔍 Looking for user profile in 'profiles' table...");
+    console.log("🔍 Looking for user profile in 'users' table...");
     const { data: profile, error: profileError } = await supabase
-      .from("profiles")
-      .select("id, username, email")
+      .from("users")
+      .select("id, username")
       .eq("id", verifyResult.data.user.id)
       .maybeSingle();
 
     if (profileError) {
       console.error("❌ Error fetching profile:", profileError);
     } else if (!profile) {
-      console.log("ℹ️ No profile found in 'profiles' table");
+      console.log("ℹ️ No profile found in 'users' table");
     } else {
-      console.log("✅ Profile found in 'profiles' table:", profile);
+      console.log("✅ Profile found in 'users' table:", profile);
     }
 
     // If profile doesn't exist, try to see if it's in a different table or has a different structure
@@ -170,7 +170,7 @@ export async function verifyOTP(formData: { email: string; otp: string }) {
       // Try to get the user from the users table if that's where your data is
       const { data: user, error: userError } = await supabase
         .from("users")
-        .select("id, username, email")
+        .select("id, username")
         .eq("id", verifyResult.data.user.id)
         .maybeSingle();
 

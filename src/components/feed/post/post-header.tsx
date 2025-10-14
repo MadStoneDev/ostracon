@@ -1,12 +1,13 @@
 ﻿import React from "react";
 import Link from "next/link";
+import { User } from "@supabase/supabase-js";
 
 import { formatTimestamp } from "@/lib/fragments";
 import UserAvatar from "@/components/ui/user-avatar";
+import ReportButton from "@/components/report-button";
 import {
   IconClock,
   IconDotsVertical,
-  IconFlag,
   IconPencil,
   IconSkull,
   IconTrash,
@@ -20,12 +21,16 @@ type PostHeaderProps = {
   showOptions: boolean;
   setShowOptions: (value: boolean) => void;
   postId: string;
+  userId: string; // Add userId for profile reporting
+  currentUser: User; // Add currentUser for report functionality
   referenceOnly?: boolean;
   setShowDeleteConfirm?: (value: boolean) => void;
 };
 
 type PostOptionsProps = {
   postId: string;
+  userId: string;
+  currentUser: User;
   isCurrentUserPost: boolean;
   showOptions: boolean;
   setShowOptions: (value: boolean) => void;
@@ -35,6 +40,8 @@ type PostOptionsProps = {
 const PostOptions = React.memo(
   ({
     postId,
+    userId,
+    currentUser,
     isCurrentUserPost,
     showOptions,
     setShowOptions,
@@ -52,7 +59,7 @@ const PostOptions = React.memo(
 
       <div
         className={`flex gap-2 items-center ${
-          showOptions ? "ml-1 pr-1 max-w-20" : "max-w-0"
+          showOptions ? "ml-1 pr-1 max-w-32" : "max-w-0"
         } overflow-hidden transition-all duration-500 ease-in-out`}
       >
         {isCurrentUserPost ? (
@@ -77,21 +84,21 @@ const PostOptions = React.memo(
           </>
         ) : (
           <>
-            <Link
-              title="Flag"
-              href={`/post/${postId}/flag`}
+            {/* Flag Post Button */}
+            <ReportButton
+              type="post"
+              targetId={postId}
+              currentUser={currentUser}
               className="grid place-content-center w-6 opacity-50 hover:opacity-100 transition-all duration-300 ease-in-out"
-            >
-              <IconFlag />
-            </Link>
+            />
 
-            <Link
-              href={`/post/${postId}/report`}
+            {/* Report User Button */}
+            <ReportButton
+              type="profile"
+              targetId={userId}
+              currentUser={currentUser}
               className="grid place-content-center w-6 opacity-50 hover:opacity-100 transition-all duration-300 ease-in-out"
-              title="Report"
-            >
-              <IconSkull />
-            </Link>
+            />
           </>
         )}
       </div>
@@ -108,6 +115,8 @@ export const PostHeader = React.memo(
     showOptions,
     setShowOptions,
     postId,
+    userId,
+    currentUser,
     referenceOnly,
     setShowDeleteConfirm,
   }: PostHeaderProps) => (
@@ -138,6 +147,8 @@ export const PostHeader = React.memo(
       {!referenceOnly && (
         <PostOptions
           postId={postId}
+          userId={userId}
+          currentUser={currentUser}
           isCurrentUserPost={isCurrentUserPost}
           showOptions={showOptions}
           setShowOptions={setShowOptions}

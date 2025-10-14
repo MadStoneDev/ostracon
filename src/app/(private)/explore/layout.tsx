@@ -8,7 +8,9 @@ export default function PrivateLayout({
   params: Promise<{ username: string }>;
 }>) {
   return (
-    <div className={`relative flex-grow grid overflow-hidden`}>
+    <div
+      className={`relative flex-grow grid bg-light dark:bg-dark overflow-hidden`}
+    >
       <main className={`relative flex-grow flex justify-center`}>
         {children}
       </main>

@@ -10,7 +10,12 @@ import {
   IconCircleChevronLeftFilled,
   IconCircleChevronRightFilled,
   IconTrash,
+  IconAlertTriangle,
+  IconFlag,
 } from "@tabler/icons-react";
+import { updateRiskLevel } from "@/utils/moderation";
+import ReportButton from "@/components/report-button";
+import { User } from "@supabase/supabase-js";
 
 // Define types
 type UserPhoto = {
@@ -20,12 +25,41 @@ type UserPhoto = {
   created_at: string;
 };
 
+type SightEngineResponse = {
+  status: string;
+  nudity?: {
+    sexual_activity: number;
+    sexual_display: number;
+    erotica: number;
+    very_suggestive: number;
+    suggestive: number;
+    mildly_suggestive: number;
+    none: number;
+  };
+  recreational_drug?: {
+    prob: number;
+  };
+  medical?: {
+    prob: number;
+  };
+  gore?: {
+    prob: number;
+  };
+  "self-harm"?: {
+    prob: number;
+  };
+  weapon?: number;
+  violence?: number;
+};
+
 export default function UserPhotosCarousel({
   userId,
   currentUserId,
+  currentUser,
 }: {
   userId: string;
   currentUserId: string;
+  currentUser: User;
 }) {
   const [photos, setPhotos] = useState<UserPhoto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -41,9 +75,21 @@ export default function UserPhotosCarousel({
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
 
+  const [uploadStatus, setUploadStatus] = useState<{
+    isUploading: boolean;
+    message: string;
+    type: "info" | "success" | "error" | "warning";
+  }>({
+    isUploading: false,
+    message: "",
+    type: "info",
+  });
+
   const carouselRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const isOwnProfile = userId === currentUserId;
+
+  // ... (keep all the existing useEffect and handler functions exactly the same)
 
   useEffect(() => {
     const fetchUserPhotos = async () => {
@@ -80,6 +126,64 @@ export default function UserPhotosCarousel({
     };
   }, [showFullScreen]);
 
+  // Helper function to determine risk level and reason from Sightengine response
+  const analyzeModerationResult = (result: SightEngineResponse) => {
+    const violations = [];
+    let riskLevel: "low" | "medium" | "high" | "critical" = "low";
+
+    // Check nudity
+    if (result.nudity) {
+      if (
+        result.nudity.sexual_activity > 0.8 ||
+        result.nudity.sexual_display > 0.8
+      ) {
+        violations.push("Explicit sexual content");
+        riskLevel = "critical";
+      } else if (
+        result.nudity.erotica > 0.6 ||
+        result.nudity.very_suggestive > 0.6
+      ) {
+        violations.push("Highly suggestive content");
+        riskLevel = updateRiskLevel("high", riskLevel);
+      } else if (result.nudity.suggestive > 0.6) {
+        violations.push("Suggestive content");
+        riskLevel = updateRiskLevel("medium", riskLevel);
+      }
+    }
+
+    // Check other violations
+    if (result.weapon && result.weapon > 0.6) {
+      violations.push("Weapon detected");
+      riskLevel = updateRiskLevel("high", riskLevel);
+    }
+
+    if (result.recreational_drug?.prob && result.recreational_drug.prob > 0.6) {
+      violations.push("Drug-related content");
+      riskLevel = updateRiskLevel("medium", riskLevel);
+    }
+
+    if (result.gore?.prob && result.gore.prob > 0.6) {
+      violations.push("Gore/violent content");
+      riskLevel = updateRiskLevel("critical", riskLevel);
+    }
+
+    if (result["self-harm"]?.prob && result["self-harm"].prob > 0.6) {
+      violations.push("Self-harm content");
+      riskLevel = updateRiskLevel("critical", riskLevel);
+    }
+
+    if (result.violence && result.violence > 0.6) {
+      violations.push("Violent content");
+      riskLevel = updateRiskLevel("high", riskLevel);
+    }
+
+    return {
+      hasViolations: violations.length > 0,
+      reason: violations.join(", "),
+      riskLevel,
+    };
+  };
+
   const handleUploadPhoto = async () => {
     const supabase = createClient();
 
@@ -95,56 +199,17 @@ export default function UserPhotosCarousel({
 
       if (!file) return;
 
+      setUploadStatus({
+        isUploading: true,
+        message: "Uploading and checking image...",
+        type: "info",
+      });
+
       try {
-        // First, we'll check the image with Sightengine
-        const formData = new FormData();
-        formData.append("media", file);
-        formData.append(
-          "models",
-          "nudity-2.1,weapon,recreational_drug,gore-2.0,violence",
-        );
-        formData.append(
-          "api_user",
-          process.env.NEXT_PUBLIC_SIGHTENGINE_API_USER!,
-        );
-        formData.append(
-          "api_secret",
-          process.env.NEXT_PUBLIC_SIGHTENGINE_API_SECRET!,
-        );
-
-        // Make the API call to Sightengine
-        const moderationResponse = await fetch(
-          "https://api.sightengine.com/1.0/check.json",
-          {
-            method: "POST",
-            body: formData,
-          },
-        );
-
-        const moderationResult = await moderationResponse.json();
-
-        // Check if the image violates content policy
-        // You can adjust these thresholds based on your requirements
-        if (
-          moderationResult.nudity?.raw > 0.6 ||
-          moderationResult.nudity?.partial > 0.6 ||
-          moderationResult.weapon > 0.6 ||
-          moderationResult.drugs > 0.6 ||
-          moderationResult.gore?.prob > 0.6 ||
-          moderationResult.violence > 0.6
-        ) {
-          throw new Error(
-            "This image contains inappropriate content and cannot be uploaded.",
-          );
-        }
-
-        console.log(moderationResult);
-
-        // If image passes moderation, proceed with upload
+        // First, upload the file to storage
         const fileExt = file.name.split(".").pop();
         const filePath = `${currentUserId}/${Date.now()}.${fileExt}`;
 
-        // Upload to Supabase Storage with the correct path
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from("user.photos")
           .upload(filePath, file);
@@ -158,22 +223,94 @@ export default function UserPhotosCarousel({
 
         const photoUrl = publicUrlData.publicUrl;
 
-        // Add record to user_photos table
-        const { data: photoData, error: photoError } = await supabase
-          .from("user_photos")
-          .insert([
-            {
-              user_id: currentUserId,
-              photo_url: photoUrl,
-            },
-          ])
-          .select()
-          .single();
+        // Now check with Sightengine
+        setUploadStatus({
+          isUploading: true,
+          message: "Checking image content...",
+          type: "info",
+        });
 
-        if (photoError) throw photoError;
+        const formData = new FormData();
+        formData.append("media", file);
+        formData.append(
+          "models",
+          "nudity-2.1,weapon,recreational_drug,gore-2.0,violence,self-harm",
+        );
+        formData.append(
+          "api_user",
+          process.env.NEXT_PUBLIC_SIGHTENGINE_API_USER!,
+        );
+        formData.append(
+          "api_secret",
+          process.env.NEXT_PUBLIC_SIGHTENGINE_API_SECRET!,
+        );
 
-        // Update local state with the new photo
-        setPhotos((prevPhotos) => [photoData, ...prevPhotos]);
+        const moderationResponse = await fetch(
+          "https://api.sightengine.com/1.0/check.json",
+          {
+            method: "POST",
+            body: formData,
+          },
+        );
+
+        const moderationResult: SightEngineResponse =
+          await moderationResponse.json();
+        console.log("Sightengine result:", moderationResult);
+
+        const analysis = analyzeModerationResult(moderationResult);
+
+        if (analysis.hasViolations) {
+          // Create moderation record
+          const { error: moderationError } = await supabase
+            .from("images_moderation")
+            .insert([
+              {
+                image_url: photoUrl,
+                uploaded_by: currentUserId,
+                reported_by: null, // System-triggered
+                reason: analysis.reason,
+                risk_level: analysis.riskLevel,
+                sightengine_data: moderationResult,
+              },
+            ]);
+
+          if (moderationError) {
+            console.error("Error creating moderation record:", moderationError);
+          }
+
+          setUploadStatus({
+            isUploading: false,
+            message:
+              "Image flagged for review. It will be reviewed by our moderation team.",
+            type: "warning",
+          });
+
+          // Clean up the uploaded file since it won't be added to user_photos
+          await supabase.storage.from("user.photos").remove([filePath]);
+        } else {
+          // Image is safe, add to user_photos
+          const { data: photoData, error: photoError } = await supabase
+            .from("user_photos")
+            .insert([
+              {
+                user_id: currentUserId,
+                photo_url: photoUrl,
+              },
+            ])
+            .select()
+            .single();
+
+          if (photoError) throw photoError;
+
+          // Update local state with the new photo
+          setPhotos((prevPhotos) => [photoData, ...prevPhotos]);
+
+          setUploadStatus({
+            isUploading: false,
+            message: "Photo uploaded successfully!",
+            type: "success",
+          });
+        }
       } catch (error: unknown) {
         console.error("Error uploading photo:", error);
 
@@ -186,15 +323,24 @@ export default function UserPhotosCarousel({
           error !== null &&
           "message" in error
         ) {
-          errorMessage = (
-            error as {
-              message: string;
-            }
-          ).message;
+          errorMessage = (error as { message: string }).message;
         }
 
-        alert(errorMessage);
+        setUploadStatus({
+          isUploading: false,
+          message: errorMessage,
+          type: "error",
+        });
       }
+
+      // Clear the status message after 5 seconds
+      setTimeout(() => {
+        setUploadStatus({
+          isUploading: false,
+          message: "",
+          type: "info",
+        });
+      }, 5000);
     };
   };
 
@@ -255,7 +401,6 @@ export default function UserPhotosCarousel({
   const navigateCarousel = (direction: "left" | "right") => {
     if (!carouselRef.current) return;
 
-    // Use a standard width for scrolling
     const scrollAmount = 100;
     carouselRef.current.scrollBy({
       left: direction === "left" ? -scrollAmount : scrollAmount,
@@ -300,6 +445,29 @@ export default function UserPhotosCarousel({
 
   return (
     <div ref={containerRef} className={`group/carousel my-3 w-full relative`}>
+      {/* Upload Status Message */}
+      {uploadStatus.message && (
+        <div
+          className={`mb-3 p-3 rounded-lg flex items-center gap-2 ${
+            uploadStatus.type === "success"
+              ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300"
+              : uploadStatus.type === "error"
+                ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300"
+                : uploadStatus.type === "warning"
+                  ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300"
+                  : "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
+          }`}
+        >
+          {uploadStatus.type === "warning" && (
+            <IconAlertTriangle className="w-5 h-5" />
+          )}
+          <span className="text-sm">{uploadStatus.message}</span>
+          {uploadStatus.isUploading && (
+            <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+          )}
+        </div>
+      )}
+
       {/* Carousel */}
       <div
         ref={carouselRef}
@@ -309,12 +477,20 @@ export default function UserPhotosCarousel({
         {/* Upload button (only for own profile) */}
         {isOwnProfile && (
           <div
-            onClick={handleUploadPhoto}
-            className={`group/new flex-shrink-0 w-[80px] sm:w-[90px] md:w-[100px] lg:w-[120px] h-[120px] sm:h-[135px] md:h-[150px] lg:h-[180px] rounded-lg bg-light dark:bg-dark border-2 border-dashed border-dark dark:border-light cursor-pointer flex items-center justify-center transition-all duration-300`}
+            onClick={uploadStatus.isUploading ? undefined : handleUploadPhoto}
+            className={`group/new flex-shrink-0 w-[80px] sm:w-[90px] md:w-[100px] lg:w-[120px] h-[120px] sm:h-[135px] md:h-[150px] lg:h-[180px] rounded-lg bg-light dark:bg-dark border-2 border-dashed border-dark dark:border-light ${
+              uploadStatus.isUploading
+                ? "cursor-not-allowed opacity-50"
+                : "cursor-pointer"
+            } flex items-center justify-center transition-all duration-300`}
           >
-            <IconLibraryPhoto
-              className={`w-8 h-8 group-hover/new:scale-110 text-dark dark:text-light transition-all duration-300 ease-in-out`}
-            />
+            {uploadStatus.isUploading ? (
+              <div className="w-8 h-8 border-2 border-dark dark:border-light border-t-transparent rounded-full animate-spin"></div>
+            ) : (
+              <IconLibraryPhoto
+                className={`w-8 h-8 group-hover/new:scale-110 text-dark dark:text-light transition-all duration-300 ease-in-out`}
+              />
+            )}
           </div>
         )}
 
@@ -331,22 +507,38 @@ export default function UserPhotosCarousel({
               className={`group-hover/image:scale-110 w-full h-full object-cover transition-all duration-300 ease-in-out`}
             />
 
-            {/* Delete button - Only show on own photos */}
-            {isOwnProfile && (
-              <div
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setPhotoToDelete({ id: photo.id, url: photo.photo_url });
-                  setShowDeleteConfirm(true);
-                }}
-                className="absolute top-2 right-2 opacity-0 group-hover/image:opacity-100 transition-all duration-300 ease-in-out z-10"
-              >
-                <IconTrash className="w-6 h-6 p-1 text-white bg-red-500 hover:bg-red-600 rounded-full shadow-md cursor-pointer" />
-              </div>
-            )}
+            {/* Action buttons - Top right corner */}
+            <div className="absolute top-2 right-2 opacity-0 group-hover/image:opacity-100 transition-all duration-300 ease-in-out z-10 flex gap-1">
+              {isOwnProfile ? (
+                // Delete button for own photos
+                <div
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setPhotoToDelete({ id: photo.id, url: photo.photo_url });
+                    setShowDeleteConfirm(true);
+                  }}
+                  className="cursor-pointer"
+                >
+                  <IconTrash className="w-6 h-6 p-1 text-white bg-red-500 hover:bg-red-600 rounded-full shadow-md" />
+                </div>
+              ) : (
+                // Report button for other users' photos
+                <div onClick={(e) => e.stopPropagation()}>
+                  <ReportButton
+                    type="image"
+                    targetId={photo.photo_url}
+                    currentUser={currentUser}
+                    className="bg-red-500 hover:bg-red-600 rounded-full shadow-md text-white"
+                    size="sm"
+                  />
+                </div>
+              )}
+            </div>
           </div>
         ))}
       </div>
+
+      {/* Rest of the component remains the same... */}
 
       {/* Hover Navigation Arrows */}
       {photos.length > 0 && (

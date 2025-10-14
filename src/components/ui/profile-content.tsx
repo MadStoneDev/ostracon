@@ -11,6 +11,8 @@ import LikedFeed from "@/components/profile/liked-feed";
 import PostedFeed from "@/components/profile/posted-feed";
 import UserPhotosCarousel from "@/components/profile/user-photos-carousel";
 import { ListeningFeed, ListenersFeed } from "@/components/profile/listen-feed";
+import ModerationLink from "@/components/moderation-link";
+import ReportButton from "@/components/report-button";
 
 import { IconUserPlus, IconUserOff } from "@tabler/icons-react";
 
@@ -187,31 +189,48 @@ export default function ProfileContent({
   }, [currentUser.id, profile.id, isOwnProfile]);
 
   return (
-    <div className={`mx-auto w-full`}>
-      {/* Follow Button - Only show if not own profile */}
-      {!isOwnProfile && (
-        <button
-          onClick={handleListen}
-          disabled={isFollowLoading}
-          className={`absolute right-4 md:right-6 px-2 py-1 flex items-center gap-1 ${
-            isFollowing
-              ? "bg-dark dark:bg-light text-light dark:text-dark"
-              : "bg-primary text-light"
-          } md:hover:scale-105 rounded-full transition-all duration-300 ease-in-out`}
-        >
-          {isFollowing ? (
-            <>
-              <IconUserOff size={20} />
-              <span>Stop Listening</span>
-            </>
-          ) : (
-            <>
-              <IconUserPlus size={20} />
-              <span>Start Listening</span>
-            </>
-          )}
-        </button>
-      )}
+    <div className={`relative mx-auto w-full`}>
+      {/* Top right actions */}
+      <div
+        className={`absolute right-4 md:right-6 top-0 flex items-center gap-2`}
+      >
+        {/* Moderation Link - Show for moderators/admins */}
+        <ModerationLink user={currentUser} />
+        {/* Follow/Report buttons - Only show if not own profile */}
+        {isOwnProfile && (
+          <>
+            {/* Report Button */}
+            <ReportButton
+              type="profile"
+              targetId={profile.id}
+              currentUser={currentUser}
+              className={`rounded-full bg-gray-100 dark:bg-neutral-800/80`}
+            />
+            {/* Follow Button */}
+            <button
+              onClick={handleListen}
+              disabled={isFollowLoading}
+              className={`px-2 py-1 flex items-center gap-1 ${
+                isFollowing
+                  ? "bg-dark dark:bg-light text-light dark:text-dark"
+                  : "bg-primary text-light"
+              } md:hover:scale-105 rounded-full transition-all duration-300 ease-in-out`}
+            >
+              {isFollowing ? (
+                <>
+                  <IconUserOff size={20} />
+                  <span>Stop Listening</span>
+                </>
+              ) : (
+                <>
+                  <IconUserPlus size={20} />
+                  <span>Start Listening</span>
+                </>
+              )}
+            </button>
+          </>
+        )}
+      </div>
 
       {/* Header */}
       <section>
@@ -222,7 +241,6 @@ export default function ProfileContent({
           avatarSize={`w-24 md:w-32 h-24 md:h-32`}
           textSize={`text-3xl md:text-6xl`}
         />
-
         {/* User Info */}
         <article className={`mt-2 mb-8 grid gap-3`}>
           <h1
@@ -235,7 +253,6 @@ export default function ProfileContent({
           </h1>
           <p className={`opacity-75 font-normal`}>{profile.bio}</p>
         </article>
-
         {/* Tabs */}
         <article className={`flex flex-col justify-center gap-2 text-sm`}>
           <div className={`flex flex-wrap gap-x-1 gap-y-2`}>
@@ -318,7 +335,7 @@ export default function ProfileContent({
       <section className={`mt-8 h-[1px] bg-dark/50 dark:bg-light/50`}></section>
 
       {/* Photo Carousel */}
-      {/*<UserPhotosCarousel profile.id={profile.id} currentUser.id={currentUser.id} />*/}
+      <UserPhotosCarousel currentUserId={currentUser.id} userId={profile.id} />
 
       {/* Second Separator */}
       <section className={`h-[1px] bg-dark/50 dark:bg-light/50`}></section>

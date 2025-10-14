@@ -35,7 +35,9 @@ export function ListeningFeed({
   }
 
   return (
-    <section className={`pb-[80px] transition-all duration-300 ease-in-out`}>
+    <section
+      className={`mt-3 pb-[70px] space-y-3 transition-all duration-300 ease-in-out`}
+    >
       {followingUsers.map((followedUser) => (
         <div
           key={`listening-${followedUser.id}`}
@@ -75,7 +77,9 @@ export function ListenersFeed({
   }
 
   return (
-    <section className={`pb-[80px] transition-all duration-300 ease-in-out`}>
+    <section
+      className={`mt-3 pb-[70px] space-y-3 transition-all duration-300 ease-in-out`}
+    >
       {followerUsers.map((follower) => (
         <div
           key={`listener-${follower.id}`}

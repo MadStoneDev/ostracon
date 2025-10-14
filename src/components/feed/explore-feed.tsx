@@ -362,7 +362,7 @@ export default function ExploreFeed() {
   }
 
   return (
-    <div className={`flex flex-col items-center w-full z-0`}>
+    <div className={`flex flex-col items-center w-full space-y-3 z-0`}>
       {/* Show skeletons during initial load */}
       {isLoading && (
         <>
@@ -377,7 +377,7 @@ export default function ExploreFeed() {
         posts.map((post) => (
           <article
             key={`feed-post-${post.id}`}
-            className={`w-full border-b last-of-type:border-b-0 border-dark/10 dark:border-light/10 transition-all duration-300 ease-in-out`}
+            className={`w-full transition-all duration-300 ease-in-out`}
           >
             <Post
               postId={post.id}

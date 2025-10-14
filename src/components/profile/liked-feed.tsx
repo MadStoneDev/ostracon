@@ -61,7 +61,9 @@ export default function LikedFeed({
   }
 
   return (
-    <section className={`pb-[70px] transition-all duration-300 ease-in-out`}>
+    <section
+      className={`mt-3 pb-[70px] space-y-3 transition-all duration-300 ease-in-out`}
+    >
       {posts.map((post) => {
         const postUser = userProfiles[post.user_id || ""];
 

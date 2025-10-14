@@ -61,7 +61,9 @@ export default function PostedFeed({
   }
 
   return (
-    <section className={`pb-[70px] transition-all duration-300 ease-in-out`}>
+    <section
+      className={`mt-3 pb-[70px] space-y-3 transition-all duration-300 ease-in-out`}
+    >
       {posts.map((post) => {
         const postUser = userProfiles[post.user_id || ""];
 
@@ -70,7 +72,7 @@ export default function PostedFeed({
         return (
           <article
             key={`feed-post-${post.id}`}
-            className={`border-b last-of-type:border-b-0 border-dark/10 dark:border-light/10 transition-all duration-300 ease-in-out`}
+            className={`transition-all duration-300 ease-in-out`}
           >
             <Post
               postId={post.id}

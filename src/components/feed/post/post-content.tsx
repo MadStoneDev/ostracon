@@ -25,7 +25,9 @@ export const PostContent = React.memo(
     truncate,
   }: PostContentProps) => (
     <section
-      className={`relative mt-2 mb-3 p-3 flex flex-col bg-neutral-200/70 dark:bg-neutral-800/50 rounded-lg transition-all duration-300 ease-in-out overflow-x-hidden`}
+      className={`relative mt-2 mb-3 py-5 ${
+        blurred ? "px-2" : ""
+      } flex flex-col transition-all duration-300 ease-in-out overflow-x-hidden`}
     >
       <article
         className={`${!isExpanded ? "cursor-pointer" : ""} pr-3 ${
