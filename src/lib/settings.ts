@@ -19,8 +19,8 @@ class SupabaseSettings implements SettingsAPI {
       if (userError || !user) throw new Error("Not authenticated");
 
       const { data: userData, error: settingsError } = await supabase
-        .from("users")
-        .select("settings")
+        .from("profiles")
+        .select("date_of_birth, settings")
         .eq("id", user.id)
         .single();
 
@@ -33,6 +33,7 @@ class SupabaseSettings implements SettingsAPI {
       return {
         ...defaultSettings,
         ...(userData?.settings || {}),
+        date_of_birth: userData?.date_of_birth || null,
       };
     } catch (error) {
       console.error("Error in getUserSettings:", error);
@@ -41,6 +42,9 @@ class SupabaseSettings implements SettingsAPI {
   }
 
   async updateUserSettings(settings: Partial<UserSettings>): Promise<void> {
+    // This will now separately handle date_of_birth
+    const { date_of_birth, ...otherSettings } = settings;
+
     try {
       const supabase = createClient();
 
@@ -50,34 +54,19 @@ class SupabaseSettings implements SettingsAPI {
       } = await supabase.auth.getUser();
       if (userError || !user) throw new Error("Not authenticated");
 
-      const { data: currentData, error: fetchError } = await supabase
-        .from("users")
-        .select("settings")
-        .eq("id", user.id)
-        .single();
-
-      if (fetchError) {
-        console.error("Error fetching current settings:", fetchError);
-        throw new Error("Failed to fetch current settings");
-      }
-
-      const updatedSettings = {
-        ...(currentData?.settings || {}),
-        ...settings,
-      };
-
-      const { error: updateError } = await supabase
-        .from("users")
-        .update({ settings: updatedSettings })
+      // Update profiles table directly for date_of_birth
+      const { error: dateError } = await supabase
+        .from("profiles")
+        .update({ date_of_birth })
         .eq("id", user.id);
 
-      if (updateError) {
-        console.error("Error updating settings:", updateError);
-        throw new Error("Failed to update settings");
-      }
+      // Update settings column for other settings
+      const { error: settingsError } = await supabase
+        .from("profiles")
+        .update({ settings: otherSettings })
+        .eq("id", user.id);
     } catch (error) {
-      console.error("Error in updateUserSettings:", error);
-      throw new Error("Failed to update user settings");
+      console.error("Could not update settings. Try again later.");
     }
   }
 }

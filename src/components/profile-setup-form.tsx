@@ -3,22 +3,25 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 
-import { updateUsername } from "@/app/(private)/profile/setup/actions";
+import { updateProfileSetup } from "@/app/(private)/profile/setup/actions";
+import { YearDatePicker } from "@/components/ui/year-date-picker";
 
 export default function ProfileSetupForm() {
   const { toast } = useToast();
   const [username, setUsername] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
+  const [bio, setBio] = useState("");
   const [loading, setLoading] = useState(false);
   const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(
     null,
   );
   const [usernameChecking, setUsernameChecking] = useState(false);
 
-  // Basic username validation
+  // Existing username validation
   const usernamePattern = /^[a-zA-Z0-9_]{3,30}$/;
   const isUsernameFormatValid = usernamePattern.test(username);
 
-  // Username check with debounce
+  // Existing username check method
   const checkUsername = async (username: string) => {
     if (!isUsernameFormatValid) {
       setUsernameAvailable(null);
@@ -28,7 +31,6 @@ export default function ProfileSetupForm() {
     setUsernameChecking(true);
 
     try {
-      // You can implement this server action to check username availability
       const response = await fetch(
         `/api/check-username?username=${encodeURIComponent(username)}`,
       );
@@ -42,11 +44,10 @@ export default function ProfileSetupForm() {
     }
   };
 
-  // Debounce username check
+  // Existing handleUsernameChange method
   const handleUsernameChange = (value: string) => {
     setUsername(value);
 
-    // Clear previous timer
     const timeoutId = setTimeout(() => {
       if (value && isUsernameFormatValid) {
         checkUsername(value);
@@ -61,6 +62,7 @@ export default function ProfileSetupForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Validate username
     if (!isUsernameFormatValid) {
       toast({
         title: "Invalid Username",
@@ -71,27 +73,41 @@ export default function ProfileSetupForm() {
       return;
     }
 
+    // Validate date of birth
+    if (!dateOfBirth) {
+      toast({
+        title: "Missing Date of Birth",
+        description: "Please enter your date of birth.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const result = await updateUsername({ username });
+      const result = await updateProfileSetup({
+        username,
+        dateOfBirth,
+        bio: bio.trim() || undefined,
+      });
 
       if (result.success) {
         toast({
           title: "Profile Updated",
-          description: "Your username has been set successfully.",
+          description: "Your profile has been set up successfully.",
           variant: "default",
         });
         // Redirect will be handled by the server action
       } else {
         toast({
           title: "Error",
-          description: result.error || "Failed to update username.",
+          description: result.error || "Failed to update profile.",
           variant: "destructive",
         });
       }
     } catch (error) {
-      console.error("Username update error:", error);
+      console.error("Profile setup error:", error);
       toast({
         title: "Error",
         description: "Something went wrong. Please try again.",
@@ -187,6 +203,7 @@ export default function ProfileSetupForm() {
               </div>
             )}
           </div>
+          {/* Existing username validation messages */}
           <div className="mt-1">
             {!isUsernameFormatValid && username && (
               <p className="text-xs text-red-500">
@@ -205,10 +222,44 @@ export default function ProfileSetupForm() {
           </div>
         </div>
 
+        {/* New date of birth input */}
+        <div>
+          <label htmlFor="dateOfBirth" className="block text-sm font-medium">
+            Date of Birth
+          </label>
+          <YearDatePicker
+            value={dateOfBirth ? new Date(dateOfBirth) : undefined}
+            onChange={(date) => setDateOfBirth(date ? date.toISOString() : "")}
+          />
+        </div>
+
+        {/* Optional bio input */}
+        <div>
+          <label htmlFor="bio" className="block text-sm font-medium">
+            Bio (Optional)
+          </label>
+          <textarea
+            id="bio"
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            className="block w-full rounded-md border border-gray-300 shadow-sm py-2 px-3 
+                       bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 
+                       focus:outline-none focus:ring-2 focus:ring-primary"
+            placeholder="Tell us about yourself"
+            maxLength={200}
+            disabled={loading}
+            rows={3}
+          />
+        </div>
+
+        {/* Submit button */}
         <button
           type="submit"
           disabled={
-            loading || !isUsernameFormatValid || usernameAvailable !== true
+            loading ||
+            !isUsernameFormatValid ||
+            usernameAvailable !== true ||
+            !dateOfBirth
           }
           className="w-full py-2 px-4 border border-transparent rounded-md 
                    shadow-sm text-sm font-medium text-white bg-primary 

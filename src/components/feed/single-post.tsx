@@ -12,11 +12,18 @@ import React, {
 import { createClient } from "@/utils/supabase/client";
 
 import SinglePostReply from "@/components/ui/single-post-reply";
-import { PostState } from "@/types/fragments";
 import { PostHeader } from "@/components/feed/post/post-header";
 import { PostTags } from "@/components/feed/post/post-tags";
 import { PostContent } from "@/components/feed/post/post-content";
 import { PostActions } from "@/components/feed/post/post-actions";
+import { User } from "@supabase/supabase-js";
+
+type PostState = {
+  liked: boolean;
+  likeCount: number;
+  hasCommented: boolean;
+  commentCount: number;
+};
 
 type PostProps = {
   postId: string;
@@ -34,12 +41,11 @@ type PostProps = {
   truncate?: boolean;
   isExpanded?: boolean;
   referenceOnly?: boolean;
-  userId?: string;
+  authorId?: string;
   onDelete?: (postId: string) => void;
   // Pre-fetched data props
   initialLikeCount?: number;
   initialCommentCount?: number;
-  initialViewCount?: number;
   initialUserLiked?: boolean;
   initialUserCommented?: boolean;
 };
@@ -60,12 +66,11 @@ export default function Post({
   truncate = true,
   isExpanded = false,
   referenceOnly = false,
-  userId = "",
+  authorId = "",
   onDelete,
   // Default values for pre-fetched data
   initialLikeCount = 0,
   initialCommentCount = 0,
-  initialViewCount = 0,
   initialUserLiked = false,
   initialUserCommented = false,
 }: PostProps) {
@@ -83,6 +88,7 @@ export default function Post({
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [isDeleted, setIsDeleted] = useState(false);
   const [isDataLoading, setIsDataLoading] = useState(false);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   // Initialize state with pre-fetched data
   const [baseState, setBaseState] = useState<PostState>({
@@ -90,7 +96,6 @@ export default function Post({
     likeCount: initialLikeCount,
     hasCommented: initialUserCommented,
     commentCount: initialCommentCount,
-    viewCount: initialViewCount,
   });
 
   const [isPending, startTransition] = useTransition();
@@ -112,7 +117,7 @@ export default function Post({
         throw new Error("You must be logged in to delete this post.");
       }
 
-      if (userData.user.id !== userId) {
+      if (userData.user.id !== authorId) {
         throw new Error("You can only delete your own posts.");
       }
 
@@ -151,14 +156,15 @@ export default function Post({
   useEffect(() => {
     const checkIfCurrentUserPost = async () => {
       const { data: userData } = await supabase.auth.getUser();
+      setCurrentUser(userData.user ?? null);
 
       if (!userData?.user) return;
 
-      if (userId) {
-        setIsCurrentUserPost(userData.user.id === userId);
+      if (authorId) {
+        setIsCurrentUserPost(userData.user.id === authorId);
       } else {
         const { data: userProfile } = await supabase
-          .from("users")
+          .from("profiles")
           .select("username")
           .eq("id", userData.user.id)
           .single();
@@ -168,7 +174,7 @@ export default function Post({
     };
 
     checkIfCurrentUserPost();
-  }, [supabase, username, userId]);
+  }, [supabase, username, authorId]);
 
   // Only fetch post data if not provided through props
   useEffect(() => {
@@ -176,7 +182,6 @@ export default function Post({
     const hasAllPreFetchedData =
       initialLikeCount !== undefined &&
       initialCommentCount !== undefined &&
-      initialViewCount !== undefined &&
       initialUserLiked !== undefined &&
       initialUserCommented !== undefined;
 
@@ -191,37 +196,25 @@ export default function Post({
         const isLoggedIn = !!userData?.user;
 
         // Execute all queries in parallel for better performance
-        const [likesResult, commentsResult, analyticsResult] =
-          await Promise.all([
-            // Only fetch likes if not provided
-            initialLikeCount === undefined || initialUserLiked === undefined
-              ? supabase
-                  .from("fragment_reactions")
-                  .select("*", { count: "exact", head: true })
-                  .eq("fragment_id", postId)
-                  .eq("type", "like")
-              : Promise.resolve(null),
+        const [likesResult, commentsResult] = await Promise.all([
+          // Only fetch likes if not provided
+          initialLikeCount === undefined || initialUserLiked === undefined
+            ? supabase
+                .from("fragment_reactions")
+                .select("*", { count: "exact", head: true })
+                .eq("fragment_id", postId)
+                .eq("type", "like")
+            : Promise.resolve(null),
 
-            // Only fetch comments if not provided
-            initialCommentCount === undefined ||
-            initialUserCommented === undefined
-              ? supabase
-                  .from("fragment_comments")
-                  .select("*", { count: "exact", head: true })
-                  .eq("fragment_id", postId)
-              : Promise.resolve(null),
-
-            // Only fetch views if not provided
-            initialViewCount === undefined
-              ? supabase
-                  .from("fragment_analytics")
-                  .select("views")
-                  .eq("fragment_id", postId)
-                  .maybeSingle()
-              : Promise.resolve(null),
-          ]);
-
-        console.log(likesResult);
+          // Only fetch comments if not provided
+          initialCommentCount === undefined ||
+          initialUserCommented === undefined
+            ? supabase
+                .from("fragment_comments")
+                .select("*", { count: "exact", head: true })
+                .eq("fragment_id", postId)
+            : Promise.resolve(null),
+        ]);
 
         // Prepare updated state
         const stateUpdate: Partial<PostState> = {};
@@ -237,13 +230,6 @@ export default function Post({
           stateUpdate.commentCount = commentsResult.error
             ? 0
             : commentsResult.count || 0;
-        }
-
-        if (analyticsResult) {
-          stateUpdate.viewCount =
-            analyticsResult.error || !analyticsResult.data
-              ? 0
-              : analyticsResult.data.views;
         }
 
         // Check the user's interactions only if logged in and not provided
@@ -313,7 +299,6 @@ export default function Post({
     supabase,
     initialLikeCount,
     initialCommentCount,
-    initialViewCount,
     initialUserLiked,
     initialUserCommented,
   ]);
@@ -480,6 +465,8 @@ export default function Post({
       )}
 
       <PostHeader
+        authorId={authorId}
+        currentUser={currentUser}
         avatar_url={avatar_url}
         username={username}
         timestamp={timestamp}

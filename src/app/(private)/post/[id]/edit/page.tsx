@@ -22,12 +22,12 @@ async function getPostById(postId: string) {
     .select(
       `
       *,
-      users:user_id (
+      profiles:user_id (
         id,
         username,
         avatar_url
       ),
-      groups:group_id (
+      communities:communities_id (
         id,
         name
       )

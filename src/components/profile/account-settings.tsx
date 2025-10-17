@@ -3,7 +3,6 @@
 import { useEffect, useState, useRef } from "react";
 
 import { settingsService } from "@/lib/settings";
-import { UserSettings } from "@/types/settings.types";
 
 import Switch from "@/components/ui/switch";
 import { YearDatePicker } from "@/components/ui/year-date-picker";
@@ -23,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { UserSettings } from "@/types/settings.types";
 
 export default function AccountSettings() {
   const [settings, setSettings] = useState<UserSettings | null>(null);

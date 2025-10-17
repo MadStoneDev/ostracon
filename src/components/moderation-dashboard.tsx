@@ -134,7 +134,7 @@ export default function ModerationDashboard({
 
     try {
       const { data, error } = await supabase
-        .from("users")
+        .from("profiles")
         .select("id, username, avatar_url, is_moderator, is_admin")
         .ilike("username", `%${userSearch}%`)
         .order("username")
@@ -247,7 +247,7 @@ export default function ModerationDashboard({
       };
 
       const { error } = await supabase
-        .from("users")
+        .from("profiles")
         .update(updateData)
         .eq("id", userId);
 

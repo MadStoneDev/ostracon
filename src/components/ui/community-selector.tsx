@@ -60,17 +60,17 @@ export default function CommunitySelector({
 
         // First, get the group IDs where the user is a member
         const { data: memberData, error: memberError } = await supabase
-          .from("group_members")
-          .select("group_id")
+          .from("community_members")
+          .select("community_id")
           .eq("user_id", user.id);
 
         if (memberError) throw memberError;
 
         // Extract the group IDs to an array
-        const groupIds = memberData.map((item) => item.group_id);
+        const communityIds = memberData.map((item) => item.community_id);
 
         // If user isn't a member of any groups, return early
-        if (groupIds.length === 0) {
+        if (communityIds.length === 0) {
           setCommunities([]);
           setLoading(false);
           return;
@@ -78,9 +78,9 @@ export default function CommunitySelector({
 
         // Fetch communities using the extracted IDs
         const { data, error: communitiesError } = await supabase
-          .from("groups")
+          .from("communities")
           .select("id, name, display_name")
-          .in("id", groupIds);
+          .in("id", communityIds);
 
         if (communitiesError) throw communitiesError;
 

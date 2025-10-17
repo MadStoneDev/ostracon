@@ -17,7 +17,6 @@ type EnhancedFragment = FragmentRow & {
   groups?: Pick<CommunityRow, "name" | "id"> | null;
   likeCount: number;
   commentCount: number;
-  viewCount: number;
   userLiked: boolean;
   userCommented: boolean;
 };
@@ -58,11 +57,10 @@ export default function PostScreen({
           groupName={post.groups?.name || ""}
           truncate={false}
           isExpanded={true}
-          userId={post.user_id || ""}
+          authorId={post.user_id || ""}
           // Pass interaction data from enhanced post
           initialLikeCount={post.likeCount}
           initialCommentCount={post.commentCount || comments?.length || 0}
-          initialViewCount={post.viewCount}
           initialUserLiked={post.userLiked}
           initialUserCommented={post.userCommented}
         />

@@ -19,6 +19,7 @@ import { Drama } from "lucide-react";
 import CommunitySelector from "@/components/ui/community-selector";
 
 import type { Database } from "../../../../database.types";
+import { Tooltip, TooltipContent } from "@/components/ui/tooltip";
 
 type PostSettings = {
   allowReactions: boolean;
@@ -30,6 +31,7 @@ type SettingKey = keyof PostSettings;
 
 type FragmentRow = Database["public"]["Tables"]["fragments"]["Row"];
 type CommunityRow = Database["public"]["Tables"]["communities"]["Row"];
+type Tag = Database["public"]["Tables"]["tags"]["Row"];
 type FragmentWithUser = FragmentRow & {
   users?: {
     username: string;
@@ -60,6 +62,8 @@ export default function PostForm({
   // States
   const [postTitle, setPostTitle] = useState(post?.title || "");
   const [postContent, setPostContent] = useState(post?.content || "");
+  const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
+  const [availableTags, setAvailableTags] = useState<Tag[]>([]);
   const [allowReactions, setAllowReactions] = useState(
     post?.reactions_open ?? true,
   );
@@ -142,6 +146,29 @@ export default function PostForm({
     setIsSubmitting(true);
     setError(null);
 
+    let publishedTimestamp = null;
+
+    if (selectedCommunity !== "draft") {
+      publishedTimestamp = isEditing
+        ? post?.published_at
+        : new Date().toISOString();
+    }
+
+    const postData = {
+      title: postTitle || "",
+      content: postContent,
+      comments_open: allowComments,
+      reactions_open: allowReactions,
+      is_nsfw: postNSFW,
+      updated_at: new Date().toISOString(),
+      is_draft: selectedCommunity === "draft",
+      community_id:
+        selectedCommunity !== "draft" && selectedCommunity !== "public"
+          ? selectedCommunity
+          : "",
+      published_at: publishedTimestamp,
+    };
+
     try {
       const {
         data: { user },
@@ -160,15 +187,7 @@ export default function PostForm({
         // Update existing post
         const { data, error } = await supabase
           .from("fragments")
-          .update({
-            title: postTitle || "",
-            content: postContent,
-            comments_open: allowComments,
-            reactions_open: allowReactions,
-            is_nsfw: postNSFW,
-            group_id: selectedCommunity,
-            updated_at: new Date().toISOString(),
-          })
+          .update(postData)
           .eq("id", postId)
           .select();
 
@@ -178,7 +197,7 @@ export default function PostForm({
 
         if (selectedCommunity) {
           const { data: communityData } = await supabase
-            .from("groups")
+            .from("communities")
             .select("name")
             .eq("id", selectedCommunity)
             .single();
@@ -193,18 +212,21 @@ export default function PostForm({
         }
       } else {
         // Create new post
-        const { data, error } = await supabase
+        const { data: fragmentData, error } = await supabase
           .from("fragments")
-          .insert({
-            user_id: user.id,
-            title: postTitle || "",
-            content: postContent,
-            comments_open: allowComments,
-            reactions_open: allowReactions,
-            is_nsfw: postNSFW,
-            group_id: selectedCommunity,
-          })
-          .select();
+          .insert(postData)
+          .select()
+          .single();
+
+        // After inserting the fragment
+        if (selectedTags.length > 0 && fragmentData?.id) {
+          const tagInserts = selectedTags.map((tag) => ({
+            fragment_id: fragmentData.id,
+            tag_id: tag.id,
+          }));
+
+          await supabase.from("fragment_tags").insert(tagInserts);
+        }
 
         if (error) {
           throw error;
@@ -212,7 +234,7 @@ export default function PostForm({
 
         if (selectedCommunity) {
           const { data: communityData } = await supabase
-            .from("groups")
+            .from("communities")
             .select("name")
             .eq("id", selectedCommunity)
             .single();
@@ -326,7 +348,7 @@ export default function PostForm({
 
       try {
         const { data: communityData, error: communityError } = await supabase
-          .from("groups")
+          .from("communities")
           .select("id")
           .eq("name", communityFromUrl)
           .single();
@@ -345,10 +367,10 @@ export default function PostForm({
         }
 
         const { data: memberData, error: memberError } = await supabase
-          .from("group_members")
-          .select("group_id")
+          .from("community_members")
+          .select("community_id")
           .eq("user_id", user.id)
-          .eq("group_id", communityData.id);
+          .eq("community_id", communityData.id);
 
         if (!memberError && memberData && memberData.length > 0) {
           setSelectedCommunity(communityData.id);
@@ -362,6 +384,18 @@ export default function PostForm({
     }
     validateCommunity();
   }, [supabase, searchParams, isEditing]);
+
+  useEffect(() => {
+    async function fetchAvailableTags() {
+      const { data: tags, error } = await supabase.from("tags").select("*");
+
+      if (tags) {
+        setAvailableTags(tags);
+      }
+    }
+
+    fetchAvailableTags();
+  }, [supabase]);
 
   return (
     <div className={`flex-grow flex flex-col h-full`}>
@@ -435,55 +469,12 @@ export default function PostForm({
         />
       </article>
 
-      {/* Side Bar*/}
-      <aside
-        className={`px-2 py-3 ${
-          isEditing ? "fixed" : "absolute"
-        } top-1/2 -translate-y-1/2 right-0 flex flex-col gap-5 bg-dark text-primary dark:bg-light rounded-l-xl`}
-      >
-        <button
-          className={`relative flex-grow flex justify-center items-center h-full`}
-          onClick={() => handleDefaultSettings("allowReactions")}
-        >
-          <div
-            className={`${
-              allowReactions ? "opacity-100" : "opacity-50"
-            } transition-all duration-300 ease-in-out`}
-          >
-            {allowReactions ? (
-              <IconHeartFilled size={24} strokeWidth={2} />
-            ) : (
-              <IconHeart size={24} strokeWidth={2} />
-            )}
-          </div>
-        </button>
-
-        <button
-          className={`relative flex-grow flex justify-center items-center h-full`}
-          onClick={() => handleDefaultSettings("allowComments")}
-        >
-          <div
-            className={`${
-              allowComments ? "opacity-100" : "opacity-50"
-            } transition-all duration-300 ease-in-out`}
-          >
-            {allowComments ? (
-              <IconMessageFilled size={24} strokeWidth={2} />
-            ) : (
-              <IconMessage size={24} strokeWidth={2} />
-            )}
-          </div>
-        </button>
-
-        <button
-          className={`flex-grow flex justify-center items-center gap-1 h-full ${
-            postNSFW ? "opacity-100" : "opacity-50"
-          } transition-all duration-300 ease-in-out`}
-          onClick={() => handleDefaultSettings("postNSFW")}
-        >
-          <Drama size={24} strokeWidth={2} />
-        </button>
-      </aside>
+      <PostSettings
+        allowReactions={allowReactions}
+        allowComments={allowComments}
+        postNSFW={postNSFW}
+        onToggle={handleDefaultSettings}
+      />
 
       {/* Delete Post Option (only in edit mode) */}
       {isEditing && (
@@ -542,5 +533,72 @@ export default function PostForm({
         )}
       </footer>
     </div>
+  );
+}
+
+function PostSettings({
+  allowReactions,
+  allowComments,
+  postNSFW,
+  onToggle,
+}: {
+  allowReactions?: boolean;
+  allowComments?: boolean;
+  postNSFW?: boolean;
+  onToggle: (setting: SettingKey) => void;
+}) {
+  return (
+    <aside
+      className={`px-2 py-3 absolute top-1/2 -translate-y-1/2 right-0 flex flex-col gap-5 bg-dark text-primary dark:bg-light rounded-l-xl`}
+    >
+      <button
+        className={`relative flex-grow flex justify-center items-center h-full`}
+        onClick={() => onToggle("allowReactions")}
+      >
+        <div
+          className={`${
+            allowReactions
+              ? "opacity-100 bg-red-100 text-red-500 rounded-full p-2"
+              : "opacity-50"
+          } transition-all duration-300 ease-in-out`}
+        >
+          {allowReactions ? (
+            <IconHeartFilled size={24} strokeWidth={2} />
+          ) : (
+            <IconHeart size={24} strokeWidth={2} />
+          )}
+        </div>
+      </button>
+
+      <button
+        className={`relative flex-grow flex justify-center items-center h-full`}
+        onClick={() => onToggle("allowComments")}
+      >
+        <div
+          className={`${
+            allowComments
+              ? "opacity-100 bg-blue-100 text-blue-500 rounded-full p-2"
+              : "opacity-50"
+          } transition-all duration-300 ease-in-out`}
+        >
+          {allowComments ? (
+            <IconMessageFilled size={24} strokeWidth={2} />
+          ) : (
+            <IconMessage size={24} strokeWidth={2} />
+          )}
+        </div>
+      </button>
+
+      <button
+        className={`flex-grow flex justify-center items-center gap-1 h-full ${
+          postNSFW
+            ? "opacity-100 bg-yellow-100 text-yellow-500 rounded-full p-2"
+            : "opacity-50"
+        } transition-all duration-300 ease-in-out`}
+        onClick={() => onToggle("postNSFW")}
+      >
+        <Drama size={24} strokeWidth={2} />
+      </button>
+    </aside>
   );
 }

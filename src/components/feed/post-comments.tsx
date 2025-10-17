@@ -60,7 +60,7 @@ export default function PostComments({
 
             // Then fetch the user data separately
             const { data: userData, error: userError } = await supabase
-              .from("users")
+              .from("profiles")
               .select("username, avatar_url")
               .eq("id", newCommentData.user_id)
               .single();

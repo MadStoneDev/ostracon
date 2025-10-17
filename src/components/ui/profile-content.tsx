@@ -20,7 +20,7 @@ import { User } from "@supabase/supabase-js";
 import { Database } from "../../../database.types";
 
 // Types
-type Profile = Database["public"]["Tables"]["users"]["Row"];
+type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 type Fragment = Database["public"]["Tables"]["fragments"]["Row"];
 
 const slideVariants = {
@@ -335,7 +335,7 @@ export default function ProfileContent({
       <section className={`mt-8 h-[1px] bg-dark/50 dark:bg-light/50`}></section>
 
       {/* Photo Carousel */}
-      <UserPhotosCarousel currentUserId={currentUser.id} userId={profile.id} />
+      <UserPhotosCarousel currentUser={currentUser} userId={profile.id} />
 
       {/* Second Separator */}
       <section className={`h-[1px] bg-dark/50 dark:bg-light/50`}></section>

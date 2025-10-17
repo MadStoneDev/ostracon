@@ -38,7 +38,7 @@ export async function fetchPostComments(postId: string) {
 
     // Fetch all users in one query
     const { data: usersData, error: usersError } = await supabase
-      .from("users")
+      .from("profiles")
       .select("id, username, avatar_url")
       .in("id", userIds);
 

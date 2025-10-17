@@ -5,17 +5,15 @@ import { updateSession } from "@/utils/supabase/middleware";
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
-  // Public Routes prefixes - these and all their subdirectories are public
-  const publicRoutesPrefixes = [
-    "/",
-    "/auth", // Changed from /login to /auth to match your structure
-    "/register",
-    "/info",
-    "/support",
-    "/privacy-policy",
-    "/terms-of-service",
-    "/cookies-policy",
-    "/error",
+  const protectedRoutes = [
+    "/connect",
+    "/explore",
+    "/messages",
+    "/notifications",
+    "/post",
+    "/profile",
+    "/search",
+    "/settings",
   ];
 
   // Skip for static files and API routes
@@ -29,10 +27,8 @@ export async function middleware(request: NextRequest) {
 
   // Check if the path starts with any of the public route prefixes
   // Special handling for root path "/" to prevent it from matching everything
-  const isPublicRoute = publicRoutesPrefixes.some((prefix) =>
-    prefix === "/"
-      ? path === "/"
-      : path === prefix || path.startsWith(`${prefix}/`),
+  const isPublicRoute = !protectedRoutes.some(
+    (route) => path === route || path.startsWith(`${route}/`),
   );
 
   // Skip for public routes
@@ -52,34 +48,57 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL("/auth", request.url));
     }
 
-    // User is authenticated - check profile
-    // Only perform this check on protected routes (not on /profile/setup)
-    if (path !== "/profile/setup") {
-      const { data: profile, error } = await supabase
+    // Only perform this check on protected routes
+    const { data: profile, error } = await supabase
+      .from("profiles")
+      .select("id, username, date_of_birth, account_status")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    // Profile doesn't exist (shouldn't happen with trigger, but safety check)
+    if (error || !profile) {
+      console.error("⚠️ Profile missing for user:", user.id, error);
+
+      // Try to create profile as fallback
+      const { error: createError } = await supabase
         .from("profiles")
-        .select("id, username, account_status")
+        .insert({
+          id: user.id,
+          username: null,
+        })
+        .select()
+        .single();
+
+      if (createError) {
+        console.error("❌ Failed to create profile:", createError);
+      }
+
+      // Redirect to profile setup
+      return NextResponse.redirect(new URL("/profile/setup", request.url));
+    }
+
+    // If on setup page but already has username, redirect to explore
+    if (path === "/profile/setup") {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("username, date_of_birth")
         .eq("id", user.id)
-        .maybeSingle();
+        .single();
 
-      // Profile doesn't exist (shouldn't happen with trigger, but safety check)
-      if (error || !profile) {
-        console.error("⚠️ Profile missing for user:", user.id, error);
+      if (profile?.username && profile?.date_of_birth) {
+        return NextResponse.redirect(new URL("/explore", request.url));
+      }
+    } else {
+      if (profile.date_of_birth) {
+        const birthDate = new Date(profile.date_of_birth);
+        const ageDifMs = Date.now() - birthDate.getTime();
+        const ageDate = new Date(ageDifMs);
+        const age = Math.abs(ageDate.getUTCFullYear() - 1970);
 
-        // Try to create profile as fallback
-        const { error: createError } = await supabase
-          .from("profiles")
-          .insert({
-            id: user.id,
-            username: null,
-          })
-          .select()
-          .single();
-
-        if (createError) {
-          console.error("❌ Failed to create profile:", createError);
+        if (age < 21) {
+          return NextResponse.redirect(new URL("/age-restricted", request.url));
         }
-
-        // Redirect to profile setup
+      } else {
         return NextResponse.redirect(new URL("/profile/setup", request.url));
       }
 
@@ -107,19 +126,6 @@ export async function middleware(request: NextRequest) {
       // Profile exists but no username - redirect to setup
       if (!profile.username) {
         return NextResponse.redirect(new URL("/profile/setup", request.url));
-      }
-    }
-
-    // If on setup page but already has username, redirect to explore
-    if (path === "/profile/setup") {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("username")
-        .eq("id", user.id)
-        .single();
-
-      if (profile?.username) {
-        return NextResponse.redirect(new URL("/explore", request.url));
       }
     }
 

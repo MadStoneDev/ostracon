@@ -5,6 +5,8 @@ import Post from "@/components/feed/single-post";
 import { defaultSettings } from "@/data/defaults/settings";
 import { createClient } from "@/utils/supabase/client";
 import type { Database } from "../../../database.types";
+import Link from "next/link";
+import { IconSquareRoundedPlus } from "@tabler/icons-react";
 
 // Define types using the Database type
 type FragmentRow = Database["public"]["Tables"]["fragments"]["Row"];
@@ -21,7 +23,6 @@ type FragmentWithUser = FragmentRow & {
 type EnhancedFragment = FragmentWithUser & {
   likeCount: number;
   commentCount: number;
-  viewCount: number;
   userLiked: boolean;
   userCommented: boolean;
 };
@@ -125,7 +126,7 @@ export default function ExploreFeed() {
 
       // Get user settings
       const { data: userSettings, error: userError } = await supabase
-        .from("users")
+        .from("profiles")
         .select("settings")
         .eq("id", userData.user.id)
         .single();
@@ -159,13 +160,16 @@ export default function ExploreFeed() {
           .from("follows")
           .select("following_id")
           .eq("follower_id", userId),
-        supabase.from("group_members").select("group_id").eq("user_id", userId),
+        supabase
+          .from("community_members")
+          .select("community_id")
+          .eq("user_id", userId),
       ]);
 
       const followingIds =
         followingData.data?.map((item) => item.following_id) || [];
-      const groupIds =
-        groupMemberships.data?.map((item) => item.group_id) || [];
+      const membershipCommunityIds =
+        groupMemberships.data?.map((item) => item.community_id) || [];
       const relevantUserIds = [userId, ...followingIds];
 
       // Build the paginated query
@@ -174,11 +178,11 @@ export default function ExploreFeed() {
         .select(
           `
           *,
-          users:user_id (
+          profiles:user_id (
             username,
             avatar_url
           ),
-          groups:group_id (
+          communities:community_id (
             name
           )
         `,
@@ -187,15 +191,17 @@ export default function ExploreFeed() {
         .range(pageNum * PAGE_SIZE, (pageNum + 1) * PAGE_SIZE - 1);
 
       // Only add filters if we have valid IDs to filter by
-      if (relevantUserIds.length > 0 || groupIds.length > 0) {
+      if (relevantUserIds.length > 0 || membershipCommunityIds.length > 0) {
         let filterConditions = [];
 
         if (relevantUserIds.length > 0) {
           filterConditions.push(`user_id.in.(${relevantUserIds.join(",")})`);
         }
 
-        if (groupIds.length > 0) {
-          filterConditions.push(`group_id.in.(${groupIds.join(",")})`);
+        if (membershipCommunityIds.length > 0) {
+          filterConditions.push(
+            `community_id.in.(${membershipCommunityIds.join(",")})`,
+          );
         }
 
         if (filterConditions.length > 0) {
@@ -213,7 +219,7 @@ export default function ExploreFeed() {
       const postIds = newPosts?.map((post) => post.id) || [];
 
       // Fetch interactions for all the posts we just loaded
-      const [likesData, commentsData, viewsData] = await Promise.all([
+      const [likesData, commentsData] = await Promise.all([
         // Fetch like counts
         supabase
           .from("fragment_reactions")
@@ -225,12 +231,6 @@ export default function ExploreFeed() {
         supabase
           .from("fragment_comments")
           .select("fragment_id, user_id")
-          .in("fragment_id", postIds),
-
-        // Fetch view counts
-        supabase
-          .from("fragment_analytics")
-          .select("fragment_id, views")
           .in("fragment_id", postIds),
       ]);
 
@@ -278,17 +278,6 @@ export default function ExploreFeed() {
         }
       }
 
-      // Process views data
-      const viewCountMap: Record<string, number> = {};
-
-      if (viewsData.data && viewsData.data.length > 0) {
-        for (const view of viewsData.data) {
-          if (view.fragment_id) {
-            viewCountMap[view.fragment_id] = view.views || 0;
-          }
-        }
-      }
-
       // Cast the result to our type and enhance with interaction data
       const typedPosts = (newPosts || []).map(
         (post) =>
@@ -296,7 +285,6 @@ export default function ExploreFeed() {
             ...post,
             likeCount: likeCountMap[post.id] || 0,
             commentCount: commentCountMap[post.id] || 0,
-            viewCount: viewCountMap[post.id] || 0,
             userLiked: userLikedMap[post.id] || false,
             userCommented: userCommentedMap[post.id] || false,
           }) as EnhancedFragment,
@@ -392,11 +380,10 @@ export default function ExploreFeed() {
               timestamp={post.published_at || ""}
               groupId={post.community_id}
               groupName={post.groups?.name || ""}
-              userId={post.user_id || ""}
+              authorId={post.user_id || ""}
               onDelete={handleDeletePost}
               initialLikeCount={post.likeCount}
               initialCommentCount={post.commentCount}
-              initialViewCount={post.viewCount}
               initialUserLiked={post.userLiked}
               initialUserCommented={post.userCommented}
             />
@@ -432,6 +419,14 @@ export default function ExploreFeed() {
           <p className="text-gray-500 mb-4">
             No posts to show. Try posting something or following more users!
           </p>
+
+          <Link
+            href={"/post/new"}
+            className={`my-6 px-4 py-2 inline-flex gap-2 justify-center items-center rounded-full hover:bg-dark dark:hover:bg-light border border-dark dark:border-light hover:text-light dark:hover:text-dark transition-all duration-300 ease-in-out`}
+          >
+            <IconSquareRoundedPlus size={24} />
+            Create your first fragment!
+          </Link>
         </div>
       )}
     </div>

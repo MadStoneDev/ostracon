@@ -19,7 +19,7 @@ export default async function Messages() {
 
   // Get user profile
   const { data: profile, error: profileError } = await supabase
-    .from("users")
+    .from("profiles")
     .select("*")
     .eq("id", user.id)
     .single();
@@ -293,7 +293,7 @@ export default async function Messages() {
 
   // Get user profiles for all participants
   const { data: userProfiles, error: userProfilesError } = await supabase
-    .from("users")
+    .from("profiles")
     .select("id, username, avatar_url")
     .in("id", Array.from(otherUserIds));
 

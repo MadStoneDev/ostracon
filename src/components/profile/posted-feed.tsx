@@ -7,11 +7,10 @@ import { User } from "@supabase/supabase-js";
 import type { Database } from "../../../database.types";
 
 // Types
-type Profile = Database["public"]["Tables"]["users"]["Row"];
+type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 type Fragment = Database["public"]["Tables"]["fragments"]["Row"] & {
   likeCount?: number;
   commentCount?: number;
-  viewCount?: number;
   userLiked?: boolean;
   userCommented?: boolean;
 };
@@ -44,7 +43,10 @@ export default function PostedFeed({
       }
 
       // Filter out NSFW posts if user has disabled sensitive content
-      return !(!settings?.allow_sensitive_content && post.is_nsfw);
+      return (
+        post.published_at &&
+        !(!settings?.allow_sensitive_content && post.is_nsfw)
+      );
     });
 
     setPosts(filteredFragments);
@@ -85,12 +87,11 @@ export default function PostedFeed({
               reactionsAllowed={post.reactions_open ?? true}
               // Never blur your own posts when viewing your profile
               blur={!isViewingOwnProfile && settings?.blur_sensitive_content}
-              timestamp={post.created_at}
-              userId={post.user_id || ""}
+              timestamp={post.published_at || post.created_at!}
+              authorId={post.user_id || ""}
               // Pass pre-fetched data to avoid loading delay
               initialLikeCount={post.likeCount || 0}
               initialCommentCount={post.commentCount || 0}
-              initialViewCount={post.viewCount || 0}
               initialUserLiked={post.userLiked || false}
               initialUserCommented={post.userCommented || false}
             />

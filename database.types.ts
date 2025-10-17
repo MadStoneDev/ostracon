@@ -184,6 +184,42 @@ export type Database = {
           },
         ]
       }
+      community_join_requests: {
+        Row: {
+          community_id: string
+          message: string | null
+          requested_at: string
+          user_id: string
+        }
+        Insert: {
+          community_id: string
+          message?: string | null
+          requested_at?: string
+          user_id: string
+        }
+        Update: {
+          community_id?: string
+          message?: string | null
+          requested_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_join_requests_community_id_fkey"
+            columns: ["community_id"]
+            isOneToOne: false
+            referencedRelation: "communities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_join_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       community_members: {
         Row: {
           community_id: string
@@ -707,6 +743,86 @@ export type Database = {
           },
         ]
       }
+      images_moderation: {
+        Row: {
+          admin_notes: string | null
+          assigned_to: string | null
+          created_at: string
+          id: string
+          image_url: string
+          reason: string
+          reported_by: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          risk_level: string
+          sightengine_data: Json | null
+          status: string
+          updated_at: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          assigned_to?: string | null
+          created_at?: string
+          id?: string
+          image_url: string
+          reason: string
+          reported_by?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          risk_level?: string
+          sightengine_data?: Json | null
+          status?: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          assigned_to?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string
+          reason?: string
+          reported_by?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          risk_level?: string
+          sightengine_data?: Json | null
+          status?: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "images_moderation_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "images_moderation_reported_by_fkey"
+            columns: ["reported_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "images_moderation_resolved_by_fkey"
+            columns: ["resolved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "images_moderation_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       message_reactions: {
         Row: {
           created_at: string | null
@@ -1019,6 +1135,80 @@ export type Database = {
           },
         ]
       }
+      posts_moderation: {
+        Row: {
+          admin_notes: string | null
+          assigned_to: string | null
+          created_at: string
+          id: string
+          post_id: string
+          reason: string
+          reported_by: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          risk_level: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          assigned_to?: string | null
+          created_at?: string
+          id?: string
+          post_id: string
+          reason: string
+          reported_by?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          risk_level?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          assigned_to?: string | null
+          created_at?: string
+          id?: string
+          post_id?: string
+          reason?: string
+          reported_by?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          risk_level?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "posts_moderation_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "posts_moderation_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "fragments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "posts_moderation_reported_by_fkey"
+            columns: ["reported_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "posts_moderation_resolved_by_fkey"
+            columns: ["resolved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profile_photos: {
         Row: {
           created_at: string | null
@@ -1064,6 +1254,7 @@ export type Database = {
           created_at: string | null
           date_of_birth: string | null
           id: string
+          is_admin: boolean | null
           is_moderator: boolean | null
           is_private: boolean | null
           paddle_customer_id: string | null
@@ -1080,6 +1271,7 @@ export type Database = {
           created_at?: string | null
           date_of_birth?: string | null
           id: string
+          is_admin?: boolean | null
           is_moderator?: boolean | null
           is_private?: boolean | null
           paddle_customer_id?: string | null
@@ -1096,6 +1288,7 @@ export type Database = {
           created_at?: string | null
           date_of_birth?: string | null
           id?: string
+          is_admin?: boolean | null
           is_moderator?: boolean | null
           is_private?: boolean | null
           paddle_customer_id?: string | null
@@ -1104,6 +1297,80 @@ export type Database = {
           username?: string
         }
         Relationships: []
+      }
+      profiles_moderation: {
+        Row: {
+          admin_notes: string | null
+          assigned_to: string | null
+          created_at: string
+          id: string
+          reason: string
+          reported_by: string | null
+          reported_user_id: string
+          resolved_at: string | null
+          resolved_by: string | null
+          risk_level: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          assigned_to?: string | null
+          created_at?: string
+          id?: string
+          reason: string
+          reported_by?: string | null
+          reported_user_id: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          risk_level?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          assigned_to?: string | null
+          created_at?: string
+          id?: string
+          reason?: string
+          reported_by?: string | null
+          reported_user_id?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          risk_level?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_moderation_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_moderation_reported_by_fkey"
+            columns: ["reported_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_moderation_reported_user_id_fkey"
+            columns: ["reported_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_moderation_resolved_by_fkey"
+            columns: ["resolved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       report_appeals: {
         Row: {
@@ -1303,18 +1570,21 @@ export type Database = {
       }
       tags: {
         Row: {
+          colour: string | null
           created_at: string | null
           id: string
           tag: string
           usage_count: number | null
         }
         Insert: {
+          colour?: string | null
           created_at?: string | null
           id?: string
           tag: string
           usage_count?: number | null
         }
         Update: {
+          colour?: string | null
           created_at?: string | null
           id?: string
           tag?: string

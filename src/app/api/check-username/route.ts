@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
 
     // Check the users table
     const { data, error } = await supabase
-      .from("users")
+      .from("profiles")
       .select("id")
       .eq("username", username)
       .maybeSingle();

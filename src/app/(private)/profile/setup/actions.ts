@@ -1,81 +1,54 @@
 ﻿"use server";
 
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
 
-export async function updateUsername(formData: { username: string }) {
+export async function updateProfileSetup(formData: {
+  username: string;
+  dateOfBirth: string;
+  bio?: string;
+}) {
   try {
     const supabase = await createClient();
-
-    // Get the current user
     const {
       data: { user },
-      error: userError,
     } = await supabase.auth.getUser();
 
-    if (userError || !user) {
-      console.error("Error getting user:", userError);
+    if (!user) {
       return {
-        error: "You must be logged in to update your profile.",
+        error: "Not authenticated",
         success: false,
       };
     }
 
-    // Check if username is already taken
-    const { data: existingUser, error: checkError } = await supabase
-      .from("users")
-      .select("id")
-      .eq("username", formData.username)
-      .maybeSingle();
+    // Validate date of birth
+    const birthDate = new Date(formData.dateOfBirth);
+    const ageDifMs = Date.now() - birthDate.getTime();
+    const ageDate = new Date(ageDifMs);
+    const age = Math.abs(ageDate.getUTCFullYear() - 1970);
 
-    if (checkError) {
-      console.error("Error checking username availability:", checkError);
+    // Update user record
+    const { error } = await supabase.from("profiles").upsert({
+      id: user.id,
+      username: formData.username,
+      date_of_birth: formData.dateOfBirth,
+      bio: formData.bio || null,
+    });
+
+    if (error) {
+      console.error("Profile update error:", error);
       return {
-        error: "Unable to verify username availability. Please try again.",
+        error: "Failed to update profile",
         success: false,
       };
     }
 
-    if (existingUser) {
-      return {
-        error: "This username is already taken. Please choose another one.",
-        success: false,
-      };
-    }
-
-    // Update the username in the users table
-    const { error: updateError } = await supabase
-      .from("users")
-      .update({ username: formData.username })
-      .eq("id", user.id);
-
-    if (updateError) {
-      console.error("Error updating username:", updateError);
-      return {
-        error: "Failed to update username. Please try again.",
-        success: false,
-      };
-    }
-
-    // Redirect to explore page
-    revalidatePath("/explore");
     redirect("/explore");
-
-    // This return is for TypeScript, it will never be reached due to redirect
-    return {
-      success: true,
-      error: null,
-    };
   } catch (error) {
-    if (error instanceof Error && !error.message.includes("NEXT_REDIRECT")) {
-      console.error("Unexpected username update error:", error);
-      return {
-        error: "An unexpected error occurred. Please try again.",
-        success: false,
-      };
-    }
-
-    throw error;
+    console.error("Unexpected profile setup error:", error);
+    return {
+      error: "An unexpected error occurred",
+      success: false,
+    };
   }
 }

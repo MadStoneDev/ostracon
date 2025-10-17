@@ -19,7 +19,7 @@ export default async function PoliciesLayout({
 
   if (user) {
     const { data: profile } = await supabase
-      .from("users")
+      .from("profiles")
       .select("*")
       .eq("id", user!.id)
       .single();

@@ -17,7 +17,7 @@ export default async function PrivateLayout({
   } = await supabase.auth.getUser();
 
   const { data: profile } = await supabase
-    .from("users")
+    .from("profiles")
     .select("*")
     .eq("id", user!.id)
     .single();

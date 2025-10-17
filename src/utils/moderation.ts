@@ -14,7 +14,7 @@ export async function getUserPermissions(
   const supabase = createClient();
 
   const { data: user, error } = await supabase
-    .from("users")
+    .from("profiles")
     .select("is_moderator, is_admin")
     .eq("id", userId)
     .single();

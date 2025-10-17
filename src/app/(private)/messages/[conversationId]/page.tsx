@@ -24,7 +24,7 @@ export default async function ConversationPage({
 
   // Get user profile
   const { data: profile, error: profileError } = await supabase
-    .from("users")
+    .from("profiles")
     .select("*")
     .eq("id", user.id)
     .single();
@@ -86,7 +86,7 @@ export default async function ConversationPage({
 
   // Get profiles for all other participants
   const { data: otherProfiles, error: otherProfilesError } = await supabase
-    .from("users")
+    .from("profiles")
     .select("id, username, avatar_url")
     .in("id", otherUserIds);
 

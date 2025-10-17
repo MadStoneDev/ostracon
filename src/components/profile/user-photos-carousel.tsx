@@ -54,11 +54,9 @@ type SightEngineResponse = {
 
 export default function UserPhotosCarousel({
   userId,
-  currentUserId,
   currentUser,
 }: {
   userId: string;
-  currentUserId: string;
   currentUser: User;
 }) {
   const [photos, setPhotos] = useState<UserPhoto[]>([]);
@@ -87,7 +85,7 @@ export default function UserPhotosCarousel({
 
   const carouselRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const isOwnProfile = userId === currentUserId;
+  const isOwnProfile = userId === currentUser.id;
 
   // ... (keep all the existing useEffect and handler functions exactly the same)
 
@@ -208,7 +206,7 @@ export default function UserPhotosCarousel({
       try {
         // First, upload the file to storage
         const fileExt = file.name.split(".").pop();
-        const filePath = `${currentUserId}/${Date.now()}.${fileExt}`;
+        const filePath = `${currentUser.id}/${Date.now()}.${fileExt}`;
 
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from("user.photos")
@@ -266,7 +264,7 @@ export default function UserPhotosCarousel({
             .insert([
               {
                 image_url: photoUrl,
-                uploaded_by: currentUserId,
+                uploaded_by: currentUser.id,
                 reported_by: null, // System-triggered
                 reason: analysis.reason,
                 risk_level: analysis.riskLevel,
@@ -293,7 +291,7 @@ export default function UserPhotosCarousel({
             .from("user_photos")
             .insert([
               {
-                user_id: currentUserId,
+                user_id: currentUser.id,
                 photo_url: photoUrl,
               },
             ])

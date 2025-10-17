@@ -16,7 +16,7 @@ export default async function ProfileRedirect() {
   }
 
   const checkUser = await supabase
-    .from("users")
+    .from("profiles")
     .select("username")
     .eq("id", currentUser)
     .single();

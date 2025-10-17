@@ -1,6 +1,7 @@
 ﻿import React from "react";
+import Link from "next/link";
+
 import {
-  IconChartBarPopular,
   IconHeart,
   IconHeartFilled,
   IconHeartOff,
@@ -9,8 +10,13 @@ import {
   IconMessageOff,
   IconMessagePlus,
 } from "@tabler/icons-react";
-import Link from "next/link";
-import { PostState } from "@/types/fragments";
+
+type PostState = {
+  liked: boolean;
+  likeCount: number;
+  hasCommented: boolean;
+  commentCount: number;
+};
 
 type PostActionsProps = {
   blurred: boolean;
@@ -134,16 +140,6 @@ export const PostActions = React.memo(
             </span>
           </Link>
         </div>
-
-        {/*<Link*/}
-        {/*  href={`/post/${postId}/analytics`}*/}
-        {/*  className="flex items-center gap-1 opacity-30 hover:opacity-100 transition-all duration-300 ease-in-out"*/}
-        {/*>*/}
-        {/*  <IconChartBarPopular size={20} strokeWidth={2.5} />*/}
-        {/*  <span className="font-sans text-sm font-bold">*/}
-        {/*    {isLoading ? "..." : optimisticState.viewCount}*/}
-        {/*  </span>*/}
-        {/*</Link>*/}
       </article>
     </section>
   ),

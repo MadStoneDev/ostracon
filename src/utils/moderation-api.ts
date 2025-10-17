@@ -93,7 +93,7 @@ export class ModerationAPI {
 
   async updateUserRole(userId: string, isModerator: boolean, isAdmin: boolean) {
     return this.supabase
-      .from("users")
+      .from("profiles")
       .update({
         is_moderator: isModerator,
         is_admin: isAdmin,

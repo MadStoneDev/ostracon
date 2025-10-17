@@ -7,11 +7,10 @@ import { User } from "@supabase/supabase-js";
 import type { Database } from "../../../database.types";
 
 // Types
-type Profile = Database["public"]["Tables"]["users"]["Row"];
+type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 type Fragment = Database["public"]["Tables"]["fragments"]["Row"] & {
   likeCount?: number;
   commentCount?: number;
-  viewCount?: number;
   userLiked?: boolean;
   userCommented?: boolean;
 };
@@ -85,11 +84,9 @@ export default function LikedFeed({
               reactionsAllowed={post.reactions_open ?? true}
               blur={!isViewingOwnProfile && settings?.blur_sensitive_content}
               timestamp={post.created_at}
-              userId={post.user_id || ""}
-              // Pass pre-fetched data to avoid loading delay
+              authorId={post.user_id || ""}
               initialLikeCount={post.likeCount || 0}
               initialCommentCount={post.commentCount || 0}
-              initialViewCount={post.viewCount || 0}
               initialUserLiked={post.userLiked || false}
               initialUserCommented={post.userCommented || false}
             />

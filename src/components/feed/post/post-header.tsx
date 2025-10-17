@@ -14,6 +14,8 @@ import {
 } from "@tabler/icons-react";
 
 type PostHeaderProps = {
+  authorId: string;
+  currentUser: User | null;
   avatar_url: string;
   username: string;
   timestamp: string;
@@ -21,8 +23,6 @@ type PostHeaderProps = {
   showOptions: boolean;
   setShowOptions: (value: boolean) => void;
   postId: string;
-  userId: string; // Add userId for profile reporting
-  currentUser: User; // Add currentUser for report functionality
   referenceOnly?: boolean;
   setShowDeleteConfirm?: (value: boolean) => void;
 };
@@ -30,7 +30,7 @@ type PostHeaderProps = {
 type PostOptionsProps = {
   postId: string;
   userId: string;
-  currentUser: User;
+  currentUser: User | null;
   isCurrentUserPost: boolean;
   showOptions: boolean;
   setShowOptions: (value: boolean) => void;
@@ -83,23 +83,25 @@ const PostOptions = React.memo(
             )}
           </>
         ) : (
-          <>
-            {/* Flag Post Button */}
-            <ReportButton
-              type="post"
-              targetId={postId}
-              currentUser={currentUser}
-              className="grid place-content-center w-6 opacity-50 hover:opacity-100 transition-all duration-300 ease-in-out"
-            />
+          currentUser && (
+            <>
+              {/* Flag Post Button */}
+              <ReportButton
+                type="post"
+                targetId={postId}
+                currentUser={currentUser}
+                className="grid place-content-center w-6 opacity-50 hover:opacity-100 transition-all duration-300 ease-in-out"
+              />
 
-            {/* Report User Button */}
-            <ReportButton
-              type="profile"
-              targetId={userId}
-              currentUser={currentUser}
-              className="grid place-content-center w-6 opacity-50 hover:opacity-100 transition-all duration-300 ease-in-out"
-            />
-          </>
+              {/* Report User Button */}
+              <ReportButton
+                type="profile"
+                targetId={userId}
+                currentUser={currentUser}
+                className="grid place-content-center w-6 opacity-50 hover:opacity-100 transition-all duration-300 ease-in-out"
+              />
+            </>
+          )
         )}
       </div>
     </div>
@@ -115,7 +117,7 @@ export const PostHeader = React.memo(
     showOptions,
     setShowOptions,
     postId,
-    userId,
+    authorId,
     currentUser,
     referenceOnly,
     setShowDeleteConfirm,
@@ -147,7 +149,7 @@ export const PostHeader = React.memo(
       {!referenceOnly && (
         <PostOptions
           postId={postId}
-          userId={userId}
+          userId={authorId}
           currentUser={currentUser}
           isCurrentUserPost={isCurrentUserPost}
           showOptions={showOptions}

@@ -6,7 +6,7 @@ import SingleUser from "@/components/feed/single-user";
 import type { Database } from "../../../database.types";
 
 // Types
-type Profile = Database["public"]["Tables"]["users"]["Row"];
+type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 
 export function ListeningFeed({
   user,

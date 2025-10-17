@@ -3,14 +3,13 @@
 import { createClient } from "@/utils/supabase/server";
 import { Database } from "../../../database.types";
 
-type Profile = Database["public"]["Tables"]["users"]["Row"];
+type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 type Fragment = Database["public"]["Tables"]["fragments"]["Row"];
 
 // Enhanced type to include interaction data
 type EnhancedFragment = Fragment & {
   likeCount: number;
   commentCount: number;
-  viewCount: number;
   userLiked: boolean;
   userCommented: boolean;
 };
@@ -34,7 +33,7 @@ export async function fetchUserSettings() {
 
   const supabase = await createClient();
   const { data: userSettings } = await supabase
-    .from("users")
+    .from("profiles")
     .select("settings")
     .eq("id", userId)
     .single();
@@ -46,7 +45,7 @@ export async function fetchProfileByUsername(username: string) {
   const supabase = await createClient();
 
   const { data: user } = await supabase
-    .from("users")
+    .from("profiles")
     .select()
     .eq("username", username)
     .single();
@@ -60,7 +59,7 @@ export async function fetchProfileById(userId: string) {
   const supabase = await createClient();
 
   const { data: user } = await supabase
-    .from("users")
+    .from("profiles")
     .select()
     .eq("id", userId)
     .single();
@@ -83,12 +82,6 @@ async function fetchInteractionData(postIds: string[], currentUserId?: string) {
   const { data: allComments } = await supabase
     .from("fragment_comments")
     .select("fragment_id, user_id")
-    .in("fragment_id", postIds);
-
-  // 3. Fetch all view data for these posts
-  const { data: allViews } = await supabase
-    .from("fragment_analytics")
-    .select("fragment_id, views")
     .in("fragment_id", postIds);
 
   // Process the results manually in JavaScript
@@ -139,21 +132,9 @@ async function fetchInteractionData(postIds: string[], currentUserId?: string) {
     }
   }
 
-  // Get view counts
-  const viewCountMap: Record<string, number> = {};
-
-  if (allViews && allViews.length > 0) {
-    for (const view of allViews) {
-      if (view.fragment_id) {
-        viewCountMap[view.fragment_id] = view.views || 0;
-      }
-    }
-  }
-
   return {
     likeCountMap,
     commentCountMap,
-    viewCountMap,
     userLikedMap,
     userCommentedMap,
   };
@@ -179,20 +160,14 @@ export async function fetchPostedFeedWithInteractions(
   const postIds = posts.map((post) => post.id);
 
   // Get interaction data
-  const {
-    likeCountMap,
-    commentCountMap,
-    viewCountMap,
-    userLikedMap,
-    userCommentedMap,
-  } = await fetchInteractionData(postIds, currentUserId);
+  const { likeCountMap, commentCountMap, userLikedMap, userCommentedMap } =
+    await fetchInteractionData(postIds, currentUserId);
 
   // Combine all the data
   const enhancedPosts: EnhancedFragment[] = posts.map((post) => ({
     ...post,
     likeCount: likeCountMap[post.id] || 0,
     commentCount: commentCountMap[post.id] || 0,
-    viewCount: viewCountMap[post.id] || 0,
     userLiked: userLikedMap[post.id] || false,
     userCommented: userCommentedMap[post.id] || false,
   }));
@@ -229,20 +204,14 @@ export async function fetchLikedFeedWithInteractions(
   const postIds = fragments.map((post) => post.id);
 
   // Get interaction data
-  const {
-    likeCountMap,
-    commentCountMap,
-    viewCountMap,
-    userLikedMap,
-    userCommentedMap,
-  } = await fetchInteractionData(postIds, currentUserId);
+  const { likeCountMap, commentCountMap, userLikedMap, userCommentedMap } =
+    await fetchInteractionData(postIds, currentUserId);
 
   // Combine all the data
   const enhancedPosts: EnhancedFragment[] = fragments.map((post) => ({
     ...post,
     likeCount: likeCountMap[post.id] || 0,
     commentCount: commentCountMap[post.id] || 0,
-    viewCount: viewCountMap[post.id] || 0,
     userLiked: userLikedMap[post.id] || false,
     userCommented: userCommentedMap[post.id] || false,
   }));
@@ -275,7 +244,7 @@ export async function fetchFollowers(userId: string): Promise<Profile[]> {
   const followerIds = follows.map((follow) => follow.follower_id);
 
   const { data: followers } = await supabase
-    .from("users")
+    .from("profiles")
     .select("*")
     .in("id", followerIds);
 
@@ -297,7 +266,7 @@ export async function fetchFollowing(userId: string): Promise<Profile[]> {
   const followingIds = follows.map((follow) => follow.following_id);
 
   const { data: following } = await supabase
-    .from("users")
+    .from("profiles")
     .select("*")
     .in("id", followingIds);
 
@@ -315,7 +284,7 @@ export async function fetchUserProfilesByIds(
   const fetchedProfiles: Record<string, Profile> = {};
 
   const { data, error } = await supabase
-    .from("users")
+    .from("profiles")
     .select()
     .in("id", uniqueUserIds);
 
@@ -344,7 +313,7 @@ export async function fetchPostById(postId: string) {
         username,
         avatar_url
       ),
-      groups:group_id (
+      communities:community_id (
         id,
         name
       )
@@ -400,12 +369,12 @@ export async function fetchSinglePostWithInteractions(
     .select(
       `
       *,
-      users:user_id (
+      profiles:user_id (
         id,
         username,
         avatar_url
       ),
-      groups:group_id (
+      communities:community_id (
         id,
         name
       )
@@ -420,20 +389,14 @@ export async function fetchSinglePostWithInteractions(
   }
 
   // Use the existing helper to get interaction data for this single post
-  const {
-    likeCountMap,
-    commentCountMap,
-    viewCountMap,
-    userLikedMap,
-    userCommentedMap,
-  } = await fetchInteractionData([postId], currentUserId);
+  const { likeCountMap, commentCountMap, userLikedMap, userCommentedMap } =
+    await fetchInteractionData([postId], currentUserId);
 
   // Combine the data
   const enhancedPost: EnhancedFragment = {
     ...post,
     likeCount: likeCountMap[postId] || 0,
     commentCount: commentCountMap[postId] || 0,
-    viewCount: viewCountMap[postId] || 0,
     userLiked: userLikedMap[postId] || false,
     userCommented: userCommentedMap[postId] || false,
   };

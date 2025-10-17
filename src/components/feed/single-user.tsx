@@ -43,7 +43,7 @@ const SingleUserClient = ({
 
       // Get user data
       const { data: userData, error } = await supabase
-        .from("users")
+        .from("profiles")
         .select("id, username, avatar_url")
         .eq("id", userId)
         .single();

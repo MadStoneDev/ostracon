@@ -52,7 +52,7 @@ export default function SinglePostReply({
 
       if (userData?.user) {
         const { data: userProfile } = await supabase
-          .from("users")
+          .from("profiles")
           .select("avatar_url")
           .eq("id", userData.user.id)
           .single();
