@@ -19,7 +19,7 @@ import { Drama } from "lucide-react";
 import CommunitySelector from "@/components/ui/community-selector";
 
 import type { Database } from "../../../../database.types";
-import { Tooltip, TooltipContent } from "@/components/ui/tooltip";
+import TagSelector from "@/components/ui/tag-selector";
 
 type PostSettings = {
   allowReactions: boolean;
@@ -451,6 +451,28 @@ export default function PostForm({
             className={`py-2 px-4 w-full bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-900 focus:outline-none focus:border-primary`}
           />
         </section>
+
+        <TagSelector
+          availableTags={availableTags}
+          selectedTags={selectedTags}
+          onTagAdd={(tag) => {
+            // Create a new array to avoid mutating state directly
+            const tagsArray = [...selectedTags];
+
+            // Check if tag is not already in the array before adding
+            if (!tagsArray.some((existingTag) => existingTag.id === tag.id)) {
+              tagsArray.push(tag);
+              setSelectedTags(tagsArray);
+            }
+          }}
+          onTagRemove={(tag: string) => {
+            // Filter out the tag to remove
+            const tagsArray = selectedTags.filter(
+              (existingTag) => existingTag.id !== tag,
+            );
+            setSelectedTags(tagsArray);
+          }}
+        />
 
         {/* Post Editor */}
         <article className={`relative grow flex flex-col text-sm`}>

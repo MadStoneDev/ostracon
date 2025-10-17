@@ -136,7 +136,7 @@ export default function PostEditor({
         <RichTextPlugin
           contentEditable={
             <ContentEditable
-              className={`flex-grow p-4 w-full min-h-full bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-900 focus:outline-none focus:border-primary transition-all duration-300 ease-in-out`}
+              className={`flex-grow p-4 w-full min-h-full bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-900 outline-none focus:border-primary transition-all duration-300 ease-in-out`}
             />
           }
           placeholder={

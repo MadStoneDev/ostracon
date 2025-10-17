@@ -21,12 +21,12 @@ const TagSelector = ({
 }) => {
   const [inputValue, setInputValue] = useState("");
   const [suggestedTags, setSuggestedTags] = useState<Tag[]>([]);
+  const [highlightedIndex, setHighlightedIndex] = useState(0);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setInputValue(value);
 
-    // Suggest tags after 2 characters
     if (value.length >= 2) {
       const suggestions = availableTags.filter(
         (tag) =>
@@ -34,36 +34,48 @@ const TagSelector = ({
           !selectedTags.some((selectedTag) => selectedTag.id === tag.id),
       );
       setSuggestedTags(suggestions);
+      setHighlightedIndex(0); // Reset highlighted index when suggestions change
     } else {
       setSuggestedTags([]);
+      setHighlightedIndex(0);
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    // Prevent adding more tags than max limit
     if (selectedTags.length >= maxTags) {
       e.preventDefault();
       return;
     }
 
-    if (e.key === "Enter" || e.key === ",") {
-      e.preventDefault();
+    switch (e.key) {
+      case "ArrowDown":
+        e.preventDefault();
+        setHighlightedIndex((prev) =>
+          Math.min(prev + 1, suggestedTags.length - 1),
+        );
+        break;
 
-      // If exact match exists and not already selected
-      const exactMatch = suggestedTags.find(
-        (tag) => tag.tag.toLowerCase() === inputValue.toLowerCase(),
-      );
+      case "ArrowUp":
+        e.preventDefault();
+        setHighlightedIndex((prev) => Math.max(prev - 1, 0));
+        break;
 
-      if (exactMatch) {
-        onTagAdd(exactMatch);
-        setInputValue("");
-        setSuggestedTags([]);
-      }
+      case "Enter":
+      case ",":
+        e.preventDefault();
+        if (suggestedTags.length > 0) {
+          const selectedTag = suggestedTags[highlightedIndex];
+          onTagAdd(selectedTag);
+          setInputValue("");
+          setSuggestedTags([]);
+          setHighlightedIndex(0);
+        }
+        break;
     }
   };
 
   return (
-    <div className="flex flex-wrap gap-2 items-center">
+    <div className="flex flex-wrap gap-2 items-center text-sm">
       {selectedTags.map((tag) => (
         <div
           key={tag.id}
@@ -91,24 +103,38 @@ const TagSelector = ({
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             placeholder={`Add tags (${selectedTags.length}/${maxTags})`}
-            className="border rounded px-2 py-1"
+            className="border focus:border-primary outline-none rounded px-2 py-1 transition-all duration-300 ease-in-out"
           />
 
           {suggestedTags.length > 0 && (
             <ul className="absolute z-10 bg-white border rounded shadow-lg">
-              {suggestedTags.map((tag) => (
-                <li
-                  key={tag.id}
-                  onClick={() => {
-                    onTagAdd(tag);
-                    setInputValue("");
-                    setSuggestedTags([]);
-                  }}
-                  className="px-2 py-1 hover:bg-gray-100 cursor-pointer"
-                >
-                  {tag.tag}
-                </li>
-              ))}
+              {suggestedTags.length > 0 && (
+                <ul className="absolute z-10 w-max bg-white border rounded shadow-lg">
+                  {suggestedTags.map((tag, index) => (
+                    <li
+                      key={tag.id}
+                      onClick={() => {
+                        onTagAdd(tag);
+                        setInputValue("");
+                        setSuggestedTags([]);
+                        setHighlightedIndex(0);
+                      }}
+                      className={`px-2 py-1 cursor-pointer flex items-center justify-between ${
+                        index === highlightedIndex
+                          ? "bg-primary/10 font-semibold"
+                          : "hover:bg-gray-100"
+                      }`}
+                    >
+                      <span>{tag.tag}</span>
+                      {index === highlightedIndex && (
+                        <span className="min text-xs text-gray-500 ml-2">
+                          (Press Enter ↵)
+                        </span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </ul>
           )}
         </div>
@@ -116,3 +142,5 @@ const TagSelector = ({
     </div>
   );
 };
+
+export default TagSelector;

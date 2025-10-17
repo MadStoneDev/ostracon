@@ -2,23 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
-import { Check, ChevronsUpDown } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandSeparator,
-} from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { IconX } from "@tabler/icons-react";
 
 interface Community {
   id: string;
@@ -35,21 +19,23 @@ export default function CommunitySelector({
   selectedCommunity,
   onChange,
 }: CommunitySelectorProps) {
-  const [open, setOpen] = useState(false);
   const [communities, setCommunities] = useState<Community[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredCommunities, setFilteredCommunities] = useState<Community[]>(
+    [],
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
 
   const supabase = createClient();
 
+  // Fetch communities on component mount
   useEffect(() => {
     async function fetchUserCommunities() {
       try {
         setLoading(true);
         setError(null);
 
-        // Get current user
         const {
           data: { user },
           error: userError,
@@ -58,7 +44,6 @@ export default function CommunitySelector({
         if (userError) throw userError;
         if (!user) throw new Error("User not authenticated");
 
-        // First, get the group IDs where the user is a member
         const { data: memberData, error: memberError } = await supabase
           .from("community_members")
           .select("community_id")
@@ -66,17 +51,14 @@ export default function CommunitySelector({
 
         if (memberError) throw memberError;
 
-        // Extract the group IDs to an array
         const communityIds = memberData.map((item) => item.community_id);
 
-        // If user isn't a member of any groups, return early
         if (communityIds.length === 0) {
           setCommunities([]);
           setLoading(false);
           return;
         }
 
-        // Fetch communities using the extracted IDs
         const { data, error: communitiesError } = await supabase
           .from("communities")
           .select("id, name, display_name")
@@ -96,99 +78,104 @@ export default function CommunitySelector({
     fetchUserCommunities();
   }, [supabase]);
 
-  // Filter communities based on search query
-  const filteredCommunities = communities.filter((community) => {
-    const displayName = community.display_name || community.name;
-    return displayName.toLowerCase().includes(searchQuery.toLowerCase());
-  });
+  // Filter communities when search query changes
+  useEffect(() => {
+    if (searchQuery.length >= 2) {
+      const filtered = communities.filter((community) => {
+        const displayName = community.display_name || community.name;
+        return displayName.toLowerCase().includes(searchQuery.toLowerCase());
+      });
+      setFilteredCommunities(filtered);
+    } else {
+      setFilteredCommunities([]);
+    }
+  }, [searchQuery, communities]);
 
-  // Get the display name for the selected community
-  const getSelectedCommunityName = () => {
-    if (!selectedCommunity) return "Public (no community)";
-
-    const selected = communities.find((c) => c.id === selectedCommunity);
-    return selected ? selected.display_name || selected.name : "Loading...";
+  const handleCommunitySelect = (community: Community) => {
+    onChange(community.id);
+    setSearchQuery("");
+    setFilteredCommunities([]);
   };
 
-  if (loading) {
-    return <div className="opacity-70">Loading communities...</div>;
-  }
+  const handleSpecialSelect = (type: "public" | "draft") => {
+    onChange(type === "public" ? null : "draft");
+    setSearchQuery("");
+    setFilteredCommunities([]);
+  };
 
-  if (error) {
-    return <div className="text-red-500 text-sm">{error}</div>;
-  }
+  if (loading) return <div>Loading communities...</div>;
+  if (error) return <div className="text-red-500">{error}</div>;
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className="w-full justify-between"
+    <div className="flex flex-wrap gap-2 items-center text-sm">
+      {/* Special selection pills */}
+      <div className="flex gap-2">
+        <button
+          onClick={() => handleSpecialSelect("public")}
+          className={`
+            px-3 py-1 rounded-full border focus:border-primary outline-none 
+            ${
+              selectedCommunity === null
+                ? "bg-primary text-white"
+                : "bg-neutral-200 text-neutral-600"
+            } transition-all duration-200 ease-in-out
+          `}
         >
-          {getSelectedCommunityName()}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-full p-0">
-        <Command>
-          <CommandInput
-            placeholder="Search communities..."
-            onValueChange={setSearchQuery}
-          />
-          <CommandList>
-            <CommandEmpty>No communities found.</CommandEmpty>
+          Public
+        </button>
+        <button
+          onClick={() => handleSpecialSelect("draft")}
+          className={`
+            px-3 py-1 rounded-full border focus:border-primary outline-none 
+            ${
+              selectedCommunity === "draft"
+                ? "bg-primary text-white"
+                : "bg-neutral-200 text-neutral-600"
+            } transition-all duration-200 ease-in-out
+          `}
+        >
+          Save as Draft
+        </button>
+      </div>
 
-            {/* Always show Public option regardless of search */}
-            <CommandGroup heading="Post to">
-              <CommandItem
-                value="public"
-                onSelect={() => {
-                  onChange(null);
-                  setOpen(false);
-                }}
+      {/* Selected Community Pill (if any) */}
+      {selectedCommunity &&
+        selectedCommunity !== "draft" &&
+        selectedCommunity !== null && (
+          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100 text-blue-600">
+            {communities.find((c) => c.id === selectedCommunity)
+              ?.display_name || "Community"}
+            <button onClick={() => onChange(null)}>
+              <IconX size={16} />
+            </button>
+          </div>
+        )}
+
+      {/* Community Search Input */}
+      <div className="relative">
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Select a community..."
+          className="border focus:border-primary outline-none rounded px-2 py-1 w-full transition-all duration-200 ease-in-out"
+        />
+
+        {/* Autocomplete Dropdown */}
+        {filteredCommunities.length > 0 && (
+          <ul className="absolute z-10 bg-white border rounded shadow-lg w-full mt-1">
+            {filteredCommunities.map((community) => (
+              <li
+                key={community.id}
+                onClick={() => handleCommunitySelect(community)}
+                className="px-2 py-1 hover:bg-gray-100 cursor-pointer"
               >
-                <Check
-                  className={cn(
-                    "mr-2 h-4 w-4",
-                    selectedCommunity === null ? "opacity-100" : "opacity-0",
-                  )}
-                />
-                Public (no community)
-              </CommandItem>
-            </CommandGroup>
-
-            {filteredCommunities.length > 0 && (
-              <>
-                <CommandSeparator />
-                <CommandGroup heading="Your Communities">
-                  {filteredCommunities.map((community) => (
-                    <CommandItem
-                      key={community.id}
-                      value={community.display_name || community.name}
-                      onSelect={() => {
-                        onChange(community.id);
-                        setOpen(false);
-                      }}
-                    >
-                      <Check
-                        className={cn(
-                          "mr-2 h-4 w-4",
-                          selectedCommunity === community.id
-                            ? "opacity-100"
-                            : "opacity-0",
-                        )}
-                      />
-                      {community.display_name || community.name}
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              </>
-            )}
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+                {community.display_name || community.name}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
   );
 }
