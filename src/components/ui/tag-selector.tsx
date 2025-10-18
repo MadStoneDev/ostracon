@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useState } from "react";
-import { IconX } from "@tabler/icons-react";
+import { IconTrash, IconX } from "@tabler/icons-react";
 import type { Database } from "../../../database.types";
 
 type Tag = Database["public"]["Tables"]["tags"]["Row"];
@@ -27,7 +27,7 @@ const TagSelector = ({
     const value = e.target.value;
     setInputValue(value);
 
-    if (value.length >= 2) {
+    if (value.length >= 1) {
       const suggestions = availableTags.filter(
         (tag) =>
           tag.tag.toLowerCase().includes(value.toLowerCase()) &&
@@ -79,7 +79,7 @@ const TagSelector = ({
       {selectedTags.map((tag) => (
         <div
           key={tag.id}
-          className="flex items-center gap-2 px-2 py-1 rounded-full"
+          className="group flex-grow lg:flex-none flex justify-between items-center px-2 py-1 rounded-full transition-all duration-200 ease-in-out"
           style={{
             backgroundColor: (tag.colour || "#000") + "20",
             color: tag.colour || "#000",
@@ -87,23 +87,28 @@ const TagSelector = ({
           title={tag.tag} // Show full tag name on hover
         >
           {tag.tag}
-          <button
-            onClick={() => onTagRemove(tag.id)}
-            className="ml-2 hover:bg-red-100 rounded-full"
+          <div
+            className={`ml-2 lg:ml-0 group-hover:ml-2 flex items-center justify-center lg:max-w-0 group-hover:max-w-96 overflow-hidden transition-all duration-200 ease-in-out`}
           >
-            <IconX size={16} />
-          </button>
+            |
+            <button
+              onClick={() => onTagRemove(tag.id)}
+              className="ml-2 hover:scale-125 rounded-full transition-all duration-200 ease-in-out"
+            >
+              <IconTrash size={16} />
+            </button>
+          </div>
         </div>
       ))}
 
       {selectedTags.length < maxTags && (
-        <div className="relative">
+        <div className="flex-grow relative">
           <input
             value={inputValue}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             placeholder={`Add tags (${selectedTags.length}/${maxTags})`}
-            className="border focus:border-primary outline-none rounded px-2 py-1 transition-all duration-300 ease-in-out"
+            className="w-full border focus:border-primary outline-none rounded px-2 py-1 transition-all duration-300 ease-in-out"
           />
 
           {suggestedTags.length > 0 && (

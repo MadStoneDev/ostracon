@@ -18,6 +18,7 @@ import { Drama } from "lucide-react";
 
 import CommunitySelector from "@/components/ui/community-selector";
 
+import type { User } from "@supabase/supabase-js";
 import type { Database } from "../../../../database.types";
 import TagSelector from "@/components/ui/tag-selector";
 
@@ -32,6 +33,7 @@ type SettingKey = keyof PostSettings;
 type FragmentRow = Database["public"]["Tables"]["fragments"]["Row"];
 type CommunityRow = Database["public"]["Tables"]["communities"]["Row"];
 type Tag = Database["public"]["Tables"]["tags"]["Row"];
+type Community = Database["public"]["Tables"]["communities"]["Row"];
 type FragmentWithUser = FragmentRow & {
   users?: {
     username: string;
@@ -42,12 +44,14 @@ type FragmentWithUser = FragmentRow & {
 };
 
 interface PostFormProps {
+  currentUser: User;
   postId?: string;
   post?: FragmentWithUser;
   isEditing?: boolean;
 }
 
 export default function PostForm({
+  currentUser,
   postId,
   post,
   isEditing = false,
@@ -64,6 +68,9 @@ export default function PostForm({
   const [postContent, setPostContent] = useState(post?.content || "");
   const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
   const [availableTags, setAvailableTags] = useState<Tag[]>([]);
+  const [availableCommunities, setAvailableCommunities] = useState<Community[]>(
+    [],
+  );
   const [allowReactions, setAllowReactions] = useState(
     post?.reactions_open ?? true,
   );
@@ -72,9 +79,10 @@ export default function PostForm({
   );
   const [postNSFW, setPostNSFW] = useState(post?.is_nsfw || false);
 
-  const [selectedCommunity, setSelectedCommunity] = useState<string | null>(
-    post?.community_id || null,
-  );
+  const [selectedCommunity, setSelectedCommunity] = useState<
+    Community | null | "public" | "draft"
+  >("public");
+
   const [isCommunityValidated, setIsCommunityValidated] = useState(true);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -134,8 +142,10 @@ export default function PostForm({
     setPostContent(htmlContent);
   };
 
-  const handleCommunityChange = (communityId: string | null) => {
-    setSelectedCommunity(communityId);
+  const handleCommunityChange = (
+    community: Community | null | "public" | "draft",
+  ) => {
+    setSelectedCommunity(community);
   };
 
   const submitPost = async () => {
@@ -155,6 +165,7 @@ export default function PostForm({
     }
 
     const postData = {
+      user_id: currentUser.id,
       title: postTitle || "",
       content: postContent,
       comments_open: allowComments,
@@ -387,15 +398,61 @@ export default function PostForm({
 
   useEffect(() => {
     async function fetchAvailableTags() {
-      const { data: tags, error } = await supabase.from("tags").select("*");
+      const { data: tags, error } = await supabase.from("tags").select();
 
-      if (tags) {
-        setAvailableTags(tags);
-      }
+      if (tags) setAvailableTags(tags);
     }
 
     fetchAvailableTags();
   }, [supabase]);
+
+  useEffect(() => {
+    async function fetchCommunities() {
+      try {
+        // Optional: Add a loading state
+        const { data: membershipData, error: membershipError } = await supabase
+          .from("community_members")
+          .select("community_id")
+          .eq("user_id", currentUser.id);
+
+        if (membershipError) {
+          console.error(
+            "Error fetching community memberships:",
+            membershipError,
+          );
+          setAvailableCommunities([]); // Ensure UI updates even on error
+          return;
+        }
+
+        // Extract community IDs, use optional chaining
+        const communityIds =
+          membershipData?.map((membership) => membership.community_id) ?? [];
+
+        if (communityIds.length === 0) {
+          setAvailableCommunities([]);
+          return;
+        }
+
+        const { data: communityData, error: communityError } = await supabase
+          .from("communities")
+          .select("*")
+          .in("id", communityIds);
+
+        if (communityError) {
+          console.error("Error fetching community details:", communityError);
+          setAvailableCommunities([]);
+          return;
+        }
+
+        setAvailableCommunities(communityData ?? []);
+      } catch (error) {
+        console.error("Unexpected error fetching communities:", error);
+        setAvailableCommunities([]);
+      }
+    }
+
+    fetchCommunities();
+  }, [supabase, currentUser.id]);
 
   return (
     <div className={`flex-grow flex flex-col h-full`}>
@@ -442,37 +499,24 @@ export default function PostForm({
           </button>
         </section>
 
-        <section className={`relative flex flex-col text-sm`}>
+        <section
+          className={`relative flex flex-row items-center gap-2 text-sm`}
+        >
           <input
             type="text"
             value={postTitle || ""}
             onChange={(e) => setPostTitle(e.target.value)}
             placeholder="Title (optional)"
-            className={`py-2 px-4 w-full bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-900 focus:outline-none focus:border-primary`}
+            className={`flex-grow py-2 px-4 h-8 bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-900 focus:outline-none focus:border-primary`}
+          />
+
+          {/* Communities */}
+          <CommunitySelector
+            communities={availableCommunities}
+            selectedCommunity={selectedCommunity}
+            onChange={handleCommunityChange}
           />
         </section>
-
-        <TagSelector
-          availableTags={availableTags}
-          selectedTags={selectedTags}
-          onTagAdd={(tag) => {
-            // Create a new array to avoid mutating state directly
-            const tagsArray = [...selectedTags];
-
-            // Check if tag is not already in the array before adding
-            if (!tagsArray.some((existingTag) => existingTag.id === tag.id)) {
-              tagsArray.push(tag);
-              setSelectedTags(tagsArray);
-            }
-          }}
-          onTagRemove={(tag: string) => {
-            // Filter out the tag to remove
-            const tagsArray = selectedTags.filter(
-              (existingTag) => existingTag.id !== tag,
-            );
-            setSelectedTags(tagsArray);
-          }}
-        />
 
         {/* Post Editor */}
         <article className={`relative grow flex flex-col text-sm`}>
@@ -483,19 +527,34 @@ export default function PostForm({
         </article>
       </div>
 
-      {/* Communities */}
-      <article className={``}>
-        <CommunitySelector
-          selectedCommunity={selectedCommunity}
-          onChange={handleCommunityChange}
-        />
-      </article>
-
       <PostSettings
         allowReactions={allowReactions}
         allowComments={allowComments}
         postNSFW={postNSFW}
         onToggle={handleDefaultSettings}
+      />
+
+      {/* Tags */}
+      <TagSelector
+        availableTags={availableTags}
+        selectedTags={selectedTags}
+        onTagAdd={(tag) => {
+          // Create a new array to avoid mutating state directly
+          const tagsArray = [...selectedTags];
+
+          // Check if tag is not already in the array before adding
+          if (!tagsArray.some((existingTag) => existingTag.id === tag.id)) {
+            tagsArray.push(tag);
+            setSelectedTags(tagsArray);
+          }
+        }}
+        onTagRemove={(tag: string) => {
+          // Filter out the tag to remove
+          const tagsArray = selectedTags.filter(
+            (existingTag) => existingTag.id !== tag,
+          );
+          setSelectedTags(tagsArray);
+        }}
       />
 
       {/* Delete Post Option (only in edit mode) */}
