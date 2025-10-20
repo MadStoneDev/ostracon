@@ -144,15 +144,19 @@ async function fetchInteractionData(postIds: string[], currentUserId?: string) {
 export async function fetchPostedFeedWithInteractions(
   userId: string,
   currentUserId?: string,
+  page: number = 0,
+  pageSize: number = 25,
 ): Promise<EnhancedFragment[]> {
   const supabase = await createClient();
+  const offset = page * pageSize;
 
   // Fetch the basic posts first
   const { data: posts } = await supabase
     .from("fragments")
     .select()
     .eq("user_id", userId)
-    .order("created_at", { ascending: false });
+    .order("published_at", { ascending: false })
+    .range(offset, offset + pageSize - 1);
 
   if (!posts || posts.length === 0) return [];
 
@@ -179,15 +183,19 @@ export async function fetchPostedFeedWithInteractions(
 export async function fetchLikedFeedWithInteractions(
   userId: string,
   currentUserId?: string,
+  page: number = 0,
+  pageSize: number = 25,
 ): Promise<EnhancedFragment[]> {
   const supabase = await createClient();
+  const offset = page * pageSize;
 
-  // Get the posts the user has liked
+  // Get the posts the user has liked with pagination
   const { data: reactions } = await supabase
     .from("fragment_reactions")
-    .select()
+    .select("fragment_id")
     .eq("user_id", userId)
-    .eq("type", "like");
+    .eq("type", "like")
+    .range(offset, offset + pageSize - 1);
 
   if (!reactions || reactions.length === 0) return [];
   const fragmentIds = reactions.map((reaction) => reaction.fragment_id);
@@ -196,16 +204,14 @@ export async function fetchLikedFeedWithInteractions(
   const { data: fragments } = await supabase
     .from("fragments")
     .select()
-    .in("id", fragmentIds);
+    .in("id", fragmentIds)
+    .order("published_at", { ascending: false });
 
   if (!fragments || fragments.length === 0) return [];
 
-  // Get all post IDs
-  const postIds = fragments.map((post) => post.id);
-
-  // Get interaction data
+  // Get interaction data (reuse existing method)
   const { likeCountMap, commentCountMap, userLikedMap, userCommentedMap } =
-    await fetchInteractionData(postIds, currentUserId);
+    await fetchInteractionData(fragmentIds, currentUserId);
 
   // Combine all the data
   const enhancedPosts: EnhancedFragment[] = fragments.map((post) => ({
@@ -402,4 +408,43 @@ export async function fetchSinglePostWithInteractions(
   };
 
   return enhancedPost;
+}
+
+export async function fetchDraftFeedWithInteractions(
+  userId: string,
+  currentUserId?: string,
+  page: number = 0,
+  pageSize: number = 25,
+): Promise<EnhancedFragment[]> {
+  const supabase = await createClient();
+  const offset = page * pageSize;
+
+  // Fetch the basic drafts first
+  const { data: drafts } = await supabase
+    .from("fragments")
+    .select()
+    .eq("user_id", userId)
+    .eq("is_draft", true)
+    .order("created_at", { ascending: false })
+    .range(offset, offset + pageSize - 1);
+
+  if (!drafts || drafts.length === 0) return [];
+
+  // Get all draft IDs
+  const draftIds = drafts.map((draft) => draft.id);
+
+  // Get interaction data (for drafts that were previously published)
+  const { likeCountMap, commentCountMap, userLikedMap, userCommentedMap } =
+    await fetchInteractionData(draftIds, currentUserId);
+
+  // Combine all the data
+  const enhancedDrafts: EnhancedFragment[] = drafts.map((draft) => ({
+    ...draft,
+    likeCount: likeCountMap[draft.id] || 0,
+    commentCount: commentCountMap[draft.id] || 0,
+    userLiked: userLikedMap[draft.id] || false,
+    userCommented: userCommentedMap[draft.id] || false,
+  }));
+
+  return enhancedDrafts;
 }

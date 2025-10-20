@@ -1,10 +1,13 @@
 ﻿"use client";
 
 import { useState, useEffect } from "react";
-import Post from "@/components/feed/single-post";
-
 import { User } from "@supabase/supabase-js";
 import type { Database } from "../../../database.types";
+import { fetchLikedFeedWithInteractions } from "@/utils/supabase/fetch-supabase";
+import { usePagination } from "@/hooks/usePagination";
+import Post from "@/components/feed/single-post";
+import { IconSquareRoundedPlus } from "@tabler/icons-react";
+import Link from "next/link";
 
 // Types
 type Profile = Database["public"]["Tables"]["profiles"]["Row"];
@@ -18,44 +21,47 @@ type Fragment = Database["public"]["Tables"]["fragments"]["Row"] & {
 export default function LikedFeed({
   currentUser,
   user,
-  likedFeed,
+  initialLikedFeed,
   settings,
   userProfiles,
 }: {
   currentUser: User;
   user: Profile;
-  likedFeed: Fragment[] | null;
+  initialLikedFeed: Fragment[] | null;
   settings: any;
   userProfiles: Record<string, Profile>;
 }) {
-  const [posts, setPosts] = useState<Fragment[]>([]);
+  const {
+    data: posts,
+    loadMore,
+    isLoading,
+    hasMore,
+  } = usePagination({
+    initialData: initialLikedFeed || [],
+    fetchMoreData: async (page) =>
+      await fetchLikedFeedWithInteractions(user.id, currentUser.id, page),
+  });
 
-  // Check if current user is the profile owner
+  // Check if current user is viewing their own profile
   const isViewingOwnProfile = currentUser.id === user.id;
 
-  useEffect(() => {
-    if (!likedFeed) return;
-
-    const filteredFragments = likedFeed.filter((post) => {
-      // Show all posts if profile is of the current user
-      if (currentUser.id === user.id) {
-        return true;
-      }
-
-      // Filter out NSFW posts if user has disabled sensitive content
-      return !(!settings?.allow_sensitive_content && post.is_nsfw);
-    });
-
-    setPosts(filteredFragments);
-  }, [likedFeed, currentUser.id, user.id, settings?.allow_sensitive_content]);
-
-  if (posts.length === 0) {
+  if (posts.length === 0 && !isLoading) {
     return (
-      <section
-        className={`my-3 pb-[70px] opacity-50 transition-all duration-300 ease-in-out`}
-      >
-        {user.username} hasn't liked any posts yet.
-      </section>
+      <div className="p-8 text-center">
+        <p className="text-gray-500 mb-4">
+          {user.username} hasn't liked any posts yet.
+        </p>
+
+        {isViewingOwnProfile && (
+          <Link
+            href={"/explore"}
+            className={`my-6 px-4 py-2 inline-flex gap-2 justify-center items-center rounded-full hover:bg-dark dark:hover:bg-light border border-dark dark:border-light hover:text-light dark:hover:text-dark transition-all duration-300 ease-in-out`}
+          >
+            <IconSquareRoundedPlus size={24} />
+            Explore and like some posts!
+          </Link>
+        )}
+      </div>
     );
   }
 
@@ -83,7 +89,7 @@ export default function LikedFeed({
               commentsAllowed={post.comments_open ?? true}
               reactionsAllowed={post.reactions_open ?? true}
               blur={!isViewingOwnProfile && settings?.blur_sensitive_content}
-              timestamp={post.created_at}
+              timestamp={post.published_at || post.created_at!}
               authorId={post.user_id || ""}
               initialLikeCount={post.likeCount || 0}
               initialCommentCount={post.commentCount || 0}
@@ -93,6 +99,22 @@ export default function LikedFeed({
           </article>
         );
       })}
+
+      {!isLoading && posts.length > 0 && (
+        <div className="py-4 text-center">
+          {hasMore ? (
+            <button
+              onClick={loadMore}
+              disabled={isLoading}
+              className={`px-4 py-2 text-sm bg-gray-100 dark:bg-gray-800 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors`}
+            >
+              {isLoading ? "Loading..." : "Load More Liked Posts"}
+            </button>
+          ) : (
+            <p className="text-gray-500 text-sm">No more liked posts to show</p>
+          )}
+        </div>
+      )}
     </section>
   );
 }

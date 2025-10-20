@@ -95,7 +95,7 @@ export default function UserPhotosCarousel({
       const supabase = createClient();
 
       const { data, error } = await supabase
-        .from("user_photos")
+        .from("profile_photos")
         .select("*")
         .eq("user_id", userId)
         .order("created_at", { ascending: false });
@@ -283,12 +283,12 @@ export default function UserPhotosCarousel({
             type: "warning",
           });
 
-          // Clean up the uploaded file since it won't be added to user_photos
+          // Clean up the uploaded file since it won't be added to profile_photos
           await supabase.storage.from("user.photos").remove([filePath]);
         } else {
-          // Image is safe, add to user_photos
+          // Image is safe, add to profile_photos
           const { data: photoData, error: photoError } = await supabase
-            .from("user_photos")
+            .from("profile_photos")
             .insert([
               {
                 user_id: currentUser.id,
@@ -366,7 +366,7 @@ export default function UserPhotosCarousel({
 
       // Delete from database
       const { error: dbError } = await supabase
-        .from("user_photos")
+        .from("profile_photos")
         .delete()
         .eq("id", photoToDelete.id);
 

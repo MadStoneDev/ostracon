@@ -18,10 +18,16 @@ import { IconUserPlus, IconUserOff } from "@tabler/icons-react";
 
 import { User } from "@supabase/supabase-js";
 import { Database } from "../../../database.types";
+import DraftsFeed from "@/components/profile/drafts-feed";
 
 // Types
 type Profile = Database["public"]["Tables"]["profiles"]["Row"];
-type Fragment = Database["public"]["Tables"]["fragments"]["Row"];
+type Fragment = Database["public"]["Tables"]["fragments"]["Row"] & {
+  likeCount?: number;
+  commentCount?: number;
+  userLiked?: boolean;
+  userCommented?: boolean;
+};
 
 const slideVariants = {
   enter: (direction: number) => ({
@@ -45,6 +51,7 @@ export default function ProfileContent({
   profile,
   postedFeed,
   likedFeed,
+  draftsFeed,
   followStats,
   followers,
   following,
@@ -55,6 +62,7 @@ export default function ProfileContent({
   profile: Profile;
   postedFeed: Fragment[] | null;
   likedFeed: Fragment[] | null;
+  draftsFeed: Fragment[] | null;
   followStats: {
     followersCount: number;
     followingCount: number;
@@ -96,7 +104,7 @@ export default function ProfileContent({
           <LikedFeed
             currentUser={currentUser}
             user={profile}
-            likedFeed={likedFeed}
+            initialLikedFeed={likedFeed}
             settings={settings}
             userProfiles={userProfiles}
           />
@@ -105,13 +113,21 @@ export default function ProfileContent({
         return <ListeningFeed user={profile} following={following} />;
       case "Listeners":
         return <ListenersFeed user={profile} followers={followers} />;
+      case "Drafts":
+        return (
+          <DraftsFeed
+            currentUser={currentUser}
+            user={profile}
+            initialDraftsFeed={draftsFeed}
+          />
+        );
       case "Posts":
       default:
         return (
           <PostedFeed
             currentUser={currentUser}
             user={profile}
-            postedFeed={postedFeed}
+            initialPostedFeed={postedFeed}
             settings={settings}
             userProfiles={userProfiles}
           />
@@ -197,7 +213,7 @@ export default function ProfileContent({
         {/* Moderation Link - Show for moderators/admins */}
         <ModerationLink user={currentUser} />
         {/* Follow/Report buttons - Only show if not own profile */}
-        {isOwnProfile && (
+        {!isOwnProfile && (
           <>
             {/* Report Button */}
             <ReportButton
@@ -267,9 +283,26 @@ export default function ProfileContent({
                     : "group-hover:bg-primary/65 text-dark dark:text-light border-dark dark:border-light"
                 } transition-all duration-300 ease-in-out`}
               >
-                Posts
+                {currentUser.id === profile.id && "My "}Posts
               </span>
             </button>
+
+            {currentUser.id === profile.id && (
+              <button
+                className={`group flex items-center rounded-full hover:bg-white hover:text-primary/65 overflow-hidden transition-all duration-300 ease-in-out`}
+                onClick={() => updateTab("Drafts")}
+              >
+                <span
+                  className={`px-2 py-1 border rounded-full ${
+                    activeTab === "Drafts"
+                      ? "text-light border-primary bg-primary"
+                      : "group-hover:bg-primary/65 text-dark dark:text-light border-dark dark:border-light"
+                  } transition-all duration-300 ease-in-out`}
+                >
+                  My Drafts
+                </span>
+              </button>
+            )}
 
             <button
               className={`group flex items-center rounded-full hover:bg-white hover:text-primary/65 overflow-hidden transition-all duration-300 ease-in-out`}
@@ -282,7 +315,7 @@ export default function ProfileContent({
                     : "group-hover:bg-primary/65 text-dark dark:text-light border-dark dark:border-light"
                 } transition-all duration-300 ease-in-out`}
               >
-                Likes
+                {currentUser.id === profile.id && "My "}Likes
               </span>
             </button>
           </div>

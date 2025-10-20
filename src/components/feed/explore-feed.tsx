@@ -7,6 +7,7 @@ import { createClient } from "@/utils/supabase/client";
 import type { Database } from "../../../database.types";
 import Link from "next/link";
 import { IconSquareRoundedPlus } from "@tabler/icons-react";
+import PullToRefresh from "react-simple-pull-to-refresh";
 
 // Define types using the Database type
 type FragmentRow = Database["public"]["Tables"]["fragments"]["Row"];
@@ -68,11 +69,16 @@ export default function ExploreFeed() {
   const [settings, setSettings] = useState<UserSettings>(defaultSettings);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(0);
-  const PAGE_SIZE = 10;
+
+  // Constants
+  const PAGE_SIZE = 25;
 
   const loadingRef = useRef<HTMLDivElement>(null);
 
@@ -82,29 +88,6 @@ export default function ExploreFeed() {
       currentPosts.filter((post) => post.id !== deletedPostId),
     );
   }, []);
-
-  // Fetch initial posts
-  useEffect(() => {
-    fetchInitialData();
-  }, []);
-
-  // Setup intersection observer for infinite scrolling
-  useEffect(() => {
-    if (!loadingRef.current || !hasMore) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        // If the loading element is visible and we're not already loading
-        if (entries[0].isIntersecting && !isLoadingMore && hasMore) {
-          loadMorePosts();
-        }
-      },
-      { threshold: 0.1 },
-    );
-
-    observer.observe(loadingRef.current);
-    return () => observer.disconnect();
-  }, [isLoadingMore, hasMore]);
 
   // Fetch initial user data and first set of posts
   const fetchInitialData = async () => {
@@ -187,7 +170,7 @@ export default function ExploreFeed() {
           )
         `,
         )
-        .order("created_at", { ascending: false })
+        .order("published_at", { ascending: false })
         .range(pageNum * PAGE_SIZE, (pageNum + 1) * PAGE_SIZE - 1);
 
       // Only add filters if we have valid IDs to filter by
@@ -335,6 +318,23 @@ export default function ExploreFeed() {
     fetchInitialData();
   };
 
+  const handlePullToRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+
+    try {
+      // Reset pagination
+      setPage(0);
+      setPosts([]);
+
+      // Fetch first page of posts
+      await fetchInitialData();
+    } catch (error) {
+      console.error("Refresh error:", error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, []);
+
   if (error) {
     return (
       <div className="p-4 text-center">
@@ -349,86 +349,127 @@ export default function ExploreFeed() {
     );
   }
 
+  // Effects
+  useEffect(() => {
+    const handleScroll = () => {
+      // Check if user is near bottom (within 200px)
+      if (
+        window.innerHeight + document.documentElement.scrollTop + 200 >=
+        document.documentElement.offsetHeight
+      ) {
+        loadMorePosts();
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [loadMorePosts]);
+
+  // Fetch initial posts
+  useEffect(() => {
+    fetchInitialData();
+  }, []);
+
+  // Setup intersection observer for infinite scrolling
+  useEffect(() => {
+    if (!loadingRef.current || !hasMore) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        // If the loading element is visible and we're not already loading
+        if (entries[0].isIntersecting && !isLoadingMore && hasMore) {
+          loadMorePosts();
+        }
+      },
+      { threshold: 0.1 },
+    );
+
+    observer.observe(loadingRef.current);
+    return () => observer.disconnect();
+  }, [isLoadingMore, hasMore]);
+
   return (
-    <div className={`flex flex-col items-center w-full space-y-3 z-0`}>
-      {/* Show skeletons during initial load */}
-      {isLoading && (
-        <>
-          <PostSkeleton />
-          <PostSkeleton />
-          <PostSkeleton />
-        </>
-      )}
+    <PullToRefresh onRefresh={handlePullToRefresh}>
+      <div className={`flex flex-col items-center w-full space-y-3 z-0`}>
+        {/* Show skeletons during initial load */}
+        {isLoading && (
+          <>
+            <PostSkeleton />
+            <PostSkeleton />
+            <PostSkeleton />
+          </>
+        )}
 
-      {!isLoading &&
-        posts.length > 0 &&
-        posts.map((post) => (
-          <article
-            key={`feed-post-${post.id}`}
-            className={`w-full transition-all duration-300 ease-in-out`}
-          >
-            <Post
-              postId={post.id}
-              avatar_url={post.users?.avatar_url || ""}
-              username={post.users?.username || ""}
-              title={post.title || ""}
-              content={post.content || ""}
-              nsfw={post.is_nsfw || false}
-              commentsAllowed={post.comments_open ?? true}
-              reactionsAllowed={post.reactions_open ?? true}
-              blur={settings.blur_sensitive_content}
-              timestamp={post.published_at || ""}
-              groupId={post.community_id}
-              groupName={post.groups?.name || ""}
-              authorId={post.user_id || ""}
-              onDelete={handleDeletePost}
-              initialLikeCount={post.likeCount}
-              initialCommentCount={post.commentCount}
-              initialUserLiked={post.userLiked}
-              initialUserCommented={post.userCommented}
-            />
-          </article>
-        ))}
-
-      {/* Loading more indicator */}
-      {!isLoading && posts.length > 0 && (
-        <div ref={loadingRef} className="py-4 text-center">
-          {isLoadingMore ? (
-            <div className="flex justify-center items-center space-x-2">
-              <div className="w-4 h-4 rounded-full bg-primary animate-pulse"></div>
-              <div className="w-4 h-4 rounded-full bg-primary animate-pulse delay-150"></div>
-              <div className="w-4 h-4 rounded-full bg-primary animate-pulse delay-300"></div>
-              <span className="ml-2">Loading more posts...</span>
-            </div>
-          ) : hasMore ? (
-            <button
-              onClick={loadMorePosts}
-              className="px-4 py-2 text-sm bg-gray-100 dark:bg-gray-800 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+        {!isLoading &&
+          posts.length > 0 &&
+          posts.map((post) => (
+            <article
+              key={`feed-post-${post.id}`}
+              className={`w-full transition-all duration-300 ease-in-out`}
             >
-              Load more posts
-            </button>
-          ) : (
-            <p className="text-gray-500 text-sm">No more posts to show</p>
-          )}
-        </div>
-      )}
+              <Post
+                postId={post.id}
+                avatar_url={post.users?.avatar_url || ""}
+                username={post.users?.username || ""}
+                title={post.title || ""}
+                content={post.content || ""}
+                nsfw={post.is_nsfw || false}
+                commentsAllowed={post.comments_open ?? true}
+                reactionsAllowed={post.reactions_open ?? true}
+                blur={settings.blur_sensitive_content}
+                timestamp={post.published_at || ""}
+                groupId={post.community_id}
+                groupName={post.groups?.name || ""}
+                authorId={post.user_id || ""}
+                onDelete={handleDeletePost}
+                initialLikeCount={post.likeCount}
+                initialCommentCount={post.commentCount}
+                initialUserLiked={post.userLiked}
+                initialUserCommented={post.userCommented}
+              />
+            </article>
+          ))}
 
-      {/* No posts found state */}
-      {!isLoading && posts.length === 0 && (
-        <div className="p-8 text-center">
-          <p className="text-gray-500 mb-4">
-            No posts to show. Try posting something or following more users!
-          </p>
+        {/* Loading more indicator */}
+        {!isLoading && posts.length > 0 && (
+          <div ref={loadingRef} className="py-4 text-center">
+            {isLoadingMore ? (
+              <div className="flex justify-center items-center space-x-2">
+                <div className="w-4 h-4 rounded-full bg-primary animate-pulse"></div>
+                <div className="w-4 h-4 rounded-full bg-primary animate-pulse delay-150"></div>
+                <div className="w-4 h-4 rounded-full bg-primary animate-pulse delay-300"></div>
+                <span className="ml-2">Loading more posts...</span>
+              </div>
+            ) : hasMore ? (
+              <button
+                onClick={loadMorePosts}
+                className="px-4 py-2 text-sm bg-gray-100 dark:bg-gray-800 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              >
+                Load more posts
+              </button>
+            ) : (
+              <p className="text-gray-500 text-sm">No more posts to show</p>
+            )}
+          </div>
+        )}
 
-          <Link
-            href={"/post/new"}
-            className={`my-6 px-4 py-2 inline-flex gap-2 justify-center items-center rounded-full hover:bg-dark dark:hover:bg-light border border-dark dark:border-light hover:text-light dark:hover:text-dark transition-all duration-300 ease-in-out`}
-          >
-            <IconSquareRoundedPlus size={24} />
-            Create your first fragment!
-          </Link>
-        </div>
-      )}
-    </div>
+        {/* No posts found state */}
+        {!isLoading && posts.length === 0 && (
+          <div className="p-8 text-center">
+            <p className="text-gray-500 mb-4">
+              No posts to show. Try posting something or following more users!
+            </p>
+
+            <Link
+              href={"/post/new"}
+              className={`my-6 px-4 py-2 inline-flex gap-2 justify-center items-center rounded-full hover:bg-dark dark:hover:bg-light border border-dark dark:border-light hover:text-light dark:hover:text-dark transition-all duration-300 ease-in-out`}
+            >
+              <IconSquareRoundedPlus size={24} />
+              Create your first fragment!
+            </Link>
+          </div>
+        )}
+      </div>
+    </PullToRefresh>
   );
 }

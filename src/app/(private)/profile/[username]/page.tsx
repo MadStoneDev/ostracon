@@ -10,6 +10,7 @@ import {
   fetchFollowStats,
   fetchUserSettings,
   fetchUserProfilesByIds,
+  fetchDraftFeedWithInteractions,
 } from "@/utils/supabase/fetch-supabase";
 
 export async function generateMetadata({
@@ -41,13 +42,15 @@ export default async function Profile({
   const [
     postedFeedWithInteractions,
     likedFeedWithInteractions,
+    draftFeed,
     followStats,
     followers,
     following,
     settings,
   ] = await Promise.all([
-    fetchPostedFeedWithInteractions(profileData.id, currentUserId),
-    fetchLikedFeedWithInteractions(profileData.id, currentUserId),
+    fetchPostedFeedWithInteractions(profileData.id, currentUserId, 0),
+    fetchLikedFeedWithInteractions(profileData.id, currentUserId, 0),
+    fetchDraftFeedWithInteractions(profileData.id, currentUserId, 0),
     fetchFollowStats(profileData.id),
     fetchFollowers(profileData.id),
     fetchFollowing(profileData.id),
@@ -78,6 +81,7 @@ export default async function Profile({
         profile={profileData}
         postedFeed={postedFeedWithInteractions}
         likedFeed={likedFeedWithInteractions}
+        draftsFeed={draftFeed}
         followStats={followStats}
         followers={followers}
         following={following}

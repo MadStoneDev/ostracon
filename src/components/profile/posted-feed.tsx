@@ -1,10 +1,12 @@
 ﻿"use client";
 
-import { useState, useEffect } from "react";
-import Post from "@/components/feed/single-post";
-
 import { User } from "@supabase/supabase-js";
 import type { Database } from "../../../database.types";
+import { fetchPostedFeedWithInteractions } from "@/utils/supabase/fetch-supabase";
+import { usePagination } from "@/hooks/usePagination";
+import Post from "@/components/feed/single-post";
+import { IconSquareRoundedPlus } from "@tabler/icons-react";
+import Link from "next/link";
 
 // Types
 type Profile = Database["public"]["Tables"]["profiles"]["Row"];
@@ -18,47 +20,47 @@ type Fragment = Database["public"]["Tables"]["fragments"]["Row"] & {
 export default function PostedFeed({
   currentUser,
   user,
-  postedFeed,
+  initialPostedFeed,
   settings,
   userProfiles,
 }: {
   currentUser: User;
   user: Profile;
-  postedFeed: Fragment[] | null;
+  initialPostedFeed: Fragment[] | null;
   settings: any;
   userProfiles: Record<string, Profile>;
 }) {
-  const [posts, setPosts] = useState<Fragment[]>([]);
+  const {
+    data: posts,
+    loadMore,
+    isLoading,
+    hasMore,
+  } = usePagination({
+    initialData: initialPostedFeed || [],
+    fetchMoreData: async (page) =>
+      await fetchPostedFeedWithInteractions(user.id, currentUser.id, page),
+  });
 
   // Check if current user is the profile owner
   const isViewingOwnProfile = currentUser.id === user.id;
 
-  useEffect(() => {
-    if (!postedFeed) return;
-
-    const filteredFragments = postedFeed.filter((post) => {
-      // Show all posts if profile is of the current user
-      if (currentUser.id === user.id) {
-        return true;
-      }
-
-      // Filter out NSFW posts if user has disabled sensitive content
-      return (
-        post.published_at &&
-        !(!settings?.allow_sensitive_content && post.is_nsfw)
-      );
-    });
-
-    setPosts(filteredFragments);
-  }, [postedFeed, currentUser.id, user.id, settings?.allow_sensitive_content]);
-
-  if (posts.length === 0) {
+  if (posts.length === 0 && !isLoading) {
     return (
-      <section
-        className={`my-3 pb-[70px] opacity-50 transition-all duration-300 ease-in-out`}
-      >
-        {user.username} hasn't posted anything yet.
-      </section>
+      <div className="p-8 text-center">
+        <p className="text-gray-500 mb-4">
+          {user.username} hasn't posted anything yet.
+        </p>
+
+        {isViewingOwnProfile && (
+          <Link
+            href={"/post/new"}
+            className={`my-6 px-4 py-2 inline-flex gap-2 justify-center items-center rounded-full hover:bg-dark dark:hover:bg-light border border-dark dark:border-light hover:text-light dark:hover:text-dark transition-all duration-300 ease-in-out`}
+          >
+            <IconSquareRoundedPlus size={24} />
+            Create your first fragment!
+          </Link>
+        )}
+      </div>
     );
   }
 
@@ -98,6 +100,22 @@ export default function PostedFeed({
           </article>
         );
       })}
+
+      {!isLoading && posts.length > 0 && (
+        <div className="py-4 text-center">
+          {hasMore ? (
+            <button
+              onClick={loadMore}
+              disabled={isLoading}
+              className={`px-4 py-2 text-sm bg-gray-100 dark:bg-gray-800 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors`}
+            >
+              {isLoading ? "Loading..." : "Load More Posts"}
+            </button>
+          ) : (
+            <p className="text-gray-500 text-sm">No more posts to show</p>
+          )}
+        </div>
+      )}
     </section>
   );
 }

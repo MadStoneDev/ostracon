@@ -6,19 +6,16 @@ import { createClient } from "@/utils/supabase/server";
 import { authRateLimiter } from "@/utils/rate-limit";
 
 function getUserFriendlyError(error: any): string {
-  console.error("Authentication error:", error.message);
+  const errorMessages: Record<string, string> = {
+    "Invalid login credentials": "Invalid verification code. Please try again.",
+    "Email not confirmed":
+      "Please verify your email address before logging in.",
+    "Too many requests": "Too many attempts. Please try again later.",
+  };
 
-  if (error.message?.includes("Invalid login credentials")) {
-    return "Invalid verification code. Please try again.";
-  }
-  if (error.message?.includes("Email not confirmed")) {
-    return "Please verify your email address before logging in.";
-  }
-  if (error.message?.includes("Too many requests")) {
-    return "Too many attempts. Please try again later.";
-  }
-
-  return error.message || "Authentication failed. Please try again.";
+  return (
+    errorMessages[error.message] || "Authentication failed. Please try again."
+  );
 }
 
 export async function requestOTP(formData: { email: string }) {

@@ -102,7 +102,7 @@ export class ModerationAPI {
   }
 
   async approveImage(imageUrl: string, userId: string) {
-    return this.supabase.from("user_photos").insert({
+    return this.supabase.from("profile_photos").insert({
       user_id: userId,
       photo_url: imageUrl,
     });

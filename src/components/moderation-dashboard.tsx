@@ -213,14 +213,14 @@ export default function ModerationDashboard({
         .eq("id", itemId);
 
       if (!error) {
-        // If approving an image, add it to user_photos
+        // If approving an image, add it to profile_photos
         if (
           action === "approve" &&
           item.type === "image" &&
           item.image_url &&
           item.uploaded_by
         ) {
-          await supabase.from("user_photos").insert({
+          await supabase.from("profile_photos").insert({
             user_id: item.uploaded_by,
             photo_url: item.image_url,
           });
