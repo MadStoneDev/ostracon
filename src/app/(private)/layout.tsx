@@ -24,7 +24,7 @@ export default async function PrivateLayout({
 
   return (
     <div
-      className={`p-4 md:p-6 flex-grow flex flex-col bg-white dark:bg-dark overflow-y-auto`}
+      className={`flex-grow flex flex-col bg-white dark:bg-dark overflow-y-auto`}
     >
       <main className={`flex-grow flex flex-col`}>{children}</main>
 

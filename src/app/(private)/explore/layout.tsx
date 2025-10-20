@@ -1,7 +1,7 @@
 ﻿import React from "react";
 import BottomNav from "@/components/ui/bottom-nav";
 
-export default function PrivateLayout({
+export default function ExploreLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -9,7 +9,7 @@ export default function PrivateLayout({
 }>) {
   return (
     <div
-      className={`relative flex-grow grid bg-light dark:bg-dark overflow-hidden`}
+      className={`p-4 md:p-6 relative flex-grow grid bg-light dark:bg-dark overflow-hidden`}
     >
       <main className={`relative flex-grow flex justify-center`}>
         {children}

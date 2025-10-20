@@ -4,6 +4,7 @@ export const CURRENT_SETTINGS_VERSION = 0;
 
 export const defaultSettings: UserSettings = {
   // Privacy
+  date_of_birth: "",
   allow_sensitive_content: false,
   blur_sensitive_content: true,
 

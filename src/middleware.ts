@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { updateSession } from "@/utils/supabase/middleware";
+import { isUserLocked } from "@/utils/upstash/redis-lock";
 
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
@@ -46,6 +47,15 @@ export async function middleware(request: NextRequest) {
     // Not authenticated - redirect to auth
     if (!user) {
       return NextResponse.redirect(new URL("/auth", request.url));
+    }
+
+    // Check if user is locked (PIN lock feature)
+    // Do this early, before other checks, but allow /locked page
+    if (path !== "/locked") {
+      const locked = await isUserLocked(user.id);
+      if (locked) {
+        return NextResponse.redirect(new URL("/locked", request.url));
+      }
     }
 
     // Only perform this check on protected routes

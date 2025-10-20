@@ -61,6 +61,8 @@ export default function AccountSettings() {
         setLoading(true);
         const userSettings = await settingsService.getUserSettings();
 
+        console.log(userSettings);
+
         // Check if sensitive content settings need to be adjusted
         if (
           !userSettings.date_of_birth &&
@@ -306,7 +308,7 @@ export default function AccountSettings() {
   if (!settings) return null;
 
   return (
-    <div className="relative">
+    <div className="p-4 md:p-6 relative">
       {hasChanges && (
         <div className="fixed top-20 right-6 z-50">
           <button
@@ -552,7 +554,7 @@ export default function AccountSettings() {
             onValueChange={(value) =>
               updateSetting(
                 "allow_messages",
-                value as "following" | "everyone" | "none",
+                value as "followers" | "everyone" | "none",
               )
             }
           >
@@ -561,7 +563,7 @@ export default function AccountSettings() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="none">No one</SelectItem>
-              <SelectItem value="following">People I Follow only</SelectItem>
+              <SelectItem value="followers">People I Follow only</SelectItem>
               <SelectItem value="everyone">Everyone</SelectItem>
             </SelectContent>
           </Select>
