@@ -14,7 +14,14 @@ import { ListeningFeed, ListenersFeed } from "@/components/profile/listen-feed";
 import ModerationLink from "@/components/moderation-link";
 import ReportButton from "@/components/report-button";
 
-import { IconUserPlus, IconUserOff } from "@tabler/icons-react";
+import {
+  IconUserPlus,
+  IconUserOff,
+  IconMessages,
+  IconPencil,
+  IconNotebook,
+  IconHeart,
+} from "@tabler/icons-react";
 
 import { User } from "@supabase/supabase-js";
 import { Database } from "../../../database.types";
@@ -89,7 +96,7 @@ export default function ProfileContent({
 
   // Functions
   const updateTab = (newTab: string) => {
-    const tabOrder = ["Posts", "Likes", "Listening", "Listeners"];
+    const tabOrder = ["Posts", "Drafts", "Likes", "Listening", "Listeners"];
     const currentIndex = tabOrder.indexOf(activeTab);
     const newIndex = tabOrder.indexOf(newTab);
     const newDirection = newIndex > currentIndex ? 1 : -1;
@@ -99,6 +106,14 @@ export default function ProfileContent({
 
   const getFeedContent = () => {
     switch (activeTab) {
+      case "Drafts":
+        return (
+          <DraftsFeed
+            currentUser={currentUser}
+            user={profile}
+            initialDraftsFeed={draftsFeed}
+          />
+        );
       case "Likes":
         return (
           <LikedFeed
@@ -113,14 +128,6 @@ export default function ProfileContent({
         return <ListeningFeed user={profile} following={following} />;
       case "Listeners":
         return <ListenersFeed user={profile} followers={followers} />;
-      case "Drafts":
-        return (
-          <DraftsFeed
-            currentUser={currentUser}
-            user={profile}
-            initialDraftsFeed={draftsFeed}
-          />
-        );
       case "Posts":
       default:
         return (
@@ -270,68 +277,63 @@ export default function ProfileContent({
           <p className={`opacity-75 font-normal`}>{profile.bio}</p>
         </article>
         {/* Tabs */}
-        <article className={`flex flex-col justify-center gap-2 text-sm`}>
-          <div className={`flex flex-wrap gap-x-1 gap-y-2`}>
+        <article className={`flex flex-col justify-center gap-3 text-sm`}>
+          <div className={`flex flex-wrap gap-3`}>
             <button
-              className={`group flex items-center rounded-full hover:bg-white hover:text-primary/65 overflow-hidden transition-all duration-300 ease-in-out`}
+              className={`group flex flex-col items-center gap-1 px-4 py-1 border rounded-xl ${
+                activeTab === "Posts"
+                  ? "text-light border-primary bg-primary"
+                  : "hover:bg-primary/65 text-dark dark:text-light border-dark/20 dark:border-light/20"
+              } overflow-hidden transition-all duration-300 ease-in-out`}
               onClick={() => updateTab("Posts")}
             >
-              <span
-                className={`px-2 py-1 border rounded-full ${
-                  activeTab === "Posts"
-                    ? "text-light border-primary bg-primary"
-                    : "group-hover:bg-primary/65 text-dark dark:text-light border-dark dark:border-light"
-                } transition-all duration-300 ease-in-out`}
-              >
+              <IconMessages size={38} stroke={1.65} />
+              <span className={`text-xs`}>
                 {currentUser.id === profile.id && "My "}Posts
               </span>
             </button>
 
             {currentUser.id === profile.id && (
               <button
-                className={`group flex items-center rounded-full hover:bg-white hover:text-primary/65 overflow-hidden transition-all duration-300 ease-in-out`}
+                className={`group flex flex-col items-center gap-1 px-4 py-1 border rounded-xl ${
+                  activeTab === "Drafts"
+                    ? "text-light border-primary bg-primary"
+                    : "hover:bg-primary/65 text-dark dark:text-light border-dark/20 dark:border-light/20"
+                } overflow-hidden transition-all duration-300 ease-in-out`}
                 onClick={() => updateTab("Drafts")}
               >
-                <span
-                  className={`px-2 py-1 border rounded-full ${
-                    activeTab === "Drafts"
-                      ? "text-light border-primary bg-primary"
-                      : "group-hover:bg-primary/65 text-dark dark:text-light border-dark dark:border-light"
-                  } transition-all duration-300 ease-in-out`}
-                >
-                  My Drafts
-                </span>
+                <IconNotebook size={38} stroke={1.65} />
+                <span className={`text-xs`}>My Drafts</span>
               </button>
             )}
 
             <button
-              className={`group flex items-center rounded-full hover:bg-white hover:text-primary/65 overflow-hidden transition-all duration-300 ease-in-out`}
+              className={`group flex flex-col items-center gap-1 px-4 py-1 border rounded-xl ${
+                activeTab === "Likes"
+                  ? "text-light border-primary bg-primary"
+                  : "hover:bg-primary/65 text-dark dark:text-light border-dark/20 dark:border-light/20"
+              } overflow-hidden transition-all duration-300 ease-in-out`}
               onClick={() => updateTab("Likes")}
             >
-              <span
-                className={`px-2 py-1 border rounded-full ${
-                  activeTab === "Likes"
-                    ? "text-light border-primary bg-primary"
-                    : "group-hover:bg-primary/65 text-dark dark:text-light border-dark dark:border-light"
-                } transition-all duration-300 ease-in-out`}
-              >
+              <IconHeart size={38} stroke={1.65} />
+              <span className={`text-sm`}>
                 {currentUser.id === profile.id && "My "}Likes
               </span>
             </button>
           </div>
 
-          <div className={`flex flex-wrap gap-x-1 gap-y-2`}>
+          <div className={`flex flex-wrap gap-3`}>
             <button
-              className={`group flex items-center rounded-full hover:bg-white hover:text-primary/65 overflow-hidden transition-all duration-300 ease-in-out`}
+              className={`group flex items-center rounded-xl hover:bg-white hover:text-primary/65 overflow-hidden transition-all duration-300 ease-in-out`}
               onClick={() => updateTab("Listening")}
             >
               <span
-                className={`px-2 py-1 bg-dark dark:bg-light rounded-l-full border border-dark dark:border-light text-light dark:text-dark font-bold transition-all duration-300 ease-in-out`}
+                className={`px-3 py-2 bg-dark dark:bg-light rounded-l-xl border border-dark dark:border-light text-light dark:text-dark font-bold transition-all duration-300 ease-in-out`}
               >
                 {formatCount(followingCount)}
               </span>
               <span
-                className={`px-2 py-1 border rounded-r-full ${
+                className={`px-3 py-2 border rounded-r-xl ${
                   activeTab === "Listening"
                     ? "text-light border-primary bg-primary"
                     : "group-hover:bg-primary/65 text-dark dark:text-light border-dark dark:border-light"
@@ -342,16 +344,16 @@ export default function ProfileContent({
             </button>
 
             <button
-              className={`group flex items-center rounded-full hover:bg-white hover:text-primary/65 overflow-hidden transition-all duration-300 ease-in-out`}
+              className={`group flex items-center rounded-xl hover:bg-white hover:text-primary/65 overflow-hidden transition-all duration-300 ease-in-out`}
               onClick={() => updateTab("Listeners")}
             >
               <span
-                className={`px-2 py-1 bg-dark dark:bg-light rounded-l-full border border-dark dark:border-light text-light dark:text-dark font-bold transition-all duration-300 ease-in-out`}
+                className={`px-3 py-2 bg-dark dark:bg-light rounded-l-xl border border-dark dark:border-light text-light dark:text-dark font-bold transition-all duration-300 ease-in-out`}
               >
                 {formatCount(followersCount)}
               </span>
               <span
-                className={`px-2 py-1 border rounded-r-full ${
+                className={`px-3 py-2 border rounded-r-xl ${
                   activeTab === "Listeners"
                     ? "text-light border-primary bg-primary"
                     : "group-hover:bg-primary/65 text-dark dark:text-light border-dark dark:border-light"

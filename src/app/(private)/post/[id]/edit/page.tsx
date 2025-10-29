@@ -49,8 +49,24 @@ async function getPostById(postId: string) {
   return post;
 }
 
+async function fetchUser() {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/auth");
+  } else {
+    return user;
+  }
+}
+
 export default async function EditPostPage({ params }: PageProps) {
   const resolvedParams = await params;
+  const currentUser = await fetchUser();
+
   const postId = resolvedParams.id;
   const post = await getPostById(postId);
 
@@ -65,5 +81,12 @@ export default async function EditPostPage({ params }: PageProps) {
     );
   }
 
-  return <PostForm postId={postId} post={post} isEditing={true} />;
+  return (
+    <PostForm
+      currentUser={currentUser}
+      postId={postId}
+      post={post}
+      isEditing={true}
+    />
+  );
 }

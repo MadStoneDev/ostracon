@@ -310,7 +310,7 @@ export default function AccountSettings() {
   return (
     <div className="p-4 md:p-6 relative">
       {hasChanges && (
-        <div className="fixed top-20 right-6 z-50">
+        <div className="absolute top-4 right-6 z-50">
           <button
             onClick={saveChanges}
             className="bg-primary text-white px-4 py-2 rounded-md shadow-lg hover:bg-primary/90 transition-colors"

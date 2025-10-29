@@ -91,7 +91,7 @@ export function CreateCommunityForm({ onSuccess }: CreateCommunityFormProps) {
       )}
 
       <div>
-        <label htmlFor="displayName" className="block text-sm font-medium mb-1">
+        <label htmlFor="displayName" className="block text-sm font-bold mb-1">
           Community Name <span className="text-red-500">*</span>
         </label>
         <input
@@ -99,7 +99,7 @@ export function CreateCommunityForm({ onSuccess }: CreateCommunityFormProps) {
           id="displayName"
           value={displayName}
           onChange={(e) => handleDisplayNameChange(e.target.value)}
-          placeholder="Photography Enthusiasts"
+          placeholder="Community Name"
           className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
           required
           maxLength={50}
@@ -111,19 +111,19 @@ export function CreateCommunityForm({ onSuccess }: CreateCommunityFormProps) {
       </div>
 
       <div>
-        <label htmlFor="name" className="block text-sm font-medium mb-1">
+        <label htmlFor="name" className="block text-sm font-bold mb-1">
           URL Name <span className="text-red-500">*</span>
         </label>
         <div className="flex items-center gap-2 mb-1">
           <span className="text-sm text-muted-foreground whitespace-nowrap">
-            /connect/
+            ostracon.app/connect/
           </span>
           <input
             type="text"
             id="name"
             value={name}
             onChange={(e) => handleNameChange(e.target.value)}
-            placeholder="photography-enthusiasts"
+            placeholder="community-slug"
             className={`flex-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
               nameError
                 ? "border-red-500 focus:ring-red-500"
@@ -146,7 +146,7 @@ export function CreateCommunityForm({ onSuccess }: CreateCommunityFormProps) {
       </div>
 
       <div>
-        <label htmlFor="description" className="block text-sm font-medium mb-1">
+        <label htmlFor="description" className="block text-sm font-bold mb-1">
           Description
         </label>
         <textarea

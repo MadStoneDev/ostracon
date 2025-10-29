@@ -26,7 +26,7 @@ export default async function PrivateLayout({
     <div
       className={`flex-grow flex flex-col bg-white dark:bg-dark overflow-y-auto`}
     >
-      <main className={`flex-grow flex flex-col`}>{children}</main>
+      <main className={`flex-grow flex flex-col p-6`}>{children}</main>
 
       {user ? <BottomNav user={user} profile={profile} /> : null}
     </div>
