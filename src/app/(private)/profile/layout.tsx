@@ -6,7 +6,6 @@ export default function PrivateLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
-  params: Promise<{ username: string }>;
 }>) {
   const authenticated = true;
 

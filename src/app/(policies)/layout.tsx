@@ -7,7 +7,6 @@ export default async function PoliciesLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
-  params: Promise<{ username: string }>;
 }>) {
   const supabase = await createClient();
 

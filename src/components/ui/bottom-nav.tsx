@@ -24,7 +24,7 @@ import { createClient } from "@/utils/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { Tables } from "../../../database.types";
 
-type Profile = Tables<`users`>;
+type Profile = Tables<"profiles">;
 
 export default function BottomNav({
   user = null,
