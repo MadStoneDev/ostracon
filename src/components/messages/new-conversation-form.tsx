@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { User } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/utils/supabase/client";
+import { createConversation } from "@/actions/conversation-actions";
 import UserAvatar from "@/components/ui/user-avatar";
 import { IconSearch, IconArrowLeft, IconUserPlus } from "@tabler/icons-react";
 
@@ -28,8 +28,6 @@ export default function NewConversationForm({
   const [isGroup, setIsGroup] = useState(false);
   const [groupName, setGroupName] = useState("");
   const [isCreating, setIsCreating] = useState(false);
-
-  const supabase = createClient();
 
   const filteredUsers = userProfiles.filter(
     (profile) =>
@@ -65,74 +63,21 @@ export default function NewConversationForm({
     setIsCreating(true);
 
     try {
-      // First, check if a conversation already exists with this user (for non-group chats)
-      if (!isGroup) {
-        const { data: existingConversations, error: queryError } =
-          await supabase
-            .from("conversations")
-            .select(
-              `
-            id,
-            conversation_participants!inner (user_id)
-          `,
-            )
-            .eq("is_group", false);
+      const participantIds = selectedUsers.map((user) => user.id);
 
-        if (!queryError && existingConversations) {
-          // Find a conversation where only the current user and selected user are participants
-          const existingConversation = existingConversations.find((conv) => {
-            const participantIds = conv.conversation_participants.map(
-              (p: any) => p.user_id,
-            );
-            return (
-              participantIds.length === 2 &&
-              participantIds.includes(currentUser.id) &&
-              participantIds.includes(selectedUsers[0].id)
-            );
-          });
+      const result = await createConversation(
+        participantIds,
+        isGroup ? groupName : undefined,
+        isGroup,
+      );
 
-          if (existingConversation) {
-            // Conversation already exists, navigate to it
-            router.push(`/messages/${existingConversation.id}`);
-            return;
-          }
-        }
+      if (!result.success) {
+        throw new Error(result.error || "Failed to create conversation");
       }
 
-      // Create a new conversation
-      const { data: conversation, error: conversationError } = await supabase
-        .from("conversations")
-        .insert({
-          title: isGroup ? groupName : null,
-          is_group: isGroup,
-          last_message_at: new Date().toISOString(),
-        })
-        .select()
-        .single();
-
-      if (conversationError || !conversation) {
-        throw conversationError || new Error("Failed to create conversation");
+      if (result.data?.id) {
+        router.push(`/messages/${result.data.id}`);
       }
-
-      // Add participants
-      const participants = [
-        { conversation_id: conversation.id, user_id: currentUser.id },
-        ...selectedUsers.map((user) => ({
-          conversation_id: conversation.id,
-          user_id: user.id,
-        })),
-      ];
-
-      const { error: participantsError } = await supabase
-        .from("conversation_participants")
-        .insert(participants);
-
-      if (participantsError) {
-        throw participantsError;
-      }
-
-      // Navigate to the new conversation
-      router.push(`/messages/${conversation.id}`);
     } catch (error) {
       console.error("Error creating conversation:", error);
       alert("Failed to create conversation");

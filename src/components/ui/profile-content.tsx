@@ -5,10 +5,14 @@ import { motion, AnimatePresence } from "framer-motion";
 
 import { formatCount } from "@/utils/format-count";
 import { createClient } from "@/utils/supabase/client";
+import { followUser, unfollowUser } from "@/actions/follow-actions";
+import { blockUser } from "@/actions/block-actions";
+import { muteUser } from "@/actions/mute-actions";
 
 import UserAvatar from "@/components/ui/user-avatar";
 import LikedFeed from "@/components/profile/liked-feed";
 import PostedFeed from "@/components/profile/posted-feed";
+import SavedFeed from "@/components/profile/saved-feed";
 import UserPhotosCarousel from "@/components/profile/user-photos-carousel";
 import { ListeningFeed, ListenersFeed } from "@/components/profile/listen-feed";
 import ModerationLink from "@/components/moderation-link";
@@ -18,9 +22,11 @@ import {
   IconUserPlus,
   IconUserOff,
   IconMessages,
-  IconPencil,
   IconNotebook,
   IconHeart,
+  IconBookmark,
+  IconBan,
+  IconVolume3,
 } from "@tabler/icons-react";
 
 import { User } from "@supabase/supabase-js";
@@ -59,6 +65,7 @@ export default function ProfileContent({
   postedFeed,
   likedFeed,
   draftsFeed,
+  savedFeed,
   followStats,
   followers,
   following,
@@ -70,6 +77,7 @@ export default function ProfileContent({
   postedFeed: Fragment[] | null;
   likedFeed: Fragment[] | null;
   draftsFeed: Fragment[] | null;
+  savedFeed?: Fragment[] | null;
   followStats: {
     followersCount: number;
     followingCount: number;
@@ -96,7 +104,7 @@ export default function ProfileContent({
 
   // Functions
   const updateTab = (newTab: string) => {
-    const tabOrder = ["Posts", "Drafts", "Likes", "Listening", "Listeners"];
+    const tabOrder = ["Posts", "Drafts", "Likes", "Saved", "Listening", "Listeners"];
     const currentIndex = tabOrder.indexOf(activeTab);
     const newIndex = tabOrder.indexOf(newTab);
     const newDirection = newIndex > currentIndex ? 1 : -1;
@@ -124,6 +132,14 @@ export default function ProfileContent({
             userProfiles={userProfiles}
           />
         );
+      case "Saved":
+        return (
+          <SavedFeed
+            currentUser={currentUser}
+            initialSavedFeed={savedFeed || null}
+            userProfiles={userProfiles}
+          />
+        );
       case "Listening":
         return <ListeningFeed user={profile} following={following} />;
       case "Listeners":
@@ -148,31 +164,22 @@ export default function ProfileContent({
     setIsFollowLoading(true);
 
     try {
-      const supabase = createClient();
-
       if (isFollowing) {
-        // Unfollow: Delete the record
-        const { error } = await supabase
-          .from("follows")
-          .delete()
-          .eq("follower_id", currentUser.id)
-          .eq("following_id", profile.id);
+        const result = await unfollowUser(profile.id);
 
-        if (error) throw error;
+        if (!result.success) {
+          throw new Error(result.error || "Failed to unfollow");
+        }
 
         // Update local state
         setIsFollowing(false);
         setFollowersCount((prev) => Math.max(0, prev - 1));
       } else {
-        // Follow: Insert a new record
-        const { error } = await supabase.from("follows").insert([
-          {
-            follower_id: currentUser.id,
-            following_id: profile.id,
-          },
-        ]);
+        const result = await followUser(profile.id);
 
-        if (error) throw error;
+        if (!result.success) {
+          throw new Error(result.error || "Failed to follow");
+        }
 
         // Update local state
         setIsFollowing(true);
@@ -251,6 +258,30 @@ export default function ProfileContent({
                 </>
               )}
             </button>
+
+            {/* Mute Button */}
+            <button
+              onClick={async () => {
+                await muteUser(profile.id);
+              }}
+              className="p-1.5 rounded-full bg-gray-100 dark:bg-neutral-800/80 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-all duration-300 ease-in-out"
+              title="Mute User"
+            >
+              <IconVolume3 size={18} />
+            </button>
+
+            {/* Block Button */}
+            <button
+              onClick={async () => {
+                if (confirm("Block this user? You will no longer see their content and mutual follows will be removed.")) {
+                  await blockUser(profile.id);
+                }
+              }}
+              className="p-1.5 rounded-full bg-gray-100 dark:bg-neutral-800/80 hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-500 transition-all duration-300 ease-in-out"
+              title="Block User"
+            >
+              <IconBan size={18} />
+            </button>
           </>
         )}
       </div>
@@ -320,6 +351,20 @@ export default function ProfileContent({
                 {currentUser.id === profile.id && "My "}Likes
               </span>
             </button>
+
+            {currentUser.id === profile.id && (
+              <button
+                className={`group flex flex-col items-center gap-1 px-4 py-1 border rounded-xl ${
+                  activeTab === "Saved"
+                    ? "text-light border-primary bg-primary"
+                    : "hover:bg-primary/65 text-dark dark:text-light border-dark/20 dark:border-light/20"
+                } overflow-hidden transition-all duration-300 ease-in-out`}
+                onClick={() => updateTab("Saved")}
+              >
+                <IconBookmark size={38} stroke={1.65} />
+                <span className={`text-xs`}>Saved</span>
+              </button>
+            )}
           </div>
 
           <div className={`flex flex-wrap gap-3`}>

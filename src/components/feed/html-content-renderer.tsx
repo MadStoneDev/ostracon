@@ -1,5 +1,6 @@
 ﻿import React, { useRef, useEffect, useState } from "react";
 import Link from "next/link";
+import DOMPurify from "dompurify";
 
 interface HtmlContentProps {
   postId: string;
@@ -41,6 +42,14 @@ export default function HtmlContent({
     }
   }, [content, truncate, isExpanded, maxLines]);
 
+  const sanitizedContent = DOMPurify.sanitize(content, {
+    ALLOWED_TAGS: [
+      "p", "strong", "em", "code", "br", "a", "ul", "ol", "li",
+      "h1", "h2", "h3", "h4", "h5", "h6", "span", "pre", "blockquote",
+    ],
+    ALLOWED_ATTR: ["href", "target", "rel", "class", "style"],
+  });
+
   return (
     <div className="html-content-container">
       <div
@@ -50,7 +59,7 @@ export default function HtmlContent({
           maxHeight: truncate && !isExpanded ? `${maxLines * 1.5}em` : "none",
           overflow: truncate && !isExpanded ? "hidden" : "visible",
         }}
-        dangerouslySetInnerHTML={{ __html: content }}
+        dangerouslySetInnerHTML={{ __html: sanitizedContent }}
       />
 
       {isTruncated && !isExpanded && showExpandButton && (

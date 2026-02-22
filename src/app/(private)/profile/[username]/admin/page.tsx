@@ -6,6 +6,7 @@ import {
   fetchCurrentUser,
   fetchProfileByUsername,
 } from "@/utils/supabase/fetch-supabase";
+import { createClient } from "@/utils/supabase/server";
 
 export async function generateMetadata({
   params,
@@ -31,6 +32,18 @@ export default async function AdminPage({
 
   if (!currentUser) {
     redirect("/login");
+  }
+
+  // Server-side permission check — redirect non-mods/admins immediately
+  const supabase = await createClient();
+  const { data: currentProfile } = await supabase
+    .from("profiles")
+    .select("is_admin, is_moderator")
+    .eq("id", currentUser.id)
+    .single();
+
+  if (!currentProfile?.is_admin && !currentProfile?.is_moderator) {
+    redirect(`/profile/${username}`);
   }
 
   const profileData = await fetchProfileByUsername(username);

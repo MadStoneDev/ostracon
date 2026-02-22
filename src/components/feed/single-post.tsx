@@ -10,6 +10,8 @@ import React, {
 } from "react";
 
 import { createClient } from "@/utils/supabase/client";
+import { toggleFragmentReaction, deleteFragment } from "@/actions/fragment-actions";
+import { saveFragment, unsaveFragment } from "@/actions/save-actions";
 
 import SinglePostReply from "@/components/ui/single-post-reply";
 import { PostHeader } from "@/components/feed/post/post-header";
@@ -89,6 +91,7 @@ export default function Post({
   const [isDeleted, setIsDeleted] = useState(false);
   const [isDataLoading, setIsDataLoading] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isSaved, setIsSaved] = useState(false);
 
   // Initialize state with pre-fetched data
   const [baseState, setBaseState] = useState<PostState>({
@@ -110,29 +113,17 @@ export default function Post({
     setDeleteError(null);
 
     try {
-      const { data: userData, error: authError } =
-        await supabase.auth.getUser();
-
-      if (authError || !userData?.user) {
-        throw new Error("You must be logged in to delete this post.");
-      }
-
-      if (userData.user.id !== authorId) {
-        throw new Error("You can only delete your own posts.");
-      }
-
       setIsDeleted(true);
 
       if (onDelete) {
         onDelete(postId);
       }
 
-      const { error: deleteError } = await supabase
-        .from("fragments")
-        .delete()
-        .eq("id", postId);
+      const result = await deleteFragment(postId);
 
-      if (deleteError) throw deleteError;
+      if (!result.success) {
+        throw new Error(result.error || "Failed to delete post");
+      }
 
       if (isExpanded) {
         router.push("/explore");
@@ -171,10 +162,20 @@ export default function Post({
 
         setIsCurrentUserPost(userProfile?.username === username);
       }
+
+      // Check saved status
+      const { data: savedData } = await supabase
+        .from("saved_fragments")
+        .select("fragment_id")
+        .eq("user_id", userData.user.id)
+        .eq("fragment_id", postId)
+        .maybeSingle();
+
+      setIsSaved(!!savedData);
     };
 
     checkIfCurrentUserPost();
-  }, [supabase, username, authorId]);
+  }, [supabase, username, authorId, postId]);
 
   // Only fetch post data if not provided through props
   useEffect(() => {
@@ -352,25 +353,10 @@ export default function Post({
     }));
 
     try {
-      if (newLikedState) {
-        // Add like
-        const { error } = await supabase.from("fragment_reactions").insert({
-          fragment_id: postId,
-          user_id: userData.user.id,
-          type: "like",
-        });
+      const result = await toggleFragmentReaction(postId, "like");
 
-        if (error) throw error;
-      } else {
-        // Remove like
-        const { error } = await supabase
-          .from("fragment_reactions")
-          .delete()
-          .eq("fragment_id", postId)
-          .eq("user_id", userData.user.id)
-          .eq("type", "like");
-
-        if (error) throw error;
+      if (!result.success) {
+        throw new Error(result.error || "Failed to update reaction");
       }
     } catch (error) {
       console.error("Error updating like:", error);
@@ -401,6 +387,23 @@ export default function Post({
     postId,
     updateOptimisticState,
   ]);
+
+  const handleToggleSave = useCallback(async () => {
+    const previousSaved = isSaved;
+    setIsSaved(!isSaved);
+
+    try {
+      const result = previousSaved
+        ? await unsaveFragment(postId)
+        : await saveFragment(postId);
+
+      if (!result.success) {
+        setIsSaved(previousSaved);
+      }
+    } catch {
+      setIsSaved(previousSaved);
+    }
+  }, [isSaved, postId]);
 
   const handleCommentAdded = useCallback(() => {
     if (isPending) return;
@@ -510,6 +513,8 @@ export default function Post({
             startReply={startReply}
             postId={postId}
             isLoading={isDataLoading}
+            isSaved={isSaved}
+            onToggleSave={currentUser ? handleToggleSave : undefined}
           />
 
           {commentsAllowed && (

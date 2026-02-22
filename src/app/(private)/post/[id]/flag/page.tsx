@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import FlagForm from "@/components/ui/flag-form";
 
 export default async function FlagPage({
@@ -19,7 +19,7 @@ export default async function FlagPage({
         className={`pt-4 pb-[70px] border-t border-dark/20 dark:border-light/20 transition-all duration-300 ease-in-out`}
       >
         <h2 className={`font-bold`}>Why are you flagging this post?</h2>
-        <FlagForm />
+        <FlagForm postId={postId} />
       </section>
     </div>
   );

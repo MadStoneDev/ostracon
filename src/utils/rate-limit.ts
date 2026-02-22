@@ -9,4 +9,17 @@ const redis = new Redis({
 export const authRateLimiter = new Ratelimit({
   redis,
   limiter: Ratelimit.slidingWindow(5, "60s"),
+  prefix: "ratelimit:auth",
+});
+
+export const writeRateLimiter = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(20, "60s"),
+  prefix: "ratelimit:write",
+});
+
+export const messageRateLimiter = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(30, "60s"),
+  prefix: "ratelimit:message",
 });

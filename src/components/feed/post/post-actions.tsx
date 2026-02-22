@@ -9,6 +9,8 @@ import {
   IconMessageFilled,
   IconMessageOff,
   IconMessagePlus,
+  IconBookmark,
+  IconBookmarkFilled,
 } from "@tabler/icons-react";
 
 type PostState = {
@@ -28,7 +30,9 @@ type PostActionsProps = {
   setStartReply: (value: boolean) => void;
   startReply: boolean;
   postId: string;
-  isLoading?: boolean; // Add the isLoading prop
+  isLoading?: boolean;
+  isSaved?: boolean;
+  onToggleSave?: () => void;
 };
 
 export const PostActions = React.memo(
@@ -42,7 +46,9 @@ export const PostActions = React.memo(
     setStartReply,
     startReply,
     postId,
-    isLoading = false, // Default to false
+    isLoading = false,
+    isSaved = false,
+    onToggleSave,
   }: PostActionsProps) => (
     <section className="flex flex-nowrap justify-between items-center">
       <article
@@ -140,6 +146,21 @@ export const PostActions = React.memo(
             </span>
           </Link>
         </div>
+
+        {onToggleSave && (
+          <button
+            onClick={onToggleSave}
+            className="opacity-30 hover:opacity-100 transition-all duration-300 ease-in-out"
+            aria-label={isSaved ? "Unsave" : "Save"}
+            title={isSaved ? "Unsave" : "Save"}
+          >
+            {isSaved ? (
+              <IconBookmarkFilled size={20} strokeWidth={2.5} />
+            ) : (
+              <IconBookmark size={20} strokeWidth={2.5} />
+            )}
+          </button>
+        )}
       </article>
     </section>
   ),

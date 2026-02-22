@@ -225,6 +225,50 @@ export async function fetchLikedFeedWithInteractions(
   return enhancedPosts;
 }
 
+export async function fetchSavedFeedWithInteractions(
+  userId: string,
+  currentUserId?: string,
+  page: number = 0,
+  pageSize: number = 25,
+): Promise<EnhancedFragment[]> {
+  const supabase = await createClient();
+  const offset = page * pageSize;
+
+  // Get the posts the user has saved with pagination
+  const { data: saved } = await supabase
+    .from("saved_fragments")
+    .select("fragment_id")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .range(offset, offset + pageSize - 1);
+
+  if (!saved || saved.length === 0) return [];
+  const fragmentIds = saved.map((s) => s.fragment_id);
+
+  // Fetch the basic posts
+  const { data: fragments } = await supabase
+    .from("fragments")
+    .select()
+    .in("id", fragmentIds);
+
+  if (!fragments || fragments.length === 0) return [];
+
+  // Get interaction data
+  const { likeCountMap, commentCountMap, userLikedMap, userCommentedMap } =
+    await fetchInteractionData(fragmentIds, currentUserId);
+
+  // Combine all the data
+  const enhancedPosts: EnhancedFragment[] = fragments.map((post) => ({
+    ...post,
+    likeCount: likeCountMap[post.id] || 0,
+    commentCount: commentCountMap[post.id] || 0,
+    userLiked: userLikedMap[post.id] || false,
+    userCommented: userCommentedMap[post.id] || false,
+  }));
+
+  return enhancedPosts;
+}
+
 export async function fetchFollowStats(userId: string) {
   const myFollowers = (await fetchFollowers(userId))?.length || 0;
   const myFollowing = (await fetchFollowing(userId))?.length || 0;

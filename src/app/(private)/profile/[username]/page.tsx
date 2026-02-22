@@ -5,6 +5,7 @@ import {
   fetchProfileByUsername,
   fetchPostedFeedWithInteractions,
   fetchLikedFeedWithInteractions,
+  fetchSavedFeedWithInteractions,
   fetchFollowers,
   fetchFollowing,
   fetchFollowStats,
@@ -38,11 +39,14 @@ export default async function Profile({
   const currentUser = await fetchCurrentUser();
   const currentUserId = currentUser?.id;
 
+  const isOwnProfile = currentUserId === profileData.id;
+
   // Use parallel fetching for better performance
   const [
     postedFeedWithInteractions,
     likedFeedWithInteractions,
     draftFeed,
+    savedFeed,
     followStats,
     followers,
     following,
@@ -51,6 +55,9 @@ export default async function Profile({
     fetchPostedFeedWithInteractions(profileData.id, currentUserId, 0),
     fetchLikedFeedWithInteractions(profileData.id, currentUserId, 0),
     fetchDraftFeedWithInteractions(profileData.id, currentUserId, 0),
+    isOwnProfile
+      ? fetchSavedFeedWithInteractions(profileData.id, currentUserId, 0)
+      : Promise.resolve(null),
     fetchFollowStats(profileData.id),
     fetchFollowers(profileData.id),
     fetchFollowing(profileData.id),
@@ -68,8 +75,13 @@ export default async function Profile({
       ?.map((post) => post.user_id)
       .filter((id): id is string => id !== null && id !== undefined) || [];
 
+  const savedUserIds =
+    savedFeed
+      ?.map((post) => post.user_id)
+      .filter((id): id is string => id !== null && id !== undefined) || [];
+
   // Combine and deduplicate IDs
-  const allUserIds = [...new Set([...userIds, ...likedUserIds])];
+  const allUserIds = [...new Set([...userIds, ...likedUserIds, ...savedUserIds])];
 
   // Now allUserIds is guaranteed to be string[]
   const userProfiles = await fetchUserProfilesByIds(allUserIds);
@@ -82,6 +94,7 @@ export default async function Profile({
         postedFeed={postedFeedWithInteractions}
         likedFeed={likedFeedWithInteractions}
         draftsFeed={draftFeed}
+        savedFeed={savedFeed}
         followStats={followStats}
         followers={followers}
         following={following}

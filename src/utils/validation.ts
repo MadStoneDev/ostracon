@@ -76,7 +76,30 @@ export function getCommunityNameError(name: string): string | null {
 }
 
 /**
- * Reserved community names that cannot be used
+ * Get error message for invalid username
+ */
+export function getUsernameError(username: string): string | null {
+  if (!username || username.length === 0) {
+    return "Username is required";
+  }
+
+  if (username.length < 3) {
+    return "Username must be at least 3 characters";
+  }
+
+  if (username.length > 30) {
+    return "Username must be 30 characters or less";
+  }
+
+  if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+    return "Username can only contain letters, numbers, and underscores";
+  }
+
+  return null;
+}
+
+/**
+ * Reserved names that cannot be used as usernames or community names
  */
 const RESERVED_NAMES = [
   "admin",
@@ -108,5 +131,12 @@ const RESERVED_NAMES = [
  * Check if community name is reserved
  */
 export function isReservedCommunityName(name: string): boolean {
+  return RESERVED_NAMES.includes(name.toLowerCase());
+}
+
+/**
+ * Check if username is reserved
+ */
+export function isReservedUsername(name: string): boolean {
   return RESERVED_NAMES.includes(name.toLowerCase());
 }

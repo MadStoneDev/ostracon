@@ -26,7 +26,7 @@ export async function verifyUserPin(
   const storedHash = await redis.get<string>(`user:${userId}:pin`);
 
   if (!storedHash) {
-    return true;
+    return false;
   }
 
   const inputHash = await hashPin(pin);

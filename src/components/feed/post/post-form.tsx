@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { createClient } from "@/utils/supabase/client";
+import { createFragment, updateFragment, deleteFragment } from "@/actions/fragment-actions";
 import PostEditor from "@/components/feed/post-editor";
 
 import {
@@ -156,61 +157,36 @@ export default function PostForm({
     setIsSubmitting(true);
     setError(null);
 
-    let publishedTimestamp = null;
-
-    if (selectedCommunity !== "draft") {
-      publishedTimestamp = isEditing
-        ? post?.published_at
-        : new Date().toISOString();
-    }
-
-    const postData = {
-      user_id: currentUser.id,
-      title: postTitle || "",
-      content: postContent,
-      comments_open: allowComments,
-      reactions_open: allowReactions,
-      is_nsfw: postNSFW,
-      updated_at: new Date().toISOString(),
-      is_draft: selectedCommunity === "draft",
-      community_id:
-        selectedCommunity !== "draft" && selectedCommunity !== "public"
-          ? selectedCommunity
-          : "",
-      published_at: publishedTimestamp,
-    };
+    const communityId =
+      selectedCommunity !== "draft" &&
+      selectedCommunity !== "public" &&
+      selectedCommunity !== null &&
+      typeof selectedCommunity === "object"
+        ? selectedCommunity.id
+        : "";
 
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
-        throw new Error("You must be logged in to post.");
-      }
-
       if (isEditing && postId) {
-        // Check post ownership
-        if (user.id !== post?.user_id) {
-          throw new Error("You can only edit your own posts.");
+        const result = await updateFragment(postId, {
+          title: postTitle || "",
+          content: postContent,
+          commentsOpen: allowComments,
+          reactionsOpen: allowReactions,
+          isNsfw: postNSFW,
+          isDraft: selectedCommunity === "draft",
+          communityId,
+          publishedAt: post?.published_at ?? null,
+        });
+
+        if (!result.success) {
+          throw new Error(result.error || "Failed to update post");
         }
 
-        // Update existing post
-        const { data, error } = await supabase
-          .from("fragments")
-          .update(postData)
-          .eq("id", postId)
-          .select();
-
-        if (error) {
-          throw error;
-        }
-
-        if (selectedCommunity) {
+        if (communityId) {
           const { data: communityData } = await supabase
             .from("communities")
             .select("name")
-            .eq("id", selectedCommunity)
+            .eq("id", communityId)
             .single();
 
           if (communityData?.name) {
@@ -222,32 +198,26 @@ export default function PostForm({
           router.push(`/post/${postId}`);
         }
       } else {
-        // Create new post
-        const { data: fragmentData, error } = await supabase
-          .from("fragments")
-          .insert(postData)
-          .select()
-          .single();
+        const result = await createFragment({
+          title: postTitle || "",
+          content: postContent,
+          commentsOpen: allowComments,
+          reactionsOpen: allowReactions,
+          isNsfw: postNSFW,
+          isDraft: selectedCommunity === "draft",
+          communityId,
+          tagIds: selectedTags.map((tag) => tag.id),
+        });
 
-        // After inserting the fragment
-        if (selectedTags.length > 0 && fragmentData?.id) {
-          const tagInserts = selectedTags.map((tag) => ({
-            fragment_id: fragmentData.id,
-            tag_id: tag.id,
-          }));
-
-          await supabase.from("fragment_tags").insert(tagInserts);
+        if (!result.success) {
+          throw new Error(result.error || "Failed to create post");
         }
 
-        if (error) {
-          throw error;
-        }
-
-        if (selectedCommunity) {
+        if (communityId) {
           const { data: communityData } = await supabase
             .from("communities")
             .select("name")
-            .eq("id", selectedCommunity)
+            .eq("id", communityId)
             .single();
 
           if (communityData?.name) {
@@ -283,26 +253,10 @@ export default function PostForm({
     setError(null);
 
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const result = await deleteFragment(postId);
 
-      if (!user) {
-        throw new Error("You must be logged in to delete this post.");
-      }
-
-      // Verify that the current user is the owner of the post
-      if (user.id !== post?.user_id) {
-        throw new Error("You can only delete your own posts.");
-      }
-
-      const { error } = await supabase
-        .from("fragments")
-        .delete()
-        .eq("id", postId);
-
-      if (error) {
-        throw error;
+      if (!result.success) {
+        throw new Error(result.error || "Failed to delete post");
       }
 
       // Redirect to explore page

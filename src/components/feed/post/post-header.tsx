@@ -1,16 +1,19 @@
-﻿import React from "react";
+﻿import React, { useState } from "react";
 import Link from "next/link";
 import { User } from "@supabase/supabase-js";
+import { blockUser } from "@/actions/block-actions";
+import { muteUser } from "@/actions/mute-actions";
 
 import { formatTimestamp } from "@/lib/fragments";
 import UserAvatar from "@/components/ui/user-avatar";
 import ReportButton from "@/components/report-button";
 import {
+  IconBan,
   IconClock,
   IconDotsVertical,
   IconPencil,
-  IconSkull,
   IconTrash,
+  IconVolume3,
 } from "@tabler/icons-react";
 
 type PostHeaderProps = {
@@ -100,6 +103,30 @@ const PostOptions = React.memo(
                 currentUser={currentUser}
                 className="grid place-content-center w-6 opacity-50 hover:opacity-100 transition-all duration-300 ease-in-out"
               />
+
+              {/* Block User Button */}
+              <button
+                onClick={async () => {
+                  if (confirm("Block this user? You will no longer see their content.")) {
+                    await blockUser(userId);
+                  }
+                }}
+                className="grid place-content-center w-6 opacity-50 hover:opacity-100 transition-all duration-300 ease-in-out text-red-600 dark:text-red-500"
+                title="Block User"
+              >
+                <IconBan size={20} />
+              </button>
+
+              {/* Mute User Button */}
+              <button
+                onClick={async () => {
+                  await muteUser(userId);
+                }}
+                className="grid place-content-center w-6 opacity-50 hover:opacity-100 transition-all duration-300 ease-in-out"
+                title="Mute User"
+              >
+                <IconVolume3 size={20} />
+              </button>
             </>
           )
         )}

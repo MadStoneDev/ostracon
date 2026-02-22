@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 
 import SingleUser from "@/components/feed/single-user";
 import ReportForm from "@/components/ui/report-form";
@@ -27,7 +27,7 @@ export default async function ReportPage({
         className={`pt-4 pb-[70px] border-t border-dark/20 dark:border-light/20 transition-all duration-300 ease-in-out`}
       >
         <h2 className={`font-bold`}>Why are you reporting this user?</h2>
-        <ReportForm />
+        <ReportForm userId={userId} />
       </section>
     </div>
   );

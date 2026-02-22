@@ -101,11 +101,15 @@ export async function addComment(formData: FormData) {
     }
 
     // Insert the comment
-    const { error } = await supabase.from("fragment_comments").insert({
-      fragment_id: postId,
-      user_id: user.id,
-      content: content.trim(),
-    });
+    const { data: commentData, error } = await supabase
+      .from("fragment_comments")
+      .insert({
+        fragment_id: postId,
+        user_id: user.id,
+        content: content.trim(),
+      })
+      .select("id")
+      .single();
 
     if (error) throw error;
 
@@ -121,10 +125,10 @@ export async function addComment(formData: FormData) {
       await supabase.from("notifications").insert({
         user_id: postData.user_id,
         actor_id: user.id,
-        post_id: postId,
+        fragment_id: postId,
+        comment_id: commentData?.id ?? null,
         type: "comment",
         read: false,
-        data: { comment_content: content.substring(0, 100) },
       });
     }
 

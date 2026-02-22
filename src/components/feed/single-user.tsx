@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useOptimistic } from "react";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
+import { followUser, unfollowUser } from "@/actions/follow-actions";
 import { useRouter } from "next/navigation";
 
 // Client component for fetching user data and handling follow logic
@@ -81,18 +82,15 @@ const SingleUserClient = ({
   const handleFollow = async () => {
     if (!userId || !currentUser || userId === currentUser) return;
 
-    const supabase = createClient();
-
     // Update optimistic state immediately
     setOptimisticFollowState({ type: "follow" });
 
     try {
-      const { error } = await supabase.from("follows").insert({
-        follower_id: currentUser,
-        following_id: userId,
-      });
+      const result = await followUser(userId);
 
-      if (error) throw error;
+      if (!result.success) {
+        throw new Error(result.error || "Failed to follow user");
+      }
 
       // Update actual state after successful API call
       setIsFollowing(true);
@@ -107,19 +105,15 @@ const SingleUserClient = ({
   const handleUnfollow = async () => {
     if (!userId || !currentUser || userId === currentUser) return;
 
-    const supabase = createClient();
-
     // Update optimistic state immediately
     setOptimisticFollowState({ type: "unfollow" });
 
     try {
-      const { error } = await supabase
-        .from("follows")
-        .delete()
-        .eq("follower_id", currentUser)
-        .eq("following_id", userId);
+      const result = await unfollowUser(userId);
 
-      if (error) throw error;
+      if (!result.success) {
+        throw new Error(result.error || "Failed to unfollow user");
+      }
 
       // Update actual state after successful API call
       setIsFollowing(false);
