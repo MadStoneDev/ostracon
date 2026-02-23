@@ -1,4 +1,5 @@
 ﻿import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
+import Image from "next/image";
 import { IconX } from "@tabler/icons-react";
 
 export default function UserAvatar({
@@ -35,10 +36,12 @@ export default function UserAvatar({
       onClick={() => action?.()}
     >
       {avatar_url ? (
-        <img
+        <Image
           src={avatar_url}
           alt={`Avatar photo of ${username}`}
-          className={`h-full w-full object-cover`}
+          fill
+          className={`object-cover`}
+          unoptimized
           onClick={() => {
             if (!action && setFullScreenImage && setShowFullScreen) {
               setFullScreenImage(avatar_url);
@@ -62,10 +65,12 @@ export default function UserAvatar({
           className={`fixed top-[60px] left-0 bottom-0 right-0 bg-dark overflow-hidden z-50`}
         >
           {fullscreenImage && (
-            <img
+            <Image
               src={fullscreenImage}
               alt={`Avatar photo of ${username}`}
-              className={`h-full w-full object-contain`}
+              fill
+              className={`object-contain`}
+              unoptimized
             />
           )}
 

@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import React, { useState, useEffect, useRef } from "react";
 
 import { User } from "@supabase/supabase-js";
@@ -350,10 +351,13 @@ function MessageBubble({
       case "image":
         return (
           <div className="max-w-[240px]">
-            <img
+            <Image
               src={message.media_url || ""}
               alt="Shared image"
+              width={240}
+              height={300}
               className="rounded-lg max-h-[300px] object-contain"
+              unoptimized
             />
             {message.content && <div className="mt-1">{message.content}</div>}
           </div>
@@ -362,10 +366,13 @@ function MessageBubble({
       case "gif":
         return (
           <div className="max-w-[240px]">
-            <img
+            <Image
               src={message.media_url || ""}
               alt="GIF"
+              width={240}
+              height={200}
               className="rounded-lg max-h-[200px] object-contain"
+              unoptimized
             />
             {message.content && <div className="mt-1">{message.content}</div>}
           </div>

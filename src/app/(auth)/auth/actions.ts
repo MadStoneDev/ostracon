@@ -56,7 +56,6 @@ export async function requestOTP(formData: { email: string }) {
       message: "Verification code sent to your email.",
     };
   } catch (error) {
-    console.error("OTP request error:", error);
     return {
       error: "Unable to send verification code. Please try again.",
       success: false,
@@ -101,12 +100,6 @@ export async function verifyOTP(formData: { email: string; otp: string }) {
       };
     }
 
-    // Detailed logging
-    console.log("Verification Data:", {
-      userId: data.user.id,
-      email: data.user.email,
-    });
-
     // Profile is guaranteed to exist due to database trigger
     // Check if user has completed profile setup (has username)
     const { data: profile, error: profileError } = await supabase
@@ -115,26 +108,15 @@ export async function verifyOTP(formData: { email: string; otp: string }) {
       .eq("id", data.user.id)
       .single();
 
-    // Log profile query details
-    console.log("Profile Query:", {
-      profile,
-      profileError,
-    });
-
     // Redirect based on profile completion
     if (!profile?.username) {
-      console.log("Redirecting to profile setup");
       revalidatePath("/profile/setup");
       redirect("/profile/setup");
     } else {
-      console.log("Redirecting to explore");
       revalidatePath("/explore");
       redirect("/explore");
     }
   } catch (error) {
-    // More detailed error logging
-    console.error("Full OTP verification error:", error);
-
     // Allow Next.js redirects to pass through
     if (error instanceof Error && error.message.includes("NEXT_REDIRECT")) {
       throw error;

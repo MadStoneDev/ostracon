@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useTheme } from "next-themes";
 import { usePathname, useRouter } from "next/navigation";
@@ -66,14 +67,18 @@ export default function MainNav({ user = null }: { user?: any }) {
     >
       <section className="flex items-center font-accent tracking-tight text-2xl">
         <Link href="/">
-          <img
+          <Image
             alt="Ostracon logo"
             src="/ostracon-logo-dark.svg"
+            width={120}
+            height={20}
             className="hidden dark:block h-5"
           />
-          <img
+          <Image
             alt="Ostracon logo"
             src="/ostracon-logo-light.svg"
+            width={120}
+            height={20}
             className="block dark:hidden h-5"
           />
         </Link>
@@ -83,6 +88,7 @@ export default function MainNav({ user = null }: { user?: any }) {
         <button
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
           className="hover:text-primary transition-all duration-300 ease-in-out"
+          aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
         >
           {theme === "dark" ? (
             <IconSun size={24} strokeWidth={2} />
@@ -96,6 +102,7 @@ export default function MainNav({ user = null }: { user?: any }) {
             onClick={handleLock}
             disabled={isLocking}
             className="hover:text-primary transition-all duration-300 ease-in-out disabled:opacity-50"
+            aria-label="Lock account"
           >
             <IconLockOpen size={24} strokeWidth={2} />
           </button>
@@ -107,6 +114,7 @@ export default function MainNav({ user = null }: { user?: any }) {
               <button
                 className="hover:text-primary transition-all duration-300 ease-in-out"
                 onClick={() => router.back()}
+                aria-label="Close"
               >
                 <IconX size={22} strokeWidth={2} />
               </button>
@@ -114,6 +122,7 @@ export default function MainNav({ user = null }: { user?: any }) {
               <Link
                 href="/settings"
                 className="hover:text-primary transition-all duration-300 ease-in-out"
+                aria-label="Settings"
               >
                 <IconTool size={22} strokeWidth={2} />
               </Link>
@@ -123,6 +132,7 @@ export default function MainNav({ user = null }: { user?: any }) {
           <Link
             href="/info"
             className="hover:text-primary transition-all duration-200"
+            aria-label="About Ostracon"
           >
             <IconInfoCircleFilled size={28} strokeWidth={1.5} />
           </Link>

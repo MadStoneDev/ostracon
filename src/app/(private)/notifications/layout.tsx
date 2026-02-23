@@ -2,8 +2,7 @@
 
 export const metadata = {
   title: "Notifications | Ostracon",
-  // TODO: Add description
-  description: "Notifications page",
+  description: "View your latest notifications including reactions, comments, and new followers.",
 };
 
 export default function NotificationsLayout({

@@ -206,6 +206,7 @@ export default function NotificationList({
                   onClick={() => handleMarkRead(notification.id)}
                   className="p-1 opacity-40 hover:opacity-100 transition-opacity"
                   title="Mark as read"
+                  aria-label="Mark notification as read"
                 >
                   <IconCheck size={16} />
                 </button>
@@ -214,6 +215,7 @@ export default function NotificationList({
                 onClick={() => handleDelete(notification.id)}
                 className="p-1 opacity-40 hover:opacity-100 transition-opacity text-red-500"
                 title="Delete"
+                aria-label="Delete notification"
               >
                 <IconTrash size={16} />
               </button>

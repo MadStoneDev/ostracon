@@ -51,14 +51,15 @@ const PostOptions = React.memo(
     setShowDeleteConfirm,
   }: PostOptionsProps) => (
     <div className="shrink-0 flex flex-row-reverse items-center justify-end border-l border-dark dark:border-light/30 text-dark dark:text-light transition-all duration-300 ease-in-out">
-      <div
+      <button
         className={`cursor-pointer grid place-content-center w-6 opacity-50 hover:opacity-100 ${
           showOptions ? "-rotate-90" : ""
         } transition-all duration-300 ease-in-out`}
         onClick={() => setShowOptions(!showOptions)}
+        aria-label="Post options"
       >
         <IconDotsVertical />
-      </div>
+      </button>
 
       <div
         className={`flex gap-2 items-center ${
@@ -71,6 +72,7 @@ const PostOptions = React.memo(
               title="Edit Post"
               href={`/post/${postId}/edit`}
               className="grid place-content-center w-6 opacity-50 hover:opacity-100 transition-all duration-300 ease-in-out"
+              aria-label="Edit post"
             >
               <IconPencil />
             </Link>
@@ -80,6 +82,7 @@ const PostOptions = React.memo(
                 onClick={() => setShowDeleteConfirm(true)}
                 className={`grid place-content-center w-6 opacity-50 hover:opacity-100 transition-all duration-300 ease-in-out text-red-600 dark:text-red-500`}
                 title="Delete Post"
+                aria-label="Delete post"
               >
                 <IconTrash />
               </button>
@@ -113,6 +116,7 @@ const PostOptions = React.memo(
                 }}
                 className="grid place-content-center w-6 opacity-50 hover:opacity-100 transition-all duration-300 ease-in-out text-red-600 dark:text-red-500"
                 title="Block User"
+                aria-label="Block user"
               >
                 <IconBan size={20} />
               </button>
@@ -124,6 +128,7 @@ const PostOptions = React.memo(
                 }}
                 className="grid place-content-center w-6 opacity-50 hover:opacity-100 transition-all duration-300 ease-in-out"
                 title="Mute User"
+                aria-label="Mute user"
               >
                 <IconVolume3 size={20} />
               </button>

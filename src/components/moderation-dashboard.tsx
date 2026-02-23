@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { createClient } from "@/utils/supabase/client";
 import { User } from "@supabase/supabase-js";
 import {
@@ -524,11 +525,14 @@ export default function ModerationDashboard({
                   </p>
                   {item.image_url && (
                     <div className="mb-2">
-                      <img
+                      <Image
                         src={item.image_url}
                         alt="Reported content"
+                        width={128}
+                        height={128}
                         className="w-32 h-32 object-cover rounded border cursor-pointer"
                         onClick={() => setSelectedItem(item)}
+                        unoptimized
                       />
                     </div>
                   )}
@@ -595,10 +599,13 @@ export default function ModerationDashboard({
 
               {selectedItem.image_url && (
                 <div className="mb-4">
-                  <img
+                  <Image
                     src={selectedItem.image_url}
                     alt="Reported content"
+                    width={600}
+                    height={400}
                     className="max-w-full h-auto rounded border"
+                    unoptimized
                   />
                 </div>
               )}

@@ -3,9 +3,14 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
+import dynamic from "next/dynamic";
 import { createClient } from "@/utils/supabase/client";
 import { createFragment, updateFragment, deleteFragment } from "@/actions/fragment-actions";
-import PostEditor from "@/components/feed/post-editor";
+
+const PostEditor = dynamic(() => import("@/components/feed/post-editor"), {
+  ssr: false,
+  loading: () => <div className="h-[200px] animate-pulse bg-neutral-200 dark:bg-neutral-800 rounded-lg" />,
+});
 
 import {
   IconHeart,
@@ -232,10 +237,6 @@ export default function PostForm({
 
       router.refresh();
     } catch (error) {
-      console.error(
-        `Failed to ${isEditing ? "update" : "submit"} post:`,
-        error,
-      );
       setError(
         typeof error === "object" && error !== null && "message" in error
           ? String(error.message)

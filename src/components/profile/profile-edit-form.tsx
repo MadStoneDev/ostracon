@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+import Image from "next/image";
 import { createClient } from "@/utils/supabase/client";
 import { updateProfile } from "@/actions/profile-actions";
 import UserAvatar from "@/components/ui/user-avatar";
@@ -120,12 +121,14 @@ export default function ProfileEditForm({ profile }: { profile: Profile }) {
     <form onSubmit={handleSubmit} className="grid gap-6">
       {/* Cover Photo */}
       <div className="relative">
-        <div className="w-full h-32 md:h-48 bg-neutral-200 dark:bg-neutral-800 rounded-lg overflow-hidden">
+        <div className="relative w-full h-32 md:h-48 bg-neutral-200 dark:bg-neutral-800 rounded-lg overflow-hidden">
           {coverUrl && (
-            <img
+            <Image
               src={coverUrl}
               alt="Cover"
-              className="w-full h-full object-cover"
+              fill
+              className="object-cover"
+              unoptimized
             />
           )}
         </div>

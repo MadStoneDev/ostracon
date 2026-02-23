@@ -7,7 +7,6 @@ export default async function ProfileRedirect() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // TODO: Get logged in user from session
   const currentUser = user ? user.id : null;
 
   // Get username from Supabase public.users table
@@ -22,7 +21,6 @@ export default async function ProfileRedirect() {
     .single();
 
   if (!checkUser) {
-    // TODO: Fix no user found
     return <div>No user found</div>;
   }
 

@@ -3,8 +3,7 @@ import BottomNav from "@/components/ui/bottom-nav";
 
 export const metadata = {
   title: "Messages",
-  // TODO: Add description
-  description: "Messages page",
+  description: "Send and receive private messages with other Ostracon users.",
 };
 
 export default function PrivateLayout({

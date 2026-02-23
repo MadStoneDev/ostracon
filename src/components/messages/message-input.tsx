@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import React, { useState, useRef } from "react";
+import Image from "next/image";
 import { User } from "@supabase/supabase-js";
 import { createClient } from "@/utils/supabase/client";
 import {
@@ -240,10 +241,13 @@ export default function MessageInput({
         <div className="mb-2 relative">
           {attachmentType === "image" || attachmentType === "gif" ? (
             <div className="relative inline-block">
-              <img
+              <Image
                 src={preview}
                 alt="Preview"
+                width={240}
+                height={200}
                 className="max-h-[200px] rounded-lg"
+                unoptimized
               />
               <button
                 onClick={handleCancelAttachment}

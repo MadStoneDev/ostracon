@@ -51,9 +51,6 @@ export default function PostComments({
           filter: `fragment_id=eq.${postId}`,
         },
         async (payload) => {
-          // When a new comment is added, fetch the user details
-          console.log("New comment received:", payload.new);
-
           try {
             // First fetch the comment data
             const newCommentData = payload.new;
@@ -66,10 +63,7 @@ export default function PostComments({
               .single();
 
             if (userError) {
-              console.error(
-                "Error fetching user data for new comment:",
-                userError,
-              );
+              // Error handled silently
             }
 
             // Add the new comment to the top of the list
@@ -92,8 +86,8 @@ export default function PostComments({
             if (!exists) {
               setComments((prevComments) => [newComment, ...prevComments]);
             }
-          } catch (err) {
-            console.error("Error processing new comment:", err);
+          } catch {
+            // Error handled silently
           }
         },
       )
@@ -152,8 +146,7 @@ export default function PostComments({
 
       setComments((prevComments) => [optimisticComment, ...prevComments]);
       setNewComment("");
-    } catch (err) {
-      console.error("Error posting comment:", err);
+    } catch {
       setError("Failed to post comment. Please try again.");
     } finally {
       setIsSubmitting(false);

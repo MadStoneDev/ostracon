@@ -25,11 +25,6 @@ export async function GET() {
     // Check lock status directly from Redis
     const lockStatus = await redis.get<string>(`user:${userId}:lock`);
 
-    // Debug output to see exactly what's stored
-    console.log("User ID:", userId);
-    console.log("Lock status from Redis:", lockStatus);
-    console.log("Type of lock status:", typeof lockStatus);
-
     // Check both "true" string and boolean true for flexibility
     const isLocked = lockStatus === "true";
 

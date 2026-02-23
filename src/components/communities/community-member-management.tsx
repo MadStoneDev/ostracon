@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type { Tables } from "../../../database.types";
 import { Shield, ShieldAlert, Crown, UserX, Search } from "lucide-react";
@@ -237,10 +238,13 @@ export function CommunityMemberManagement({
           >
             <div className="flex items-center gap-3">
               {member.profiles.avatar_url ? (
-                <img
+                <Image
                   src={member.profiles.avatar_url}
                   alt={member.profiles.username}
+                  width={40}
+                  height={40}
                   className="w-10 h-10 rounded-full"
+                  unoptimized
                 />
               ) : (
                 <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">

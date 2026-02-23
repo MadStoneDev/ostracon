@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -34,9 +35,11 @@ export default async function Home() {
       {/* Main Content */}
       <section className={`flex-grow px-[25px] grid grid-cols-1 items-center`}>
         <article>
-          <img
+          <Image
             alt={`Ostracon Symbol`}
             src={`/ostracon-symbol.svg`}
+            width={80}
+            height={80}
             className={`mb-4 h-20`}
           />
           <h1 className={`font-serif text-5xl font-black`}>Welcome!</h1>

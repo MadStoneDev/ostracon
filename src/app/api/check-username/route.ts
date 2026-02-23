@@ -51,7 +51,14 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({ available: !data });
+    return NextResponse.json(
+      { available: !data },
+      {
+        headers: {
+          "Cache-Control": "public, max-age=30",
+        },
+      },
+    );
   } catch (error) {
     console.error("Unexpected error checking username:", error);
     return NextResponse.json(

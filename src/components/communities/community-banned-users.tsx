@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { UserX, UserCheck } from "lucide-react";
 
@@ -72,10 +73,13 @@ export function CommunityBannedUsers({
             >
               <div className="flex items-center gap-3">
                 {ban.profiles.avatar_url ? (
-                  <img
+                  <Image
                     src={ban.profiles.avatar_url}
                     alt={ban.profiles.username}
+                    width={40}
+                    height={40}
                     className="w-10 h-10 rounded-full"
+                    unoptimized
                   />
                 ) : (
                   <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">

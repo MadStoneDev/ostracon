@@ -126,8 +126,7 @@ export default function ExploreFeed() {
 
       // Fetch first page of posts
       await fetchPosts(0, userData.user.id);
-    } catch (err) {
-      console.error("Error fetching initial data:", err);
+    } catch {
       setError("Something went wrong. Please try again later.");
     } finally {
       setIsLoading(false);
@@ -172,6 +171,11 @@ export default function ExploreFeed() {
         )
         .order("published_at", { ascending: false })
         .range(pageNum * PAGE_SIZE, (pageNum + 1) * PAGE_SIZE - 1);
+
+      // Filter NSFW content at the query level when user hasn't opted in
+      if (!settings.allow_sensitive_content) {
+        postsQuery = postsQuery.or(`is_nsfw.eq.false,is_nsfw.is.null,user_id.eq.${userId}`);
+      }
 
       // Only add filters if we have valid IDs to filter by
       if (relevantUserIds.length > 0 || membershipCommunityIds.length > 0) {
@@ -273,27 +277,17 @@ export default function ExploreFeed() {
           }) as EnhancedFragment,
       );
 
-      // Filter NSFW content based on user settings
-      const filteredPosts =
-        typedPosts?.filter((post) => {
-          if (post.is_nsfw) {
-            return settings.allow_sensitive_content || post.user_id === userId;
-          }
-          return true;
-        }) || [];
-
       // Update posts state - use functional update
       setPosts((prevPosts) =>
-        pageNum === 0 ? filteredPosts : [...prevPosts, ...filteredPosts],
+        pageNum === 0 ? typedPosts : [...prevPosts, ...typedPosts],
       );
 
       // Update pagination state
       setPage(pageNum);
-      setHasMore(filteredPosts.length === PAGE_SIZE);
+      setHasMore(typedPosts.length === PAGE_SIZE);
 
-      return filteredPosts;
+      return typedPosts;
     } catch (error) {
-      console.error("Error fetching posts:", error);
       throw error;
     }
   };
@@ -306,8 +300,8 @@ export default function ExploreFeed() {
     try {
       const nextPage = page + 1;
       await fetchPosts(nextPage, currentUserId);
-    } catch (error) {
-      console.error("Error loading more posts:", error);
+    } catch {
+      // Error handled silently
     } finally {
       setIsLoadingMore(false);
     }
@@ -328,8 +322,8 @@ export default function ExploreFeed() {
 
       // Fetch first page of posts
       await fetchInitialData();
-    } catch (error) {
-      console.error("Refresh error:", error);
+    } catch {
+      // Error handled silently
     } finally {
       setIsRefreshing(false);
     }

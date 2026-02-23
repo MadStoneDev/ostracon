@@ -61,8 +61,6 @@ export default function AccountSettings() {
         setLoading(true);
         const userSettings = await settingsService.getUserSettings();
 
-        console.log(userSettings);
-
         // Check if sensitive content settings need to be adjusted
         if (
           !userSettings.date_of_birth &&

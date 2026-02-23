@@ -130,7 +130,6 @@ export default function Post({
         router.refresh();
       }
     } catch (error) {
-      console.error("Error deleting post:", error);
       // Revert the optimistic deletion
       setIsDeleted(false);
       setDeleteError(
@@ -283,8 +282,8 @@ export default function Post({
             ...stateUpdate,
           }));
         }
-      } catch (error) {
-        console.error("Error fetching post data:", error);
+      } catch {
+        // Error handled silently
       } finally {
         setIsDataLoading(false);
       }
@@ -292,7 +291,6 @@ export default function Post({
 
     // Only run the fetch if we're missing some data
     if (!hasAllPreFetchedData) {
-      console.log("Fetching post data...");
       fetchPostData();
     }
   }, [
@@ -358,9 +356,7 @@ export default function Post({
       if (!result.success) {
         throw new Error(result.error || "Failed to update reaction");
       }
-    } catch (error) {
-      console.error("Error updating like:", error);
-
+    } catch {
       // Revert both states on error
       setBaseState((prev) => ({
         ...prev,

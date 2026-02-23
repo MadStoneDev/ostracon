@@ -1,12 +1,17 @@
 ﻿"use client";
 
 import React, { useState, Dispatch, SetStateAction, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { createClient } from "@/utils/supabase/client";
 import { IconLoader, IconSend, IconX } from "@tabler/icons-react";
 import UserAvatar from "@/components/ui/user-avatar";
 import HtmlContent from "@/components/feed/html-content-renderer";
-import PostEditor from "@/components/feed/post-editor";
 import { useRouter } from "next/navigation";
+
+const PostEditor = dynamic(() => import("@/components/feed/post-editor"), {
+  ssr: false,
+  loading: () => <div className="h-[200px] animate-pulse bg-neutral-200 dark:bg-neutral-800 rounded-lg" />,
+});
 
 // Import the server action
 import { addComment } from "@/utils/supabase/comment-actions";
@@ -129,8 +134,6 @@ export default function SinglePostReply({
         throw new Error(result.error as string);
       }
 
-      console.log("Successfully added comment");
-
       // Call the callback if provided
       if (onCommentAdded) {
         onCommentAdded();
@@ -147,7 +150,6 @@ export default function SinglePostReply({
         router.refresh(); // Refresh to get the server-side data
       }, 500);
     } catch (err) {
-      console.error("Error submitting comment:", err);
       setError(err instanceof Error ? err.message : "Failed to submit comment");
     } finally {
       setLoading(false);

@@ -113,7 +113,6 @@ export default async function CommunityPage({ params }: CommunityPageProps) {
       <div>
         <h2 className="text-xl font-semibold mb-4">Recent Posts</h2>
         <p className="text-muted-foreground">Community feed coming soon...</p>
-        {/* TODO: Add community-specific fragment feed */}
       </div>
     </div>
   );

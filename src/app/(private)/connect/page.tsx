@@ -1,4 +1,5 @@
-﻿import { createClient } from "@/utils/supabase/server";
+﻿import Image from "next/image";
+import { createClient } from "@/utils/supabase/server";
 import { CreateCommunityModal } from "@/components/communities/create-community-modal";
 
 export const metadata = {
@@ -50,8 +51,6 @@ export default async function CommunitiesPage() {
         {user && <CreateCommunityModal />}
       </div>
 
-      {/* TODO: Add search/filter functionality */}
-
       {communities && communities.length > 0 ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {communities.map((community) => (
@@ -61,11 +60,15 @@ export default async function CommunitiesPage() {
               className="border rounded-lg p-4 hover:border-primary transition-colors cursor-pointer"
             >
               {community.avatar_url && (
-                <img
-                  src={community.avatar_url}
-                  alt={community.display_name}
-                  className="w-full h-32 object-cover rounded-md mb-3"
-                />
+                <div className="relative w-full h-32 rounded-md mb-3 overflow-hidden">
+                  <Image
+                    src={community.avatar_url}
+                    alt={community.display_name}
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
+                </div>
               )}
               <h3 className="font-semibold">{community.display_name}</h3>
               <p className="text-sm text-muted-foreground">

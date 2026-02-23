@@ -245,6 +245,7 @@ export default function ProfileContent({
                   ? "bg-dark dark:bg-light text-light dark:text-dark"
                   : "bg-primary text-light"
               } md:hover:scale-105 rounded-full transition-all duration-300 ease-in-out`}
+              aria-label={isFollowing ? "Stop listening to this user" : "Start listening to this user"}
             >
               {isFollowing ? (
                 <>
@@ -266,6 +267,7 @@ export default function ProfileContent({
               }}
               className="p-1.5 rounded-full bg-gray-100 dark:bg-neutral-800/80 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-all duration-300 ease-in-out"
               title="Mute User"
+              aria-label="Mute user"
             >
               <IconVolume3 size={18} />
             </button>
@@ -279,6 +281,7 @@ export default function ProfileContent({
               }}
               className="p-1.5 rounded-full bg-gray-100 dark:bg-neutral-800/80 hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-500 transition-all duration-300 ease-in-out"
               title="Block User"
+              aria-label="Block user"
             >
               <IconBan size={18} />
             </button>

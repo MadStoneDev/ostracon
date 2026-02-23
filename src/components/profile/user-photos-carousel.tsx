@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import { createClient } from "@/utils/supabase/client";
 import {
   IconLibraryPhoto,
@@ -102,8 +103,6 @@ export default function UserPhotosCarousel({
 
       if (!error && data) {
         setPhotos(data);
-      } else {
-        console.error("Error fetching user photos:", error);
       }
 
       setIsLoading(false);
@@ -253,7 +252,6 @@ export default function UserPhotosCarousel({
 
         const moderationResult: SightEngineResponse =
           await moderationResponse.json();
-        console.log("Sightengine result:", moderationResult);
 
         const analysis = analyzeModerationResult(moderationResult);
 
@@ -273,7 +271,7 @@ export default function UserPhotosCarousel({
             ]);
 
           if (moderationError) {
-            console.error("Error creating moderation record:", moderationError);
+            // Error handled silently
           }
 
           setUploadStatus({
@@ -310,8 +308,6 @@ export default function UserPhotosCarousel({
           });
         }
       } catch (error: unknown) {
-        console.error("Error uploading photo:", error);
-
         let errorMessage = "Failed to upload photo. Please try again.";
 
         if (error instanceof Error) {
@@ -377,8 +373,6 @@ export default function UserPhotosCarousel({
       setShowDeleteConfirm(false);
       setPhotoToDelete(null);
     } catch (error: unknown) {
-      console.error("Error deleting photo:", error);
-
       let errorMessage = "Failed to delete photo. Please try again.";
       if (error instanceof Error) {
         errorMessage = error.message;
@@ -499,26 +493,29 @@ export default function UserPhotosCarousel({
             onClick={() => showPhotoFullscreen(photo.photo_url, index)}
             className="group/image relative flex-shrink-0 w-[80px] sm:w-[90px] md:w-[100px] lg:w-[120px] h-[120px] sm:h-[135px] md:h-[150px] lg:h-[180px] rounded-lg overflow-hidden cursor-pointer transition-all duration-300 ease-in-out"
           >
-            <img
+            <Image
               src={photo.photo_url}
               alt=""
-              className={`group-hover/image:scale-110 w-full h-full object-cover transition-all duration-300 ease-in-out`}
+              fill
+              className={`group-hover/image:scale-110 object-cover transition-all duration-300 ease-in-out`}
+              unoptimized
             />
 
             {/* Action buttons - Top right corner */}
             <div className="absolute top-2 right-2 opacity-0 group-hover/image:opacity-100 transition-all duration-300 ease-in-out z-10 flex gap-1">
               {isOwnProfile ? (
                 // Delete button for own photos
-                <div
+                <button
                   onClick={(e) => {
                     e.stopPropagation();
                     setPhotoToDelete({ id: photo.id, url: photo.photo_url });
                     setShowDeleteConfirm(true);
                   }}
                   className="cursor-pointer"
+                  aria-label="Delete photo"
                 >
                   <IconTrash className="w-6 h-6 p-1 text-white bg-red-500 hover:bg-red-600 rounded-full shadow-md" />
-                </div>
+                </button>
               ) : (
                 // Report button for other users' photos
                 <div onClick={(e) => e.stopPropagation()}>
@@ -546,12 +543,14 @@ export default function UserPhotosCarousel({
           <button
             onClick={() => navigateCarousel("left")}
             className={`absolute left-0 top-1/2 -translate-y-1/2 text-dark dark:text-light hover:text-primary opacity-20 hover:opacity-100 transition-all duration-300 ease-in-out z-10`}
+            aria-label="Scroll photos left"
           >
             <IconCircleChevronLeftFilled className="w-10 h-10" />
           </button>
           <button
             onClick={() => navigateCarousel("right")}
             className={`absolute right-0 top-1/2 -translate-y-1/2 text-dark/20 dark:text-light/20 hover:text-primary transition-all duration-300 ease-in-out z-10`}
+            aria-label="Scroll photos right"
           >
             <IconCircleChevronRightFilled className="w-10 h-10" />
           </button>
@@ -608,19 +607,25 @@ export default function UserPhotosCarousel({
           <button
             onClick={() => navigateFullscreen("prev")}
             className={`absolute left-2 top-1/2 -translate-y-1/2 text-light dark:text-dark hover:text-primary transition-all duration-300 ease-in-out`}
+            aria-label="Previous photo"
           >
             <IconCircleChevronLeftFilled className="w-10 h-10" />
           </button>
 
-          <img
-            src={fullscreenImage}
-            alt="User photo"
-            className="max-w-full max-h-full object-contain"
-          />
+          <div className="relative w-full h-full">
+            <Image
+              src={fullscreenImage}
+              alt="User photo"
+              fill
+              className="object-contain"
+              unoptimized
+            />
+          </div>
 
           <button
             onClick={() => navigateFullscreen("next")}
             className={`absolute right-2 top-1/2 -translate-y-1/2 text-light dark:text-dark hover:text-primary transition-all duration-300 ease-in-out`}
+            aria-label="Next photo"
           >
             <IconCircleChevronRightFilled className="w-10 h-10" />
           </button>
@@ -628,6 +633,7 @@ export default function UserPhotosCarousel({
           <button
             onClick={() => setShowFullScreen(false)}
             className="absolute top-4 right-4 text-white/70 hover:text-white p-2 rounded-full bg-dark/30 hover:bg-dark/50 transition-all"
+            aria-label="Close fullscreen"
           >
             <IconX className="w-6 h-6" />
           </button>

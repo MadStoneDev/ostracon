@@ -3,8 +3,7 @@ import BottomNav from "@/components/ui/bottom-nav";
 
 export const metadata = {
   title: "Connect | Ostracon",
-  // TODO: Add description
-  description: "Connect page",
+  description: "Discover and join communities on Ostracon to connect with like-minded people.",
 };
 
 export default function PrivateConnect({

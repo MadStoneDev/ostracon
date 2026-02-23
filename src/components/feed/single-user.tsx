@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import React, { useState, useEffect, useOptimistic } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
 import { followUser, unfollowUser } from "@/actions/follow-actions";
@@ -142,7 +143,7 @@ const SingleUserClient = ({
         className={`relative w-8 h-8 rounded-full bg-dark dark:bg-light overflow-hidden`}
       >
         {avatar_url ? (
-          <img src={avatar_url} alt={`Avatar photo of ${username}`} />
+          <Image src={avatar_url} alt={`Avatar photo of ${username}`} width={32} height={32} className="w-full h-full object-cover" unoptimized />
         ) : (
           <div
             className={`absolute left-0 top-0 right-0 bottom-0 grid place-content-center`}
