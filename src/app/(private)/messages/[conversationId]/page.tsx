@@ -95,6 +95,54 @@ export default async function ConversationPage({
     return <div>Error loading user profiles</div>;
   }
 
+  // Check if conversation is muted
+  const { data: mutedData } = await supabase
+    .from("muted_conversations")
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("conversation_id", conversationId)
+    .maybeSingle();
+
+  const initialMuted = !!mutedData;
+
+  // Fetch message reactions
+  const messageIds = (messages || []).map((m: any) => m.id);
+  let reactionsMap: Record<string, { emoji: string; count: number; userReacted: boolean }[]> = {};
+
+  if (messageIds.length > 0) {
+    const { data: allReactions } = await supabase
+      .from("message_reactions")
+      .select("message_id, user_id, emojis")
+      .in("message_id", messageIds);
+
+    if (allReactions) {
+      // Build reactions map: messageId → { emoji, count, userReacted }[]
+      const emojiMap: Record<string, Record<string, { count: number; userReacted: boolean }>> = {};
+
+      allReactions.forEach((r) => {
+        if (!emojiMap[r.message_id]) emojiMap[r.message_id] = {};
+        const emojis: string[] = r.emojis || [];
+        emojis.forEach((emoji: string) => {
+          if (!emojiMap[r.message_id][emoji]) {
+            emojiMap[r.message_id][emoji] = { count: 0, userReacted: false };
+          }
+          emojiMap[r.message_id][emoji].count++;
+          if (r.user_id === user.id) {
+            emojiMap[r.message_id][emoji].userReacted = true;
+          }
+        });
+      });
+
+      Object.entries(emojiMap).forEach(([msgId, emojis]) => {
+        reactionsMap[msgId] = Object.entries(emojis).map(([emoji, data]) => ({
+          emoji,
+          count: data.count,
+          userReacted: data.userReacted,
+        }));
+      });
+    }
+  }
+
   // Update last read time for this user
   await supabase
     .from("conversation_participants")
@@ -124,6 +172,8 @@ export default async function ConversationPage({
         messages: messages || [],
         participants: otherProfiles || [],
       }}
+      initialMuted={initialMuted}
+      reactionsMap={reactionsMap}
     />
   );
 }

@@ -15,7 +15,9 @@ import {
   IconSettings,
   IconShield,
   IconShieldCheck,
+  IconGavel,
 } from "@tabler/icons-react";
+import { reviewAppeal } from "@/actions/appeal-actions";
 
 type ModerationItem = {
   id: string;
@@ -54,13 +56,15 @@ export default function ModerationDashboard({
 }) {
   const [moderationItems, setModerationItems] = useState<ModerationItem[]>([]);
   const [users, setUsers] = useState<Profile[]>([]);
+  const [appeals, setAppeals] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedTab, setSelectedTab] = useState<
-    "pending" | "assigned" | "all" | "users"
+    "pending" | "assigned" | "all" | "users" | "appeals"
   >("pending");
   const [selectedItem, setSelectedItem] = useState<ModerationItem | null>(null);
   const [userSearch, setUserSearch] = useState("");
   const [assigningTo, setAssigningTo] = useState<string | null>(null);
+  const [appealNotes, setAppealNotes] = useState<Record<string, string>>({});
 
   const isAdmin = userProfile.is_admin;
   const isModerator = userProfile.is_moderator || userProfile.is_admin;
@@ -68,6 +72,9 @@ export default function ModerationDashboard({
   useEffect(() => {
     if (isModerator) {
       fetchModerationItems();
+      if (selectedTab === "appeals") {
+        fetchAppeals();
+      }
     }
     if (isAdmin) {
       fetchUsers();
@@ -146,6 +153,50 @@ export default function ModerationDashboard({
       }
     } catch (error) {
       console.error("Error fetching users:", error);
+    }
+  };
+
+  const fetchAppeals = async () => {
+    const supabase = createClient();
+
+    try {
+      const [flagAppealsRes, reportAppealsRes] = await Promise.all([
+        supabase
+          .from("flag_appeals")
+          .select("*, profiles:user_id(username, avatar_url)")
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("report_appeals")
+          .select("*, profiles:user_id(username, avatar_url)")
+          .order("created_at", { ascending: false }),
+      ]);
+
+      const allAppeals = [
+        ...(flagAppealsRes.data || []).map((a) => ({ ...a, appeal_type: "flag" as const })),
+        ...(reportAppealsRes.data || []).map((a) => ({ ...a, appeal_type: "report" as const })),
+      ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+      setAppeals(allAppeals);
+    } catch (error) {
+      console.error("Error fetching appeals:", error);
+    }
+  };
+
+  const handleReviewAppeal = async (
+    appealId: string,
+    type: "flag" | "report",
+    approved: boolean,
+  ) => {
+    const notes = appealNotes[appealId] || "";
+    const result = await reviewAppeal(appealId, type, approved, notes);
+
+    if (result.success) {
+      await fetchAppeals();
+      setAppealNotes((prev) => {
+        const updated = { ...prev };
+        delete updated[appealId];
+        return updated;
+      });
     }
   };
 
@@ -345,6 +396,17 @@ export default function ModerationDashboard({
         >
           All Reports
         </button>
+        <button
+          onClick={() => setSelectedTab("appeals")}
+          className={`px-4 py-2 rounded-t-lg transition-colors ${
+            selectedTab === "appeals"
+              ? "bg-primary text-white border-b-2 border-primary"
+              : "text-gray-600 hover:text-primary dark:text-gray-400"
+          }`}
+        >
+          <IconGavel className="w-4 h-4 inline mr-1" />
+          Appeals
+        </button>
         {isAdmin && (
           <button
             onClick={() => setSelectedTab("users")}
@@ -472,8 +534,101 @@ export default function ModerationDashboard({
         </div>
       )}
 
+      {/* Appeals Tab */}
+      {selectedTab === "appeals" && (
+        <div className="space-y-4">
+          {appeals.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              No appeals found.
+            </div>
+          ) : (
+            appeals.map((appeal) => (
+              <div
+                key={`${appeal.appeal_type}-${appeal.id}`}
+                className="bg-white dark:bg-gray-800 rounded-lg shadow p-6"
+              >
+                <div className="flex justify-between items-start mb-4">
+                  <div className="flex items-center gap-3">
+                    <IconGavel className="w-4 h-4" />
+                    <span className="font-medium capitalize">
+                      {appeal.appeal_type} Appeal
+                    </span>
+                    <span
+                      className={`px-2 py-1 text-xs rounded-full ${
+                        appeal.status === "pending"
+                          ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30"
+                          : appeal.status === "approved"
+                            ? "bg-green-100 text-green-800 dark:bg-green-900/30"
+                            : "bg-red-100 text-red-800 dark:bg-red-900/30"
+                      }`}
+                    >
+                      {appeal.status}
+                    </span>
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    {new Date(appeal.created_at).toLocaleDateString()}
+                  </div>
+                </div>
+
+                <div className="mb-4">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                    By: {appeal.profiles?.username || "Unknown"}
+                  </p>
+                  <p className="text-gray-700 dark:text-gray-300">
+                    <strong>Reason:</strong> {appeal.reason}
+                  </p>
+                </div>
+
+                {appeal.status === "pending" && (
+                  <div className="space-y-3">
+                    <textarea
+                      placeholder="Review notes (optional)..."
+                      value={appealNotes[appeal.id] || ""}
+                      onChange={(e) =>
+                        setAppealNotes((prev) => ({
+                          ...prev,
+                          [appeal.id]: e.target.value,
+                        }))
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm dark:border-gray-600 dark:bg-gray-700 resize-none"
+                      rows={2}
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() =>
+                          handleReviewAppeal(appeal.id, appeal.appeal_type, true)
+                        }
+                        className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors flex items-center gap-1"
+                      >
+                        <IconCheck className="w-4 h-4" />
+                        Approve
+                      </button>
+                      <button
+                        onClick={() =>
+                          handleReviewAppeal(appeal.id, appeal.appeal_type, false)
+                        }
+                        className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors flex items-center gap-1"
+                      >
+                        <IconX className="w-4 h-4" />
+                        Reject
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {appeal.reviewer_notes && (
+                  <div className="mt-3 p-2 bg-gray-50 dark:bg-gray-700 rounded text-sm">
+                    <strong>Reviewer notes:</strong> {appeal.reviewer_notes}
+                  </div>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
       {/* Moderation Items */}
-      {selectedTab !== "users" && (
+      {selectedTab !== "users" && selectedTab !== "appeals" && (
         <div className="space-y-4">
           {isLoading ? (
             <div className="flex justify-center py-8">

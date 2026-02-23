@@ -111,6 +111,16 @@ export default async function Messages() {
 
   const conversationIds = participations?.map((p) => p.conversation_id) || [];
 
+  // Query muted conversations for current user
+  const { data: mutedConversations } = await supabase
+    .from("muted_conversations")
+    .select("conversation_id")
+    .eq("user_id", user.id);
+
+  const mutedConversationIds = new Set(
+    mutedConversations?.map((m) => m.conversation_id) || [],
+  );
+
   // If user has no conversations, show empty state
   if (conversationIds.length === 0) {
     return (
@@ -395,6 +405,7 @@ export default async function Messages() {
           },
           {} as Record<string, string | null>,
         )}
+        mutedConversationIds={mutedConversationIds}
       />
     </div>
   );

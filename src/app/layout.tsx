@@ -7,6 +7,7 @@ import ThemeProvider from "@/components/ui/ThemeProvider";
 import { Outfit, Merriweather, Lilita_One } from "next/font/google";
 
 import MainNav from "@/components/ui/main-nav";
+import CommandPalette from "@/components/ui/command-palette";
 import { createClient } from "@/utils/supabase/server";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -38,6 +39,16 @@ export default async function RootLayout({
     data: { user },
   } = await supabase.auth.getUser();
 
+  let username: string | undefined;
+  if (user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("username")
+      .eq("id", user.id)
+      .single();
+    username = profile?.username;
+  }
+
   return (
     <html
       lang="en"
@@ -60,6 +71,7 @@ export default async function RootLayout({
           >
             <TooltipProvider>
               <MainNav user={user} />
+              {user && <CommandPalette username={username} />}
 
               {children}
               <Toaster />

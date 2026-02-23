@@ -11,6 +11,9 @@ interface Comment {
   created_at: string;
   user_id: string;
   fragment_id: string;
+  is_edited?: boolean;
+  reaction_count?: number;
+  user_has_liked?: boolean;
   user?: {
     username: string;
     avatar_url?: string;
@@ -172,6 +175,9 @@ export default function PostComments({
             timestamp={comment.created_at}
             postId={postId}
             isCurrentUserComment={currentUser?.id === comment.user_id}
+            reactionCount={comment.reaction_count || 0}
+            userHasLiked={comment.user_has_liked || false}
+            isEdited={comment.is_edited || false}
           />
         ))
       )}

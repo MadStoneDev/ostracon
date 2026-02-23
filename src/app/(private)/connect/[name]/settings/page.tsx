@@ -4,6 +4,7 @@ import { CommunitySettingsForm } from "@/components/communities/community-settin
 import { CommunityRulesEditor } from "@/components/communities/community-rules-editor";
 import { CommunityMemberManagement } from "@/components/communities/community-member-management";
 import { DeleteCommunityButton } from "@/components/communities/community-delete-button";
+import { CommunityPendingRequests } from "@/components/communities/community-pending-requests";
 
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -86,6 +87,29 @@ export default async function CommunitySettingsPage({
     .eq("community_id", community.id)
     .order("joined_at", { ascending: true });
 
+  // Fetch pending join requests (for private communities)
+  const { data: joinRequestsRaw } = await supabase
+    .from("community_join_requests")
+    .select(
+      `
+      *,
+      profiles (
+        username,
+        avatar_url,
+        bio
+      )
+    `,
+    )
+    .eq("community_id", community.id)
+    .eq("status", "pending")
+    .order("created_at", { ascending: true });
+
+  // Map to format expected by CommunityPendingRequests
+  const joinRequests = (joinRequestsRaw || []).map((r) => ({
+    ...r,
+    requested_at: r.created_at,
+  }));
+
   // Parse rules from JSONB
   const rules = Array.isArray(community.rules) ? community.rules : [];
 
@@ -143,6 +167,14 @@ export default async function CommunitySettingsPage({
           </div>
         </div>
       </div>
+
+      {/* Pending Join Requests (private communities) */}
+      {community.join_type === "private" && (joinRequests?.length ?? 0) > 0 && (
+        <CommunityPendingRequests
+          communityName={name}
+          requests={joinRequests || []}
+        />
+      )}
 
       {/* Basic Settings */}
       <CommunitySettingsForm community={community} />

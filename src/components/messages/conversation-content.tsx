@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -7,10 +7,12 @@ import React, { useState, useEffect, useRef } from "react";
 import { User } from "@supabase/supabase-js";
 import { createClient } from "@/utils/supabase/client";
 
-import { IconArrowLeft } from "@tabler/icons-react";
+import { IconArrowLeft, IconBell, IconBellOff } from "@tabler/icons-react";
 import UserAvatar from "@/components/ui/user-avatar";
 import MessageInput from "@/components/messages/message-input";
 import { formatMessageTime, formatDateForGrouping } from "@/utils/format-time";
+import { muteConversation, unmuteConversation } from "@/actions/conversation-mute-actions";
+import { toggleMessageReaction } from "@/actions/message-reaction-actions";
 
 // Types
 type ConversationType = {
@@ -39,22 +41,36 @@ type UserType = {
   avatar_url: string | null;
 };
 
+type ReactionInfo = {
+  emoji: string;
+  count: number;
+  userReacted: boolean;
+};
+
 type ConversationContentProps = {
   currentUser: User;
   currentUserProfile: any;
   conversation: ConversationType;
+  initialMuted?: boolean;
+  reactionsMap?: Record<string, ReactionInfo[]>;
 };
+
+const PRESET_EMOJIS = ["\u2764\uFE0F", "\uD83D\uDC4D", "\uD83D\uDE02", "\uD83D\uDD25", "\uD83D\uDE22"];
 
 export default function ConversationContent({
   currentUser,
   currentUserProfile,
   conversation,
+  initialMuted = false,
+  reactionsMap: initialReactionsMap = {},
 }: ConversationContentProps) {
   const router = useRouter();
   const [messages, setMessages] = useState<MessageType[]>(
     conversation.messages,
   );
   const [loadingMoreMessages, setLoadingMoreMessages] = useState(false);
+  const [isMuted, setIsMuted] = useState(initialMuted);
+  const [reactionsMap, setReactionsMap] = useState<Record<string, ReactionInfo[]>>(initialReactionsMap);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const supabase = createClient();
 
@@ -193,6 +209,54 @@ export default function ConversationContent({
     }
   };
 
+  const handleToggleMute = async () => {
+    const wasMuted = isMuted;
+    setIsMuted(!wasMuted);
+
+    const result = wasMuted
+      ? await unmuteConversation(conversation.id)
+      : await muteConversation(conversation.id);
+
+    if (!result.success) {
+      setIsMuted(wasMuted);
+    }
+  };
+
+  const handleToggleReaction = async (messageId: string, emoji: string) => {
+    // Optimistic update
+    setReactionsMap((prev) => {
+      const current = prev[messageId] || [];
+      const existingIdx = current.findIndex((r) => r.emoji === emoji);
+
+      if (existingIdx >= 0) {
+        const existing = current[existingIdx];
+        if (existing.userReacted) {
+          // Remove our reaction
+          const newCount = existing.count - 1;
+          if (newCount === 0) {
+            return { ...prev, [messageId]: current.filter((_, i) => i !== existingIdx) };
+          }
+          const updated = [...current];
+          updated[existingIdx] = { ...existing, count: newCount, userReacted: false };
+          return { ...prev, [messageId]: updated };
+        } else {
+          // Add our reaction
+          const updated = [...current];
+          updated[existingIdx] = { ...existing, count: existing.count + 1, userReacted: true };
+          return { ...prev, [messageId]: updated };
+        }
+      } else {
+        // New emoji
+        return {
+          ...prev,
+          [messageId]: [...current, { emoji, count: 1, userReacted: true }],
+        };
+      }
+    });
+
+    await toggleMessageReaction(messageId, emoji);
+  };
+
   // Group messages by date
   const groupedMessages = messages.reduce(
     (groups: Record<string, MessageType[]>, message) => {
@@ -222,7 +286,7 @@ export default function ConversationContent({
           <IconArrowLeft size={24} />
         </button>
 
-        <div className="flex items-center">
+        <div className="flex items-center flex-grow">
           {conversation.is_group ? (
             <div className="w-10 h-10 rounded-full bg-dark/10 dark:bg-light/10 flex items-center justify-center">
               <span className="text-xl font-bold">
@@ -247,6 +311,18 @@ export default function ConversationContent({
             )}
           </div>
         </div>
+
+        <button
+          onClick={handleToggleMute}
+          className="p-2 rounded-full hover:bg-dark/10 dark:hover:bg-light/10 transition-colors"
+          title={isMuted ? "Unmute conversation" : "Mute conversation"}
+        >
+          {isMuted ? (
+            <IconBellOff size={20} className="text-dark/60 dark:text-light/60" />
+          ) : (
+            <IconBell size={20} className="text-dark/60 dark:text-light/60" />
+          )}
+        </button>
       </div>
 
       {/* Messages */}
@@ -295,6 +371,8 @@ export default function ConversationContent({
                     }
                     showSender={conversation.is_group}
                     onDelete={() => handleDeleteMessage(message.id)}
+                    reactions={reactionsMap[message.id] || []}
+                    onToggleReaction={(emoji) => handleToggleReaction(message.id, emoji)}
                   />
                 ))}
               </div>
@@ -323,12 +401,16 @@ function MessageBubble({
   senderProfile,
   showSender,
   onDelete,
+  reactions,
+  onToggleReaction,
 }: {
   message: MessageType;
   isOwnMessage: boolean;
   senderProfile: UserType | undefined;
   showSender: boolean | null;
   onDelete: () => void;
+  reactions: ReactionInfo[];
+  onToggleReaction: (emoji: string) => void;
 }) {
   const [showOptions, setShowOptions] = useState(false);
 
@@ -416,36 +498,74 @@ function MessageBubble({
           </div>
         )}
 
-        <div
-          className={`rounded-2xl px-3 py-2 ${
-            isOwnMessage
-              ? "bg-primary text-white rounded-br-none"
-              : "bg-dark/10 dark:bg-light/10 rounded-bl-none"
-          } relative`}
-        >
-          {showSender && !isOwnMessage && senderProfile && (
-            <div className="text-xs font-semibold mb-1">
-              {senderProfile.username}
-            </div>
-          )}
-
-          {renderMessageContent()}
-
+        <div className="flex flex-col">
           <div
-            className={`text-xs ${
-              isOwnMessage ? "text-white/80" : "text-dark/60 dark:text-light/60"
-            } mt-1 text-right`}
+            className={`rounded-2xl px-3 py-2 ${
+              isOwnMessage
+                ? "bg-primary text-white rounded-br-none"
+                : "bg-dark/10 dark:bg-light/10 rounded-bl-none"
+            } relative`}
           >
-            {messageTime}
+            {showSender && !isOwnMessage && senderProfile && (
+              <div className="text-xs font-semibold mb-1">
+                {senderProfile.username}
+              </div>
+            )}
+
+            {renderMessageContent()}
+
+            <div
+              className={`text-xs ${
+                isOwnMessage ? "text-white/80" : "text-dark/60 dark:text-light/60"
+              } mt-1 text-right`}
+            >
+              {messageTime}
+            </div>
+
+            {/* Action buttons on hover */}
+            {showOptions && !message.is_deleted && (
+              <div className={`absolute -top-7 ${isOwnMessage ? "right-0" : "left-0"} flex gap-1`}>
+                {isOwnMessage && (
+                  <button
+                    onClick={onDelete}
+                    className="px-2 py-0.5 bg-red-500 text-white text-xs rounded"
+                  >
+                    Delete
+                  </button>
+                )}
+                <div className="flex gap-0.5 bg-white dark:bg-dark rounded-full shadow px-1 py-0.5">
+                  {PRESET_EMOJIS.map((emoji) => (
+                    <button
+                      key={emoji}
+                      onClick={() => onToggleReaction(emoji)}
+                      className="text-sm hover:scale-125 transition-transform px-0.5"
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
-          {isOwnMessage && showOptions && !message.is_deleted && (
-            <button
-              onClick={onDelete}
-              className="absolute -top-6 right-0 px-2 py-0.5 bg-red-500 text-white text-xs rounded"
-            >
-              Delete
-            </button>
+          {/* Reaction pills */}
+          {reactions.length > 0 && (
+            <div className={`flex flex-wrap gap-1 mt-1 ${isOwnMessage ? "justify-end" : "justify-start"}`}>
+              {reactions.map((r) => (
+                <button
+                  key={r.emoji}
+                  onClick={() => onToggleReaction(r.emoji)}
+                  className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-xs border transition-colors ${
+                    r.userReacted
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-dark/20 dark:border-light/20 hover:bg-dark/5 dark:hover:bg-light/5"
+                  }`}
+                >
+                  <span>{r.emoji}</span>
+                  <span>{r.count}</span>
+                </button>
+              ))}
+            </div>
           )}
         </div>
       </div>

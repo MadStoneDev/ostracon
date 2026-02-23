@@ -3,7 +3,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 
-export async function fetchPostComments(postId: string) {
+export async function fetchPostComments(postId: string, currentUserId?: string) {
   if (!postId) return [];
 
   const supabase = await createClient();
@@ -18,7 +18,8 @@ export async function fetchPostComments(postId: string) {
         content,
         created_at,
         user_id,
-        fragment_id
+        fragment_id,
+        is_edited
       `,
       )
       .eq("fragment_id", postId)
@@ -55,6 +56,38 @@ export async function fetchPostComments(postId: string) {
       });
     }
 
+    // Batch-fetch comment reactions
+    const commentIds = comments.map((c) => c.id);
+
+    const { data: reactionCounts } = await supabase
+      .from("comment_reactions")
+      .select("comment_id")
+      .in("comment_id", commentIds);
+
+    // Count reactions per comment
+    const reactionCountMap: Record<string, number> = {};
+    if (reactionCounts) {
+      reactionCounts.forEach((r) => {
+        reactionCountMap[r.comment_id] = (reactionCountMap[r.comment_id] || 0) + 1;
+      });
+    }
+
+    // Check which comments current user has liked
+    const userLikedMap: Record<string, boolean> = {};
+    if (currentUserId) {
+      const { data: userReactions } = await supabase
+        .from("comment_reactions")
+        .select("comment_id")
+        .eq("user_id", currentUserId)
+        .in("comment_id", commentIds);
+
+      if (userReactions) {
+        userReactions.forEach((r) => {
+          userLikedMap[r.comment_id] = true;
+        });
+      }
+    }
+
     // Join the data manually
     const formattedComments = comments.map((comment) => ({
       id: comment.id,
@@ -62,6 +95,9 @@ export async function fetchPostComments(postId: string) {
       created_at: comment.created_at,
       user_id: comment.user_id,
       fragment_id: comment.fragment_id,
+      is_edited: comment.is_edited || false,
+      reaction_count: reactionCountMap[comment.id] || 0,
+      user_has_liked: userLikedMap[comment.id] || false,
       users: userMap[comment.user_id]
         ? {
             username: userMap[comment.user_id].username,
@@ -186,5 +222,66 @@ export async function deleteComment(commentId: string) {
   } catch (error) {
     console.error("Error deleting comment:", error);
     return { success: false, error };
+  }
+}
+
+export async function editComment(commentId: string, newContent: string) {
+  if (!commentId || !newContent?.trim()) {
+    return { success: false, error: "Comment ID and content are required" };
+  }
+
+  try {
+    const supabase = await createClient();
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { success: false, error: "Not authenticated" };
+    }
+
+    // Fetch current comment to verify ownership and get old content
+    const { data: comment, error: fetchError } = await supabase
+      .from("fragment_comments")
+      .select("fragment_id, user_id, content")
+      .eq("id", commentId)
+      .single();
+
+    if (fetchError) {
+      return { success: false, error: "Comment not found" };
+    }
+
+    if (comment.user_id !== user.id) {
+      return { success: false, error: "Not authorized to edit this comment" };
+    }
+
+    // Insert previous content into edit history
+    await supabase.from("comment_edit_history").insert({
+      comment_id: commentId,
+      previous_content: comment.content,
+    });
+
+    // Update the comment
+    const { error: updateError } = await supabase
+      .from("fragment_comments")
+      .update({
+        content: newContent.trim(),
+        is_edited: true,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", commentId);
+
+    if (updateError) {
+      console.error("Error editing comment:", updateError);
+      return { success: false, error: "Failed to edit comment" };
+    }
+
+    revalidatePath(`/post/${comment.fragment_id}`);
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error editing comment:", error);
+    return { success: false, error: "Failed to edit comment" };
   }
 }

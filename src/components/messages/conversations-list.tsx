@@ -5,6 +5,7 @@ import Link from "next/link";
 import { User } from "@supabase/supabase-js";
 import { motion, AnimatePresence } from "framer-motion";
 import UserAvatar from "@/components/ui/user-avatar";
+import { IconBellOff } from "@tabler/icons-react";
 import { formatTimeAgo } from "@/utils/format-time";
 
 // Types
@@ -39,6 +40,7 @@ type ConversationsListProps = {
   primaryConversations: ConversationType[];
   otherConversations: ConversationType[];
   lastReadTimes: Record<string, string | null>;
+  mutedConversationIds?: Set<string>;
 };
 
 const slideVariants = {
@@ -63,6 +65,7 @@ export default function ConversationsList({
   primaryConversations,
   otherConversations,
   lastReadTimes,
+  mutedConversationIds = new Set(),
 }: ConversationsListProps) {
   const [[activeTab, direction], setActiveTab] = useState(["Primary", 0]);
 
@@ -201,6 +204,7 @@ export default function ConversationsList({
                       unread={isUnread(conversation)}
                       lastMessage={getLastMessage(conversation)}
                       conversationName={getConversationName(conversation)}
+                      isMuted={mutedConversationIds.has(conversation.id)}
                     />
                   ))
                 )}
@@ -223,6 +227,7 @@ export default function ConversationsList({
                       unread={isUnread(conversation)}
                       lastMessage={getLastMessage(conversation)}
                       conversationName={getConversationName(conversation)}
+                      isMuted={mutedConversationIds.has(conversation.id)}
                     />
                   ))
                 )}
@@ -241,12 +246,14 @@ function ConversationItem({
   unread,
   lastMessage,
   conversationName,
+  isMuted = false,
 }: {
   conversation: ConversationType;
   currentUser: User;
   unread: boolean;
   lastMessage: MessageType | null;
   conversationName: string;
+  isMuted?: boolean;
 }) {
   const timeAgo = lastMessage
     ? formatTimeAgo(new Date(lastMessage.created_at))
@@ -276,9 +283,12 @@ function ConversationItem({
         <div className="flex-grow min-w-0">
           <div className="flex justify-between items-center">
             <span
-              className={`font-medium truncate ${unread ? "font-bold" : ""}`}
+              className={`font-medium truncate ${unread ? "font-bold" : ""} flex items-center gap-1`}
             >
               {conversationName}
+              {isMuted && (
+                <IconBellOff size={14} className="text-dark/40 dark:text-light/40 flex-shrink-0" />
+              )}
             </span>
             <span className="text-xs text-dark/60 dark:text-light/60 whitespace-nowrap ml-2">
               {timeAgo}

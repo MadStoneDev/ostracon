@@ -1,5 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
 import { notFound } from "next/navigation";
+import CommunityJoinRequestButton from "@/components/communities/community-join-request-button";
 
 interface CommunityPageProps {
   params: Promise<{
@@ -62,6 +63,7 @@ export default async function CommunityPage({ params }: CommunityPageProps) {
 
   let isMember = false;
   let memberRole = null;
+  let hasPendingRequest = false;
 
   if (user) {
     const { data: membership } = await supabase
@@ -73,6 +75,19 @@ export default async function CommunityPage({ params }: CommunityPageProps) {
 
     isMember = !!membership;
     memberRole = membership?.role;
+
+    // Check for pending join request
+    if (!isMember) {
+      const { data: joinRequest } = await supabase
+        .from("community_join_requests")
+        .select("id")
+        .eq("community_id", community.id)
+        .eq("user_id", user.id)
+        .eq("status", "pending")
+        .maybeSingle();
+
+      hasPendingRequest = !!joinRequest;
+    }
   }
 
   return (
@@ -96,6 +111,15 @@ export default async function CommunityPage({ params }: CommunityPageProps) {
             <p className="text-sm text-green-600">
               You're a member {memberRole !== "member" && `(${memberRole})`}
             </p>
+          ) : hasPendingRequest ? (
+            <button
+              disabled
+              className="px-4 py-2 bg-muted text-muted-foreground rounded-md cursor-not-allowed"
+            >
+              Request Pending
+            </button>
+          ) : community.join_type === "private" ? (
+            <CommunityJoinRequestButton communityName={name} />
           ) : (
             <form action={`/api/communities/${name}/join`} method="POST">
               <button

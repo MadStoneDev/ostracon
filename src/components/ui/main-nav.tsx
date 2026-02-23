@@ -13,6 +13,7 @@ import {
   IconX,
   IconLockOpen,
   IconMoon,
+  IconSearch,
 } from "@tabler/icons-react";
 
 export default function MainNav({ user = null }: { user?: any }) {
@@ -85,6 +86,20 @@ export default function MainNav({ user = null }: { user?: any }) {
       </section>
 
       <section className="flex-grow flex justify-end items-center gap-4 z-50">
+        {user && (
+          <button
+            onClick={() => {
+              document.dispatchEvent(
+                new KeyboardEvent("keydown", { key: "k", metaKey: true, bubbles: true }),
+              );
+            }}
+            className="hover:text-primary transition-all duration-300 ease-in-out"
+            aria-label="Search (Ctrl+K)"
+          >
+            <IconSearch size={22} strokeWidth={2} />
+          </button>
+        )}
+
         <button
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
           className="hover:text-primary transition-all duration-300 ease-in-out"
