@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type { Tables } from "../../../database.types";
 import { Shield, ShieldAlert, Crown, UserX, Search } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
 type Profile = Tables<"profiles">;
 type CommunityMember = Tables<"community_members"> & {
@@ -73,7 +74,7 @@ export function CommunityMemberManagement({
 
       router.refresh();
     } catch (error) {
-      alert(error instanceof Error ? error.message : "Failed to update role");
+      toast({ title: error instanceof Error ? error.message : "Failed to update role", variant: "destructive" });
     } finally {
       setIsLoading(false);
     }
@@ -108,7 +109,7 @@ export function CommunityMemberManagement({
 
       router.refresh();
     } catch (error) {
-      alert(error instanceof Error ? error.message : "Failed to remove member");
+      toast({ title: error instanceof Error ? error.message : "Failed to remove member", variant: "destructive" });
     } finally {
       setIsLoading(false);
     }
@@ -145,12 +146,10 @@ export function CommunityMemberManagement({
         throw new Error(data.error || "Failed to transfer ownership");
       }
 
-      alert("Ownership transferred successfully");
+      toast({ title: "Ownership transferred successfully" });
       router.refresh();
     } catch (error) {
-      alert(
-        error instanceof Error ? error.message : "Failed to transfer ownership",
-      );
+      toast({ title: error instanceof Error ? error.message : "Failed to transfer ownership", variant: "destructive" });
     } finally {
       setIsLoading(false);
     }

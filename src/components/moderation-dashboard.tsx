@@ -65,6 +65,7 @@ export default function ModerationDashboard({
   const [userSearch, setUserSearch] = useState("");
   const [assigningTo, setAssigningTo] = useState<string | null>(null);
   const [appealNotes, setAppealNotes] = useState<Record<string, string>>({});
+  const [moderators, setModerators] = useState<Pick<Profile, "id" | "username">[]>([]);
 
   const isAdmin = userProfile.is_admin;
   const isModerator = userProfile.is_moderator || userProfile.is_admin;
@@ -78,6 +79,17 @@ export default function ModerationDashboard({
     }
     if (isAdmin) {
       fetchUsers();
+      // Fetch all moderators for assignment dropdown
+      const fetchModerators = async () => {
+        const supabase = createClient();
+        const { data } = await supabase
+          .from("profiles")
+          .select("id, username")
+          .or("is_moderator.eq.true,is_admin.eq.true")
+          .order("username");
+        if (data) setModerators(data);
+      };
+      fetchModerators();
     }
   }, [selectedTab, isModerator, isAdmin]);
 
@@ -726,7 +738,13 @@ export default function ModerationDashboard({
                       >
                         <option value="">Unassigned</option>
                         <option value={currentUser.id}>Assign to me</option>
-                        {/* Add other moderators here */}
+                        {moderators
+                          .filter((m) => m.id !== currentUser.id)
+                          .map((mod) => (
+                            <option key={mod.id} value={mod.id}>
+                              @{mod.username}
+                            </option>
+                          ))}
                       </select>
                     )}
                   </div>

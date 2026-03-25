@@ -13,6 +13,7 @@ import MessageInput from "@/components/messages/message-input";
 import { formatMessageTime, formatDateForGrouping } from "@/utils/format-time";
 import { muteConversation, unmuteConversation } from "@/actions/conversation-mute-actions";
 import { toggleMessageReaction } from "@/actions/message-reaction-actions";
+import { toast } from "@/hooks/use-toast";
 
 // Types
 type ConversationType = {
@@ -74,7 +75,7 @@ export default function ConversationContent({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const supabase = createClient();
 
-  // Subscribe to new messages
+  // Subscribe to message changes (insert, update, delete)
   useEffect(() => {
     const channel = supabase
       .channel(`conversation:${conversation.id}`)
@@ -87,13 +88,43 @@ export default function ConversationContent({
           filter: `conversation_id=eq.${conversation.id}`,
         },
         (payload) => {
-          // Add the new message to the list
           setMessages((prev) => [...prev, payload.new as MessageType]);
+        },
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "messages",
+          filter: `conversation_id=eq.${conversation.id}`,
+        },
+        (payload) => {
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === (payload.new as MessageType).id
+                ? (payload.new as MessageType)
+                : msg,
+            ),
+          );
+        },
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "DELETE",
+          schema: "public",
+          table: "messages",
+          filter: `conversation_id=eq.${conversation.id}`,
+        },
+        (payload) => {
+          setMessages((prev) =>
+            prev.filter((msg) => msg.id !== (payload.old as any).id),
+          );
         },
       )
       .subscribe();
 
-    // Cleanup
     return () => {
       supabase.removeChannel(channel);
     };
@@ -149,7 +180,7 @@ export default function ConversationContent({
         .eq("id", conversation.id);
     } catch (error) {
       console.error("Error sending message:", error);
-      alert("Failed to send message");
+      toast({ title: "Failed to send message", variant: "destructive" });
     }
   };
 
@@ -205,7 +236,7 @@ export default function ConversationContent({
       );
     } catch (error) {
       console.error("Error deleting message:", error);
-      alert("Failed to delete message");
+      toast({ title: "Failed to delete message", variant: "destructive" });
     }
   };
 

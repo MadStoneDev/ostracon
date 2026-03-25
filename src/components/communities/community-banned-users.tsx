@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { toast } from "@/hooks/use-toast";
 import { UserX, UserCheck } from "lucide-react";
 
 interface BannedUser {
@@ -52,7 +53,7 @@ export function CommunityBannedUsers({
       setBannedUsers(bannedUsers.filter((u) => u.user_id !== userId));
       router.refresh();
     } catch (error) {
-      alert(error instanceof Error ? error.message : "Failed to unban user");
+      toast({ title: error instanceof Error ? error.message : "Failed to unban user", variant: "destructive" });
     } finally {
       setIsLoading(false);
     }

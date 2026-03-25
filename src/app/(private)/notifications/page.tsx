@@ -59,7 +59,7 @@ export default async function NotificationsPage() {
       </section>
 
       <section className="pt-4">
-        <NotificationList notifications={enrichedNotifications} />
+        <NotificationList notifications={enrichedNotifications} currentUserId={user.id} />
       </section>
     </div>
   );

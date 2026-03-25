@@ -15,6 +15,7 @@ import UserAvatar from "@/components/ui/user-avatar";
 import HtmlContent from "@/components/feed/html-content-renderer";
 import { deleteComment, editComment } from "@/utils/supabase/comment-actions";
 import { toggleCommentReaction } from "@/actions/comment-reaction-actions";
+import ConfirmDialog from "@/components/ui/confirm-dialog";
 
 interface CommentItemProps {
   comment: any;
@@ -45,6 +46,7 @@ export default function CommentItem({
   const [liked, setLiked] = useState(userHasLiked);
   const [count, setCount] = useState(reactionCount);
   const [isEditing, setIsEditing] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [editContent, setEditContent] = useState(content);
   const [displayContent, setDisplayContent] = useState(content);
   const [isSaving, setIsSaving] = useState(false);
@@ -157,7 +159,7 @@ export default function CommentItem({
                   <IconPencil size={18} />
                 </button>
                 <button
-                  onClick={async () => await deleteComment(comment.id)}
+                  onClick={() => setShowDeleteConfirm(true)}
                   className="grid place-content-center w-6 opacity-50 hover:opacity-100 transition-all duration-300 ease-in-out text-red-600"
                   title="Delete Comment"
                 >
@@ -229,6 +231,16 @@ export default function CommentItem({
           </button>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        onOpenChange={setShowDeleteConfirm}
+        title="Delete Comment"
+        description="Are you sure you want to delete this comment? This cannot be undone."
+        confirmLabel="Delete"
+        variant="destructive"
+        onConfirm={() => deleteComment(comment.id)}
+      />
     </div>
   );
 }

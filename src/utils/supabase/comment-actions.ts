@@ -1,7 +1,11 @@
 ﻿"use server";
 
 import { createClient } from "@/utils/supabase/server";
+import { validateTextContent } from "@/utils/validation";
+import { moderateText } from "@/utils/text-moderation";
 import { revalidatePath } from "next/cache";
+
+const MAX_COMMENT_LENGTH = 5000;
 
 export async function fetchPostComments(postId: string, currentUserId?: string) {
   if (!postId) return [];
@@ -124,6 +128,11 @@ export async function addComment(formData: FormData) {
     return { success: false, error: "Comment content is required" };
   }
 
+  const lengthError = validateTextContent(content.trim(), MAX_COMMENT_LENGTH, "Comment");
+  if (lengthError) {
+    return { success: false, error: lengthError };
+  }
+
   try {
     const supabase = await createClient();
 
@@ -135,6 +144,9 @@ export async function addComment(formData: FormData) {
     if (!user) {
       return { success: false, error: "Not authenticated" };
     }
+
+    // Text moderation on comments
+    const textMod = moderateText(content.trim());
 
     // Insert the comment
     const { data: commentData, error } = await supabase
@@ -148,6 +160,17 @@ export async function addComment(formData: FormData) {
       .single();
 
     if (error) throw error;
+
+    // Flag harmful comments for moderation review
+    if (textMod.flagged) {
+      await supabase.from("posts_moderation").insert({
+        post_id: postId,
+        reported_by: null,
+        reason: `Comment flagged: ${textMod.reasons.join(", ")}`,
+        risk_level: textMod.riskLevel,
+        status: "pending",
+      });
+    }
 
     // Create a notification for the post owner
     const { data: postData } = await supabase
@@ -174,7 +197,7 @@ export async function addComment(formData: FormData) {
     return { success: true };
   } catch (error) {
     console.error("Error creating comment:", error);
-    return { success: false, error };
+    return { success: false, error: error instanceof Error ? error.message : "Failed to create comment" };
   }
 }
 
@@ -221,13 +244,18 @@ export async function deleteComment(commentId: string) {
     return { success: true };
   } catch (error) {
     console.error("Error deleting comment:", error);
-    return { success: false, error };
+    return { success: false, error: error instanceof Error ? error.message : "Failed to delete comment" };
   }
 }
 
 export async function editComment(commentId: string, newContent: string) {
   if (!commentId || !newContent?.trim()) {
     return { success: false, error: "Comment ID and content are required" };
+  }
+
+  const lengthError = validateTextContent(newContent.trim(), MAX_COMMENT_LENGTH, "Comment");
+  if (lengthError) {
+    return { success: false, error: lengthError };
   }
 
   try {

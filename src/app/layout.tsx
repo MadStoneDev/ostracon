@@ -11,6 +11,7 @@ import CommandPalette from "@/components/ui/command-palette";
 import { createClient } from "@/utils/supabase/server";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { RealtimeProvider } from "@/providers/realtime-provider";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -69,13 +70,15 @@ export default async function RootLayout({
           <div
             className={`relative mx-auto flex flex-col min-h-dvh w-full max-w-4xl z-20`}
           >
-            <TooltipProvider>
-              <MainNav user={user} />
-              {user && <CommandPalette username={username} />}
+            <RealtimeProvider userId={user?.id || null}>
+              <TooltipProvider>
+                <MainNav user={user} />
+                {user && <CommandPalette username={username} />}
 
-              {children}
-              <Toaster />
-            </TooltipProvider>
+                {children}
+                <Toaster />
+              </TooltipProvider>
+            </RealtimeProvider>
           </div>
         </ThemeProvider>
       </body>

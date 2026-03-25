@@ -4,6 +4,7 @@ import React, { useState, useRef } from "react";
 import Image from "next/image";
 import { User } from "@supabase/supabase-js";
 import { createClient } from "@/utils/supabase/client";
+import { toast } from "@/hooks/use-toast";
 import {
   IconSend,
   IconPhoto,
@@ -34,6 +35,7 @@ export default function MessageInput({
   const [isUploading, setIsUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const [attachmentType, setAttachmentType] = useState<string | null>(null);
+  const [isSending, setIsSending] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -43,13 +45,13 @@ export default function MessageInput({
   const supabase = createClient();
 
   const handleSend = async () => {
-    if (isUploading) return;
+    if (isUploading || isSending) return;
 
     if (message.trim() === "" && !preview) return;
 
+    setIsSending(true);
     try {
       if (preview && attachmentType) {
-        // Message with media
         await onSendMessage(
           message.trim() || null,
           attachmentType,
@@ -61,17 +63,17 @@ export default function MessageInput({
               : "audio/mpeg",
         );
       } else {
-        // Text-only message
         await onSendMessage(message.trim(), "text");
       }
 
-      // Reset input
       setMessage("");
       setPreview(null);
       setAttachmentType(null);
     } catch (error) {
       console.error("Error sending message:", error);
-      alert("Failed to send message");
+      toast({ title: "Failed to send message", variant: "destructive" });
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -99,7 +101,7 @@ export default function MessageInput({
 
     // Check if it's an image
     if (!file.type.startsWith("image/")) {
-      alert("Please select an image file");
+      toast({ title: "Please select an image file", variant: "destructive" });
       return;
     }
 
@@ -123,7 +125,7 @@ export default function MessageInput({
       setAttachmentType("image");
     } catch (error) {
       console.error("Error uploading file:", error);
-      alert("Failed to upload file");
+      toast({ title: "Failed to upload file", variant: "destructive" });
     } finally {
       setIsUploading(false);
       // Clear the input
@@ -181,7 +183,7 @@ export default function MessageInput({
           setAttachmentType("voice");
         } catch (error) {
           console.error("Error uploading voice recording:", error);
-          alert("Failed to upload voice recording");
+          toast({ title: "Failed to upload voice recording", variant: "destructive" });
         } finally {
           setIsUploading(false);
         }
@@ -208,7 +210,7 @@ export default function MessageInput({
       }, 1000);
     } catch (error) {
       console.error("Error accessing microphone:", error);
-      alert("Failed to access microphone");
+      toast({ title: "Failed to access microphone", variant: "destructive" });
     }
   };
 
@@ -341,10 +343,14 @@ export default function MessageInput({
           onClick={handleSend}
           className="rounded-full p-2 bg-primary text-white disabled:opacity-50"
           disabled={
-            (message.trim() === "" && !preview) || isRecording || isUploading
+            (message.trim() === "" && !preview) || isRecording || isUploading || isSending
           }
         >
-          <IconSend size={24} />
+          {isSending ? (
+            <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          ) : (
+            <IconSend size={24} />
+          )}
         </button>
       </div>
     </div>

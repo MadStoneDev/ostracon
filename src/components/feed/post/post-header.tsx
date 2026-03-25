@@ -3,6 +3,7 @@ import Link from "next/link";
 import { User } from "@supabase/supabase-js";
 import { blockUser } from "@/actions/block-actions";
 import { muteUser } from "@/actions/mute-actions";
+import ConfirmDialog from "@/components/ui/confirm-dialog";
 
 import { formatTimestamp } from "@/lib/fragments";
 import UserAvatar from "@/components/ui/user-avatar";
@@ -108,18 +109,7 @@ const PostOptions = React.memo(
               />
 
               {/* Block User Button */}
-              <button
-                onClick={async () => {
-                  if (confirm("Block this user? You will no longer see their content.")) {
-                    await blockUser(userId);
-                  }
-                }}
-                className="grid place-content-center w-6 opacity-50 hover:opacity-100 transition-all duration-300 ease-in-out text-red-600 dark:text-red-500"
-                title="Block User"
-                aria-label="Block user"
-              >
-                <IconBan size={20} />
-              </button>
+              <BlockUserButton userId={userId} />
 
               {/* Mute User Button */}
               <button
@@ -139,6 +129,32 @@ const PostOptions = React.memo(
     </div>
   ),
 );
+
+function BlockUserButton({ userId }: { userId: string }) {
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  return (
+    <>
+      <button
+        onClick={() => setShowConfirm(true)}
+        className="grid place-content-center w-6 opacity-50 hover:opacity-100 transition-all duration-300 ease-in-out text-red-600 dark:text-red-500"
+        title="Block User"
+        aria-label="Block user"
+      >
+        <IconBan size={20} />
+      </button>
+      <ConfirmDialog
+        open={showConfirm}
+        onOpenChange={setShowConfirm}
+        title="Block User"
+        description="Block this user? You will no longer see their content."
+        confirmLabel="Block"
+        variant="destructive"
+        onConfirm={() => blockUser(userId)}
+      />
+    </>
+  );
+}
 
 export const PostHeader = React.memo(
   ({

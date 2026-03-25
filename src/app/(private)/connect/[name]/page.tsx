@@ -1,6 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { notFound } from "next/navigation";
 import CommunityJoinRequestButton from "@/components/communities/community-join-request-button";
+import CommunityFeed from "@/components/communities/community-feed";
 
 interface CommunityPageProps {
   params: Promise<{
@@ -136,7 +137,7 @@ export default async function CommunityPage({ params }: CommunityPageProps) {
       {/* Community Feed */}
       <div>
         <h2 className="text-xl font-semibold mb-4">Recent Posts</h2>
-        <p className="text-muted-foreground">Community feed coming soon...</p>
+        <CommunityFeed communityId={community.id} />
       </div>
     </div>
   );

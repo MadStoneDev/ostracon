@@ -63,6 +63,32 @@ export async function requestOTP(formData: { email: string }) {
   }
 }
 
+export async function signInWithOAuth(provider: "google" | "github" | "apple") {
+  try {
+    const supabase = await createClient();
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3080";
+
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: `${siteUrl}/auth/callback`,
+      },
+    });
+
+    if (error) {
+      return { error: error.message, success: false, url: null };
+    }
+
+    return { error: null, success: true, url: data.url };
+  } catch {
+    return {
+      error: "Failed to initiate sign in. Please try again.",
+      success: false,
+      url: null,
+    };
+  }
+}
+
 export async function verifyOTP(formData: { email: string; otp: string }) {
   try {
     // Rate limiting

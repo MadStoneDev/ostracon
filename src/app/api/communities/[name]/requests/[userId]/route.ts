@@ -1,4 +1,5 @@
 import { createClient } from "@/utils/supabase/server";
+import { communityRateLimiter } from "@/utils/rate-limit";
 import { NextResponse } from "next/server";
 
 export async function POST(
@@ -16,10 +17,15 @@ export async function POST(
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
+  const { success: rateLimitOk } = await communityRateLimiter.limit(user.id);
+  if (!rateLimitOk) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  }
+
   // Fetch community
   const { data: community, error: communityError } = await supabase
     .from("communities")
-    .select("id, member_count")
+    .select("id")
     .eq("name", name)
     .single();
 
@@ -76,11 +82,7 @@ export async function POST(
       );
     }
 
-    // Increment member count
-    await supabase
-      .from("communities")
-      .update({ member_count: (community.member_count || 0) + 1 })
-      .eq("id", community.id);
+    // member_count is maintained automatically by database trigger
 
     // Notify the user
     await supabase.from("notifications").insert({

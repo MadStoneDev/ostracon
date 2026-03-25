@@ -42,6 +42,8 @@ export default function BottomNav({
   const [showMenu, setShowMenu] = useState(false);
   const [showOverlay, setShowOverlay] = useState(false);
   const [overlayActive, setOverlayActive] = useState(false);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [unreadMessages, setUnreadMessages] = useState(0);
 
   const isCommunityPage = pathname.startsWith("/connect");
   const communityName = isCommunityPage ? pathname.split("/")[2] : "";
@@ -77,6 +79,73 @@ export default function BottomNav({
     router.refresh();
     router.push("/");
   };
+
+  // Fetch unread counts and subscribe to realtime updates
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchCounts = async () => {
+      const [notifResult, msgResult] = await Promise.all([
+        supabase
+          .from("notifications")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id)
+          .eq("read", false),
+        supabase
+          .from("conversation_participants")
+          .select("conversation_id, last_read_at, conversations:conversation_id(last_message_at)")
+          .eq("user_id", user.id),
+      ]);
+
+      setUnreadNotifications(notifResult.count || 0);
+
+      let unread = 0;
+      if (msgResult.data) {
+        for (const p of msgResult.data) {
+          const conv = p.conversations as any;
+          if (conv?.last_message_at && (!p.last_read_at || new Date(conv.last_message_at) > new Date(p.last_read_at))) {
+            unread++;
+          }
+        }
+      }
+      setUnreadMessages(unread);
+    };
+
+    fetchCounts();
+
+    // Subscribe to new notifications for live badge updates
+    const channel = supabase
+      .channel(`nav-badges:${user.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "notifications",
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          setUnreadNotifications((prev) => prev + 1);
+        },
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+        },
+        () => {
+          // Refetch message counts on new messages
+          fetchCounts();
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, supabase]);
 
   // Effects
   useEffect(() => {
@@ -141,20 +210,32 @@ export default function BottomNav({
 
         <Link
           href={`/notifications`}
-          className={`flex items-center justify-center ${
+          className={`relative flex items-center justify-center ${
             pathname.includes("/notifications") ? "bg-primary rounded-full" : ""
           } w-12 h-12 rounded-full transition-all duration-300 ease-in-out`}
+          aria-label={`Notifications${unreadNotifications > 0 ? ` (${unreadNotifications} unread)` : ""}`}
         >
           <IconBell size={24} strokeWidth={2} />
+          {unreadNotifications > 0 && (
+            <span className="absolute top-1 right-1 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold px-1">
+              {unreadNotifications > 99 ? "99+" : unreadNotifications}
+            </span>
+          )}
         </Link>
 
         <Link
           href={`/messages`}
-          className={`flex items-center justify-center ${
+          className={`relative flex items-center justify-center ${
             pathname.includes("/messages") ? "bg-primary rounded-full" : ""
           } w-12 h-12 rounded-full transition-all duration-300 ease-in-out`}
+          aria-label={`Messages${unreadMessages > 0 ? ` (${unreadMessages} unread)` : ""}`}
         >
           <IconMail size={24} strokeWidth={2} />
+          {unreadMessages > 0 && (
+            <span className="absolute top-1 right-1 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold px-1">
+              {unreadMessages > 99 ? "99+" : unreadMessages}
+            </span>
+          )}
         </Link>
 
         <button

@@ -76,6 +76,7 @@ export default function ExploreFeed() {
 
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(0);
+  const [newPostsAvailable, setNewPostsAvailable] = useState(0);
 
   // Constants
   const PAGE_SIZE = 25;
@@ -364,6 +365,34 @@ export default function ExploreFeed() {
     fetchInitialData();
   }, []);
 
+  // Subscribe to new posts for "New posts available" banner
+  useEffect(() => {
+    if (!currentUserId) return;
+
+    const channel = supabase
+      .channel("feed-new-posts")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "fragments",
+        },
+        (payload) => {
+          const newPost = payload.new as any;
+          // Don't notify about own posts or drafts
+          if (newPost.user_id !== currentUserId && !newPost.is_draft && newPost.published_at) {
+            setNewPostsAvailable((prev) => prev + 1);
+          }
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [currentUserId, supabase]);
+
   // Setup intersection observer for infinite scrolling
   useEffect(() => {
     if (!loadingRef.current || !hasMore) return;
@@ -385,6 +414,19 @@ export default function ExploreFeed() {
   return (
     <PullToRefresh onRefresh={handlePullToRefresh}>
       <div className={`flex flex-col items-center w-full space-y-3 z-0`}>
+        {/* New posts banner */}
+        {newPostsAvailable > 0 && (
+          <button
+            onClick={() => {
+              setNewPostsAvailable(0);
+              handlePullToRefresh();
+            }}
+            className="sticky top-[72px] z-10 px-4 py-2 bg-primary text-white rounded-full shadow-lg hover:bg-primary/90 transition-colors text-sm font-medium"
+          >
+            {newPostsAvailable} new {newPostsAvailable === 1 ? "post" : "posts"} available
+          </button>
+        )}
+
         {/* Show skeletons during initial load */}
         {isLoading && (
           <>

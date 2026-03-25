@@ -813,7 +813,7 @@ export type Database = {
           is_private: boolean | null
           account_status: string | null
           settings: Json | null
-          paddle_customer_id: string | null
+          stripe_customer_id: string | null
           created_at: string | null
           updated_at: string | null
           is_admin: boolean | null
@@ -960,7 +960,7 @@ export type Database = {
           display_name: string
           description: string | null
           price_aud_cents: number
-          paddle_price_id: string | null
+          stripe_price_id: string | null
           max_photos: number | null
           features: Json | null
           is_active: boolean | null
@@ -1003,8 +1003,8 @@ export type Database = {
           id: string
           profile_id: string
           package_id: string
-          paddle_subscription_id: string | null
-          paddle_checkout_id: string | null
+          stripe_subscription_id: string | null
+          stripe_checkout_id: string | null
           status: string | null
           current_period_start: string | null
           current_period_end: string | null

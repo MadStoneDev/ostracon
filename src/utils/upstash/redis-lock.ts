@@ -59,7 +59,7 @@ export async function removeUserPin(userId: string): Promise<void> {
 }
 
 // Rate limiting for PIN attempts
-const MAX_ATTEMPTS = 5;
+export const MAX_PIN_ATTEMPTS = 5;
 const LOCKOUT_TIME = 15 * 60; // 15 minutes in seconds
 
 export async function recordPinAttempt(userId: string): Promise<number> {
@@ -75,7 +75,7 @@ export async function recordPinAttempt(userId: string): Promise<number> {
 
 export async function getRemainingAttempts(userId: string): Promise<number> {
   const attempts = (await redis.get<number>(`user:${userId}:attempts`)) || 0;
-  return Math.max(0, MAX_ATTEMPTS - attempts);
+  return Math.max(0, MAX_PIN_ATTEMPTS - attempts);
 }
 
 export async function resetPinAttempts(userId: string): Promise<void> {

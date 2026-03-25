@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { User } from "@supabase/supabase-js";
 import { IconFlag, IconSkull, IconX } from "@tabler/icons-react";
+import { toast } from "@/hooks/use-toast";
 import { moderationAPI } from "@/utils/moderation-api";
 
 type ReportType = "image" | "post" | "profile";
@@ -102,7 +103,7 @@ export default function ReportButton({
       }
     } catch (error) {
       console.error("Error reporting content:", error);
-      alert("Failed to submit report. Please try again.");
+      toast({ title: "Failed to submit report. Please try again.", variant: "destructive" });
     } finally {
       setIsSubmitting(false);
     }

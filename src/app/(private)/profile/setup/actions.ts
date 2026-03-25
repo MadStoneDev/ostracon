@@ -6,6 +6,8 @@ import {
   isValidUsername,
   getUsernameError,
   isReservedUsername,
+  stripHtml,
+  calculateAge,
 } from "@/utils/validation";
 
 const MAX_BIO_LENGTH = 500;
@@ -62,9 +64,7 @@ export async function updateProfileSetup(formData: {
       return { error: "Invalid date of birth", success: false };
     }
 
-    const ageDifMs = Date.now() - birthDate.getTime();
-    const ageDate = new Date(ageDifMs);
-    const age = Math.abs(ageDate.getUTCFullYear() - 1970);
+    const age = calculateAge(birthDate);
 
     if (age < MIN_AGE) {
       return {
@@ -82,8 +82,7 @@ export async function updateProfileSetup(formData: {
           success: false,
         };
       }
-      // Strip HTML tags from bio since it's plain text
-      sanitisedBio = formData.bio.replace(/<[^>]*>/g, "").trim() || null;
+      sanitisedBio = stripHtml(formData.bio).trim() || null;
     }
 
     // Update user record

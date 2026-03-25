@@ -2,6 +2,7 @@
 
 import { createClient } from "@/utils/supabase/server";
 import { writeRateLimiter } from "@/utils/rate-limit";
+import { moderateText } from "@/utils/text-moderation";
 import { revalidatePath } from "next/cache";
 
 type ActionResult<T = null> = {
@@ -41,6 +42,21 @@ export async function createFragment(data: {
     return { success: false, error: "Post content is required" };
   }
 
+  if (data.content.length > 50000) {
+    return { success: false, error: "Post content is too long" };
+  }
+
+  if (data.title && data.title.length > 300) {
+    return { success: false, error: "Post title must be 300 characters or less" };
+  }
+
+  // Text moderation: auto-detect NSFW content and flag harmful content
+  const textToCheck = `${data.title || ""} ${data.content}`;
+  const textMod = moderateText(textToCheck);
+
+  // Auto-mark NSFW if detected (even if user didn't mark it)
+  const isNsfw = data.isNsfw || textMod.nsfw;
+
   const publishedAt = data.isDraft ? null : new Date().toISOString();
 
   const { data: fragment, error } = await supabase
@@ -51,7 +67,7 @@ export async function createFragment(data: {
       content: data.content,
       comments_open: data.commentsOpen,
       reactions_open: data.reactionsOpen,
-      is_nsfw: data.isNsfw,
+      is_nsfw: isNsfw,
       is_draft: data.isDraft,
       community_id: data.communityId || "",
       published_at: publishedAt,
@@ -59,13 +75,24 @@ export async function createFragment(data: {
     .select("id")
     .single();
 
-  if (error) {
+  if (error || !fragment) {
     console.error("Error creating fragment:", error);
     return { success: false, error: "Failed to create post" };
   }
 
+  // If text was flagged for harmful content, add to moderation queue
+  if (textMod.flagged) {
+    await supabase.from("posts_moderation").insert({
+      post_id: fragment.id,
+      reported_by: null, // Auto-detected
+      reason: textMod.reasons.join(", "),
+      risk_level: textMod.riskLevel,
+      status: "pending",
+    });
+  }
+
   // Insert tags
-  if (data.tagIds.length > 0 && fragment?.id) {
+  if (data.tagIds.length > 0) {
     const tagInserts = data.tagIds.map((tagId) => ({
       fragment_id: fragment.id,
       tag_id: tagId,
@@ -113,6 +140,11 @@ export async function updateFragment(
     return { success: false, error: "You can only edit your own posts" };
   }
 
+  // Text moderation on update
+  const textToCheck = `${data.title || ""} ${data.content}`;
+  const textMod = moderateText(textToCheck);
+  const isNsfw = data.isNsfw || textMod.nsfw;
+
   const publishedAt = data.isDraft
     ? null
     : data.publishedAt ?? new Date().toISOString();
@@ -124,13 +156,24 @@ export async function updateFragment(
       content: data.content,
       comments_open: data.commentsOpen,
       reactions_open: data.reactionsOpen,
-      is_nsfw: data.isNsfw,
+      is_nsfw: isNsfw,
       is_draft: data.isDraft,
       community_id: data.communityId || "",
       published_at: publishedAt,
       updated_at: new Date().toISOString(),
     })
     .eq("id", fragmentId);
+
+  // Flag harmful content on update too
+  if (textMod.flagged) {
+    await supabase.from("posts_moderation").insert({
+      post_id: fragmentId,
+      reported_by: null,
+      reason: textMod.reasons.join(", "),
+      risk_level: textMod.riskLevel,
+      status: "pending",
+    });
+  }
 
   if (error) {
     console.error("Error updating fragment:", error);

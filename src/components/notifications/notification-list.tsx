@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/utils/supabase/client";
 
 import {
   markNotificationRead,
@@ -17,6 +18,11 @@ import {
   IconCheck,
   IconTrash,
   IconChecks,
+  IconGavel,
+  IconShieldCheck,
+  IconShieldX,
+  IconUsers,
+  IconAt,
 } from "@tabler/icons-react";
 
 type NotificationRow = {
@@ -36,6 +42,7 @@ type NotificationRow = {
 
 type NotificationListProps = {
   notifications: NotificationRow[];
+  currentUserId?: string;
 };
 
 function getNotificationText(type: string, actorName: string): string {
@@ -46,6 +53,20 @@ function getNotificationText(type: string, actorName: string): string {
       return `${actorName} liked your post`;
     case "follow":
       return `${actorName} started listening to you`;
+    case "mention":
+      return `${actorName} mentioned you`;
+    case "appeal_approved":
+      return "Your appeal has been approved";
+    case "appeal_rejected":
+      return "Your appeal has been reviewed";
+    case "community_join_approved":
+      return "Your community join request was approved";
+    case "community_join_rejected":
+      return "Your community join request was declined";
+    case "moderation_action":
+      return "A moderator took action on your content";
+    case "comment_reaction":
+      return `${actorName} liked your comment`;
     default:
       return `${actorName} interacted with you`;
   }
@@ -56,9 +77,21 @@ function getNotificationIcon(type: string) {
     case "comment":
       return <IconMessage size={20} />;
     case "reaction":
+    case "comment_reaction":
       return <IconHeart size={20} />;
     case "follow":
       return <IconUserPlus size={20} />;
+    case "mention":
+      return <IconAt size={20} />;
+    case "appeal_approved":
+      return <IconShieldCheck size={20} />;
+    case "appeal_rejected":
+      return <IconShieldX size={20} />;
+    case "community_join_approved":
+    case "community_join_rejected":
+      return <IconUsers size={20} />;
+    case "moderation_action":
+      return <IconGavel size={20} />;
     default:
       return <IconMessage size={20} />;
   }
@@ -67,6 +100,18 @@ function getNotificationIcon(type: string) {
 function getNotificationLink(notification: NotificationRow): string {
   if (notification.type === "follow" && notification.actor?.username) {
     return `/profile/${notification.actor.username}`;
+  }
+  if (
+    notification.type === "appeal_approved" ||
+    notification.type === "appeal_rejected"
+  ) {
+    return "/notifications";
+  }
+  if (
+    notification.type === "community_join_approved" ||
+    notification.type === "community_join_rejected"
+  ) {
+    return "/connect";
   }
   if (notification.fragment_id) {
     return `/post/${notification.fragment_id}`;
@@ -88,12 +133,51 @@ function timeAgo(dateString: string): string {
 
 export default function NotificationList({
   notifications: initialNotifications,
+  currentUserId,
 }: NotificationListProps) {
   const router = useRouter();
+  const supabase = useMemo(() => createClient(), []);
   const [notifications, setNotifications] = useState(initialNotifications);
   const [isMarkingAll, setIsMarkingAll] = useState(false);
 
   const hasUnread = notifications.some((n) => !n.read);
+
+  // Real-time notification subscription
+  useEffect(() => {
+    if (!currentUserId) return;
+
+    const channel = supabase
+      .channel(`notifications:${currentUserId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "notifications",
+          filter: `user_id=eq.${currentUserId}`,
+        },
+        async (payload) => {
+          const newNotif = payload.new as NotificationRow;
+          // Fetch the actor profile for the new notification
+          if (newNotif.actor_id) {
+            const { data: actor } = await supabase
+              .from("profiles")
+              .select("username, avatar_url")
+              .eq("id", newNotif.actor_id)
+              .single();
+            if (actor) {
+              newNotif.actor = actor;
+            }
+          }
+          setNotifications((prev) => [newNotif, ...prev]);
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [currentUserId, supabase]);
 
   const handleMarkAllRead = async () => {
     setIsMarkingAll(true);

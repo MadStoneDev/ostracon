@@ -64,7 +64,7 @@ export async function fetchProfileById(userId: string) {
     .eq("id", userId)
     .single();
 
-  return user.data;
+  return user ?? null;
 }
 
 // Helper function to fetch interaction data for posts
@@ -378,33 +378,6 @@ export async function fetchPostById(postId: string) {
   }
 
   return post;
-}
-
-export async function fetchPostComments(postId: string) {
-  if (!postId) return [];
-
-  const supabase = await createClient();
-
-  const { data, error } = await supabase
-    .from("fragment_comments")
-    .select(
-      `
-      *,
-      user:user_id (
-        username,
-        avatar_url
-      )
-    `,
-    )
-    .eq("fragment_id", postId)
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    console.error("Error fetching comments:", error);
-    return [];
-  }
-
-  return data || [];
 }
 
 export async function fetchSinglePostWithInteractions(

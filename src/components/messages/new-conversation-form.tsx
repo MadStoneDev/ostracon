@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { User } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
+import { toast } from "@/hooks/use-toast";
 import { createConversation } from "@/actions/conversation-actions";
 import UserAvatar from "@/components/ui/user-avatar";
 import { IconSearch, IconArrowLeft, IconUserPlus } from "@tabler/icons-react";
@@ -80,7 +81,7 @@ export default function NewConversationForm({
       }
     } catch (error) {
       console.error("Error creating conversation:", error);
-      alert("Failed to create conversation");
+      toast({ title: "Failed to create conversation", variant: "destructive" });
     } finally {
       setIsCreating(false);
     }

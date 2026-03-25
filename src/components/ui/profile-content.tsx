@@ -8,6 +8,8 @@ import { createClient } from "@/utils/supabase/client";
 import { followUser, unfollowUser } from "@/actions/follow-actions";
 import { blockUser } from "@/actions/block-actions";
 import { muteUser } from "@/actions/mute-actions";
+import ConfirmDialog from "@/components/ui/confirm-dialog";
+import { toast } from "@/hooks/use-toast";
 
 import UserAvatar from "@/components/ui/user-avatar";
 import LikedFeed from "@/components/profile/liked-feed";
@@ -88,6 +90,7 @@ export default function ProfileContent({
   userProfiles: Record<string, Profile>;
 }) {
   // States
+  const [showBlockConfirm, setShowBlockConfirm] = useState(false);
   const [[activeTab, direction], setActiveTab] = useState(["Posts", 0]);
   const [followingCount, setFollowingCount] = useState(
     followStats.followingCount,
@@ -187,7 +190,7 @@ export default function ProfileContent({
       }
     } catch (error) {
       console.error("Error updating follow status:", error);
-      alert("Failed to update listening status. Please try again.");
+      toast({ title: "Failed to update listening status", variant: "destructive" });
     } finally {
       setIsFollowLoading(false);
     }
@@ -274,17 +277,22 @@ export default function ProfileContent({
 
             {/* Block Button */}
             <button
-              onClick={async () => {
-                if (confirm("Block this user? You will no longer see their content and mutual follows will be removed.")) {
-                  await blockUser(profile.id);
-                }
-              }}
+              onClick={() => setShowBlockConfirm(true)}
               className="p-1.5 rounded-full bg-gray-100 dark:bg-neutral-800/80 hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-500 transition-all duration-300 ease-in-out"
               title="Block User"
               aria-label="Block user"
             >
               <IconBan size={18} />
             </button>
+            <ConfirmDialog
+              open={showBlockConfirm}
+              onOpenChange={setShowBlockConfirm}
+              title="Block User"
+              description="Block this user? You will no longer see their content and mutual follows will be removed."
+              confirmLabel="Block"
+              variant="destructive"
+              onConfirm={() => blockUser(profile.id)}
+            />
           </>
         )}
       </div>

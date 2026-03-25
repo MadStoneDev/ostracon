@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { IconSend } from "@tabler/icons-react";
 
 import BigButton from "@/components/ui/big-button";
-import { requestOTP, verifyOTP } from "@/app/(auth)/auth/actions";
+import { requestOTP, verifyOTP, signInWithOAuth } from "@/app/(auth)/auth/actions";
 
 export default function AuthForm() {
   const { toast } = useToast();
@@ -140,6 +140,32 @@ export default function AuthForm() {
     }
   };
 
+  const [oauthLoading, setOauthLoading] = useState<string | null>(null);
+
+  const handleOAuthSignIn = async (provider: "google" | "github" | "apple") => {
+    setOauthLoading(provider);
+    try {
+      const result = await signInWithOAuth(provider);
+      if (result.success && result.url) {
+        window.location.href = result.url;
+      } else {
+        toast({
+          title: "Error",
+          description: result.error || "Failed to sign in",
+          variant: "destructive",
+        });
+        setOauthLoading(null);
+      }
+    } catch {
+      toast({
+        title: "Error",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+      setOauthLoading(null);
+    }
+  };
+
   return (
     <div className="w-full max-w-xs my-6">
       {!showOTPInput ? (
@@ -165,6 +191,41 @@ export default function AuthForm() {
             indicator={<IconSend />}
             className={`mt-5`}
           />
+
+          {/* Divider */}
+          <div className="flex items-center gap-3 mt-6">
+            <div className="flex-grow h-px bg-dark/20 dark:bg-light/20" />
+            <span className="text-xs text-dark/50 dark:text-light/50">or continue with</span>
+            <div className="flex-grow h-px bg-dark/20 dark:bg-light/20" />
+          </div>
+
+          {/* OAuth Buttons */}
+          <div className="flex gap-3 mt-4">
+            <button
+              type="button"
+              onClick={() => handleOAuthSignIn("google")}
+              disabled={!!oauthLoading}
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-dark/20 dark:border-light/20 hover:bg-dark/5 dark:hover:bg-light/5 transition-colors disabled:opacity-50 text-sm font-medium"
+            >
+              {oauthLoading === "google" ? "..." : "Google"}
+            </button>
+            <button
+              type="button"
+              onClick={() => handleOAuthSignIn("github")}
+              disabled={!!oauthLoading}
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-dark/20 dark:border-light/20 hover:bg-dark/5 dark:hover:bg-light/5 transition-colors disabled:opacity-50 text-sm font-medium"
+            >
+              {oauthLoading === "github" ? "..." : "GitHub"}
+            </button>
+            <button
+              type="button"
+              onClick={() => handleOAuthSignIn("apple")}
+              disabled={!!oauthLoading}
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-dark/20 dark:border-light/20 hover:bg-dark/5 dark:hover:bg-light/5 transition-colors disabled:opacity-50 text-sm font-medium"
+            >
+              {oauthLoading === "apple" ? "..." : "Apple"}
+            </button>
+          </div>
         </form>
       ) : (
         <form onSubmit={handleVerifyOTP} className="space-y-4">

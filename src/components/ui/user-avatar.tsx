@@ -1,6 +1,7 @@
-﻿import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { IconX } from "@tabler/icons-react";
+import { usePresence } from "@/providers/realtime-provider";
 
 export default function UserAvatar({
   username,
@@ -9,6 +10,8 @@ export default function UserAvatar({
   letterColour = `text-primary`,
   textSize = `text-2xl`,
   action,
+  userId,
+  showPresence = false,
 }: {
   username: string;
   avatar_url: string;
@@ -16,7 +19,11 @@ export default function UserAvatar({
   letterColour?: string;
   textSize?: string;
   action?: () => void | null;
+  userId?: string;
+  showPresence?: boolean;
 }) {
+  const { onlineUsers } = usePresence();
+  const isOnline = showPresence && userId ? onlineUsers.has(userId) : false;
   // States
   const [showFullScreen, setShowFullScreen] = useState(false);
   const [fullscreenImage, setFullScreenImage] = useState(``);
@@ -57,6 +64,11 @@ export default function UserAvatar({
             {username.charAt(0).toUpperCase()}
           </span>
         </div>
+      )}
+
+      {/* Online indicator */}
+      {isOnline && (
+        <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white dark:border-gray-900 rounded-full z-10" />
       )}
 
       {/* Full Screen Image */}

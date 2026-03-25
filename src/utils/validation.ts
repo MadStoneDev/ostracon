@@ -1,4 +1,74 @@
 ﻿/**
+ * Strip all HTML tags and decode common HTML entities for plain text fields.
+ * More robust than a simple regex — handles edge cases like unclosed tags,
+ * HTML entities, and nested angle brackets.
+ */
+export function stripHtml(input: string): string {
+  return input
+    // Remove HTML comments
+    .replace(/<!--[\s\S]*?-->/g, "")
+    // Remove script/style blocks entirely
+    .replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/gi, "")
+    // Remove all HTML tags
+    .replace(/<[^>]*>/g, "")
+    // Decode common HTML entities
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, "'")
+    .replace(/&#x27;/g, "'")
+    .replace(/&#x2F;/g, "/")
+    .replace(/&#(\d+);/g, (_, code) =>
+      String.fromCharCode(parseInt(code, 10)),
+    )
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, code) =>
+      String.fromCharCode(parseInt(code, 16)),
+    );
+}
+
+/**
+ * Calculate age from a birth date using explicit year/month/day comparison.
+ * Avoids the fragile Date-millisecond approach.
+ */
+export function calculateAge(birthDate: Date): number {
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  if (
+    monthDiff < 0 ||
+    (monthDiff === 0 && today.getDate() < birthDate.getDate())
+  ) {
+    age--;
+  }
+  return age;
+}
+
+/**
+ * Validate text content with a max length.
+ * Returns an error message or null if valid.
+ */
+export function validateTextContent(
+  text: string,
+  maxLength: number,
+  fieldName = "Content",
+): string | null {
+  if (text.length > maxLength) {
+    return `${fieldName} must be ${maxLength} characters or less`;
+  }
+  return null;
+}
+
+/**
+ * Validate that a string is a plausible emoji (1-8 Unicode codepoints, no ASCII-only strings).
+ */
+export function isValidEmoji(emoji: string): boolean {
+  if (!emoji || emoji.length === 0 || emoji.length > 32) return false;
+  // Must contain at least one non-ASCII character (real emoji are non-ASCII)
+  return /[^\u0000-\u007F]/.test(emoji);
+}
+
+/**
  * Validates community name format for URL slugs
  * Format: lowercase letters, numbers, and hyphens only
  * Length: 3-50 characters

@@ -2,6 +2,7 @@
 
 import { createClient } from "@/utils/supabase/server";
 import { messageRateLimiter } from "@/utils/rate-limit";
+import { isValidEmoji } from "@/utils/validation";
 
 type ActionResult<T = null> = {
   success: boolean;
@@ -21,6 +22,10 @@ export async function toggleMessageReaction(
 
   if (!user) {
     return { success: false, error: "Not authenticated" };
+  }
+
+  if (!isValidEmoji(emoji)) {
+    return { success: false, error: "Invalid emoji" };
   }
 
   // Rate limit

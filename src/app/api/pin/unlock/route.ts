@@ -1,13 +1,14 @@
 ﻿import { NextResponse } from "next/server";
 
 import { createClient } from "@/utils/supabase/server";
+import { pinRateLimiter } from "@/utils/rate-limit";
 import {
   verifyUserPin,
   unlockUserAccount,
   recordPinAttempt,
-  getRemainingAttempts,
   resetPinAttempts,
   lockUserAccount,
+  MAX_PIN_ATTEMPTS,
 } from "@/utils/upstash/redis-lock";
 
 export async function POST(request: Request) {
@@ -21,15 +22,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const { success: rateLimitOk } = await pinRateLimiter.limit(user.id);
+    if (!rateLimitOk) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    }
+
     const userId = user.id;
     const { pin } = await request.json();
 
-    // Record attempt and get number of attempts
+    // Record attempt atomically — INCR returns the new count
     const attempts = await recordPinAttempt(userId);
-    const remainingAttempts = await getRemainingAttempts(userId);
 
-    // If out of attempts, keep the account locked
-    if (remainingAttempts <= 0) {
+    // Check limit BEFORE verifying PIN to prevent race condition
+    if (attempts > MAX_PIN_ATTEMPTS) {
       await lockUserAccount(userId);
       return NextResponse.json(
         {
@@ -44,7 +49,6 @@ export async function POST(request: Request) {
     const isPinValid = await verifyUserPin(userId, pin);
 
     if (isPinValid) {
-      // Unlock the account and reset attempts on success
       await unlockUserAccount(userId);
       await resetPinAttempts(userId);
 
@@ -53,6 +57,10 @@ export async function POST(request: Request) {
         redirectUrl: "/explore",
       });
     } else {
+      const remainingAttempts = Math.max(0, MAX_PIN_ATTEMPTS - attempts);
+      if (remainingAttempts <= 0) {
+        await lockUserAccount(userId);
+      }
       return NextResponse.json(
         {
           error: "Invalid PIN",

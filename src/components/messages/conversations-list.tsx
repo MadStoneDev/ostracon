@@ -1,12 +1,13 @@
 ﻿"use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { User } from "@supabase/supabase-js";
 import { motion, AnimatePresence } from "framer-motion";
 import UserAvatar from "@/components/ui/user-avatar";
 import { IconBellOff } from "@tabler/icons-react";
 import { formatTimeAgo } from "@/utils/format-time";
+import { createClient } from "@/utils/supabase/client";
 
 // Types
 type ConversationType = {
@@ -68,6 +69,50 @@ export default function ConversationsList({
   mutedConversationIds = new Set(),
 }: ConversationsListProps) {
   const [[activeTab, direction], setActiveTab] = useState(["Primary", 0]);
+  const [primary, setPrimary] = useState(primaryConversations);
+  const [other, setOther] = useState(otherConversations);
+
+  // Listen for new messages to update conversation previews
+  useEffect(() => {
+    const supabase = createClient();
+    const allConvIds = [...primary, ...other].map((c) => c.id);
+    if (allConvIds.length === 0) return;
+
+    const channel = supabase
+      .channel("conversations-list-updates")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "messages" },
+        (payload) => {
+          const newMsg = payload.new as any;
+          const updateList = (convs: ConversationType[]) =>
+            convs
+              .map((c) => {
+                if (c.id === newMsg.conversation_id) {
+                  return {
+                    ...c,
+                    last_message_at: newMsg.created_at,
+                    messages: [newMsg],
+                  };
+                }
+                return c;
+              })
+              .sort(
+                (a, b) =>
+                  new Date(b.last_message_at || 0).getTime() -
+                  new Date(a.last_message_at || 0).getTime(),
+              );
+
+          setPrimary((prev) => updateList(prev));
+          setOther((prev) => updateList(prev));
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   const updateTab = (newTab: string) => {
     const tabOrder = ["Primary", "Other"];
@@ -188,7 +233,7 @@ export default function ConversationsList({
           >
             {activeTab === "Primary" ? (
               <div className="py-2">
-                {primaryConversations.length === 0 ? (
+                {primary.length === 0 ? (
                   <div className="text-center py-8 text-dark/60 dark:text-light/60">
                     <p>No primary conversations yet</p>
                     <p className="mt-2 text-sm">
@@ -196,7 +241,7 @@ export default function ConversationsList({
                     </p>
                   </div>
                 ) : (
-                  primaryConversations.map((conversation) => (
+                  primary.map((conversation) => (
                     <ConversationItem
                       key={conversation.id}
                       conversation={conversation}
@@ -211,7 +256,7 @@ export default function ConversationsList({
               </div>
             ) : (
               <div className="py-2">
-                {otherConversations.length === 0 ? (
+                {other.length === 0 ? (
                   <div className="text-center py-8 text-dark/60 dark:text-light/60">
                     <p>No message requests</p>
                     <p className="mt-2 text-sm">
@@ -219,7 +264,7 @@ export default function ConversationsList({
                     </p>
                   </div>
                 ) : (
-                  otherConversations.map((conversation) => (
+                  other.map((conversation) => (
                     <ConversationItem
                       key={conversation.id}
                       conversation={conversation}

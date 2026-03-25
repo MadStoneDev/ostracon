@@ -1,6 +1,7 @@
 ﻿import { NextResponse } from "next/server";
 
 import { createClient } from "@/utils/supabase/server";
+import { pinRateLimiter } from "@/utils/rate-limit";
 import { lockUserAccount } from "@/utils/upstash/redis-lock";
 
 export async function POST() {
@@ -13,6 +14,11 @@ export async function POST() {
 
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { success: rateLimitOk } = await pinRateLimiter.limit(user.id);
+    if (!rateLimitOk) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
     }
 
     const userId = user.id;

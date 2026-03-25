@@ -23,3 +23,15 @@ export const messageRateLimiter = new Ratelimit({
   limiter: Ratelimit.slidingWindow(30, "60s"),
   prefix: "ratelimit:message",
 });
+
+export const pinRateLimiter = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(5, "60s"),
+  prefix: "ratelimit:pin",
+});
+
+export const communityRateLimiter = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(10, "60s"),
+  prefix: "ratelimit:community",
+});

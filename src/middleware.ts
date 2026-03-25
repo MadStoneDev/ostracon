@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { updateSession } from "@/utils/supabase/middleware";
 import { isUserLocked } from "@/utils/upstash/redis-lock";
+import { calculateAge } from "@/utils/validation";
 
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
@@ -47,6 +48,18 @@ export async function middleware(request: NextRequest) {
     // Not authenticated - redirect to auth
     if (!user) {
       return NextResponse.redirect(new URL("/auth", request.url));
+    }
+
+    // Check MFA status — if user has 2FA enabled but session is aal1, redirect to verify
+    if (path !== "/auth/mfa-verify" && path !== "/locked") {
+      const { data: aalData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      if (
+        aalData &&
+        aalData.nextLevel === "aal2" &&
+        aalData.currentLevel === "aal1"
+      ) {
+        return NextResponse.redirect(new URL("/auth/mfa-verify", request.url));
+      }
     }
 
     // Check if user is locked (PIN lock feature)
@@ -101,9 +114,7 @@ export async function middleware(request: NextRequest) {
     } else {
       if (profile.date_of_birth) {
         const birthDate = new Date(profile.date_of_birth);
-        const ageDifMs = Date.now() - birthDate.getTime();
-        const ageDate = new Date(ageDifMs);
-        const age = Math.abs(ageDate.getUTCFullYear() - 1970);
+        const age = calculateAge(birthDate);
 
         if (age < 21) {
           return NextResponse.redirect(new URL("/age-restricted", request.url));

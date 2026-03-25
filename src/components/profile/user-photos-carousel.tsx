@@ -220,68 +220,37 @@ export default function UserPhotosCarousel({
 
         const photoUrl = publicUrlData.publicUrl;
 
-        // Now check with Sightengine
+        // Check image with server-side moderation
         setUploadStatus({
           isUploading: true,
           message: "Checking image content...",
           type: "info",
         });
 
-        const formData = new FormData();
-        formData.append("media", file);
-        formData.append(
-          "models",
-          "nudity-2.1,weapon,recreational_drug,gore-2.0,violence,self-harm",
-        );
-        formData.append(
-          "api_user",
-          process.env.NEXT_PUBLIC_SIGHTENGINE_API_USER!,
-        );
-        formData.append(
-          "api_secret",
-          process.env.NEXT_PUBLIC_SIGHTENGINE_API_SECRET!,
-        );
+        const moderationResponse = await fetch("/api/moderation/check-image", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ imageUrl: photoUrl, context: "profile_photo" }),
+        });
 
-        const moderationResponse = await fetch(
-          "https://api.sightengine.com/1.0/check.json",
-          {
-            method: "POST",
-            body: formData,
-          },
-        );
+        const modResult = await moderationResponse.json();
 
-        const moderationResult: SightEngineResponse =
-          await moderationResponse.json();
-
-        const analysis = analyzeModerationResult(moderationResult);
-
-        if (analysis.hasViolations) {
-          // Create moderation record
-          const { error: moderationError } = await supabase
-            .from("images_moderation")
-            .insert([
-              {
-                image_url: photoUrl,
-                uploaded_by: currentUser.id,
-                reported_by: null, // System-triggered
-                reason: analysis.reason,
-                risk_level: analysis.riskLevel,
-                sightengine_data: moderationResult,
-              },
-            ]);
-
-          if (moderationError) {
-            // Error handled silently
-          }
-
+        if (modResult.blocked) {
+          // Image contains nudity — block it
+          await supabase.storage.from("user.photos").remove([filePath]);
+          setUploadStatus({
+            isUploading: false,
+            message: "Image rejected: " + (modResult.reasons?.join(", ") || "Content not allowed"),
+            type: "error",
+          });
+        } else if (modResult.flagged) {
+          // Borderline content — flagged for review
           setUploadStatus({
             isUploading: false,
             message:
               "Image flagged for review. It will be reviewed by our moderation team.",
             type: "warning",
           });
-
-          // Clean up the uploaded file since it won't be added to profile_photos
           await supabase.storage.from("user.photos").remove([filePath]);
         } else {
           // Image is safe, add to profile_photos

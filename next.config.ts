@@ -48,6 +48,20 @@ const nextConfig: NextConfig = {
             key: "Permissions-Policy",
             value: "camera=(), microphone=(), geolocation=()",
           },
+          {
+            key: "Content-Security-Policy",
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+              "style-src 'self' 'unsafe-inline'",
+              "img-src 'self' *.supabase.co *.supabase.in data: blob:",
+              "font-src 'self'",
+              "connect-src 'self' *.supabase.co *.supabase.in *.upstash.io wss://*.supabase.co",
+              "frame-src 'self'",
+              "object-src 'none'",
+              "base-uri 'self'",
+            ].join("; "),
+          },
         ],
       },
     ];

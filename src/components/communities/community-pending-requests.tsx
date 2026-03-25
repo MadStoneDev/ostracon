@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { toast } from "@/hooks/use-toast";
 import { Check, X } from "lucide-react";
 
 interface PendingRequest {
@@ -55,11 +56,12 @@ export function CommunityPendingRequests({
       setRequests(requests.filter((r) => r.user_id !== userId));
       router.refresh();
     } catch (error) {
-      alert(
-        error instanceof Error
+      toast({
+        title: error instanceof Error
           ? error.message
           : `Failed to ${approve ? "approve" : "reject"} request`,
-      );
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
