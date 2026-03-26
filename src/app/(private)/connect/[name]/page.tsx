@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
 import { notFound } from "next/navigation";
 import CommunityJoinRequestButton from "@/components/communities/community-join-request-button";
@@ -109,9 +110,27 @@ export default async function CommunityPage({ params }: CommunityPageProps) {
       {user && (
         <div>
           {isMember ? (
-            <p className="text-sm text-green-600">
-              You're a member {memberRole !== "member" && `(${memberRole})`}
-            </p>
+            <div className="flex items-center gap-3">
+              <p className="text-sm text-green-600">
+                You're a member {memberRole !== "member" && `(${memberRole})`}
+              </p>
+              {(memberRole === "admin" || memberRole === "moderator" || memberRole === "owner") && (
+                <>
+                  <Link
+                    href={`/connect/${name}/settings`}
+                    className="text-sm text-primary hover:underline"
+                  >
+                    Settings
+                  </Link>
+                  <Link
+                    href={`/connect/${name}/analytics`}
+                    className="text-sm text-primary hover:underline"
+                  >
+                    Analytics
+                  </Link>
+                </>
+              )}
+            </div>
           ) : hasPendingRequest ? (
             <button
               disabled

@@ -5,6 +5,7 @@ import Image from "next/image";
 import { User } from "@supabase/supabase-js";
 import { createClient } from "@/utils/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import GifPicker from "@/components/messages/gif-picker";
 import {
   IconSend,
   IconPhoto,
@@ -36,6 +37,7 @@ export default function MessageInput({
   const [preview, setPreview] = useState<string | null>(null);
   const [attachmentType, setAttachmentType] = useState<string | null>(null);
   const [isSending, setIsSending] = useState(false);
+  const [showGifPicker, setShowGifPicker] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -88,11 +90,14 @@ export default function MessageInput({
     fileInputRef.current?.click();
   };
 
-  const handleGifClick = async () => {
-    // In a real app, you'd implement a GIF picker here
-    // For now, we'll use a placeholder GIF
-    setPreview("https://media.giphy.com/media/3o7TKSjRrfIPjeiVyM/giphy.gif");
+  const handleGifClick = () => {
+    setShowGifPicker(!showGifPicker);
+  };
+
+  const handleGifSelect = (gifUrl: string) => {
+    setPreview(gifUrl);
     setAttachmentType("gif");
+    setShowGifPicker(false);
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -238,6 +243,16 @@ export default function MessageInput({
 
   return (
     <div className="flex flex-col">
+      {/* GIF Picker */}
+      {showGifPicker && (
+        <div className="mb-2">
+          <GifPicker
+            onSelect={handleGifSelect}
+            onClose={() => setShowGifPicker(false)}
+          />
+        </div>
+      )}
+
       {/* Preview */}
       {preview && (
         <div className="mb-2 relative">

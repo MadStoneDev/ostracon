@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { UserSettings } from "@/types/settings.types";
+import Link from "next/link";
 
 export default function AccountSettings() {
   const [settings, setSettings] = useState<UserSettings | null>(null);
@@ -320,6 +321,28 @@ export default function AccountSettings() {
 
       <h1 className="text-2xl font-bold">Settings</h1>
 
+      {/* Quick links */}
+      <div className="mt-4 flex flex-wrap gap-2">
+        <Link
+          href="/settings/security"
+          className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+        >
+          Security & 2FA
+        </Link>
+        <Link
+          href="/settings/subscription"
+          className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+        >
+          Subscription
+        </Link>
+        <Link
+          href="/profile/analytics"
+          className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+        >
+          Your Analytics
+        </Link>
+      </div>
+
       {/* Profile Settings */}
       <section className="mt-8">
         <h2 className="text-lg font-bold mb-4">Profile</h2>
@@ -563,6 +586,91 @@ export default function AccountSettings() {
               <SelectItem value="none">No one</SelectItem>
               <SelectItem value="followers">People I Follow only</SelectItem>
               <SelectItem value="everyone">Everyone</SelectItem>
+            </SelectContent>
+          </Select>
+        </article>
+      </section>
+
+      {/* Push Notifications */}
+      <section className="mt-8">
+        <h2 className="text-lg font-bold mb-4">Push Notifications</h2>
+
+        <article className="flex justify-between items-center">
+          <div>
+            <span>Browser Notifications</span>
+            <p className="text-xs text-muted-foreground">Get notified about new activity</p>
+          </div>
+          <button
+            onClick={async () => {
+              if (!("Notification" in window) || !("serviceWorker" in navigator)) {
+                alert("Push notifications are not supported in this browser");
+                return;
+              }
+              if (Notification.permission === "granted") {
+                // Already subscribed — unsubscribe
+                const reg = await navigator.serviceWorker.ready;
+                const sub = await reg.pushManager.getSubscription();
+                if (sub) {
+                  await fetch("/api/push/subscribe", {
+                    method: "DELETE",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ token: JSON.stringify(sub.toJSON()) }),
+                  });
+                  await sub.unsubscribe();
+                }
+              } else {
+                const permission = await Notification.requestPermission();
+                if (permission === "granted") {
+                  const reg = await navigator.serviceWorker.ready;
+                  const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+                  if (vapidKey) {
+                    const sub = await reg.pushManager.subscribe({
+                      userVisibleOnly: true,
+                      applicationServerKey: vapidKey,
+                    });
+                    await fetch("/api/push/subscribe", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        token: JSON.stringify(sub.toJSON()),
+                        platform: "web",
+                      }),
+                    });
+                  }
+                }
+              }
+            }}
+            className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          >
+            {typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted"
+              ? "Disable"
+              : "Enable"}
+          </button>
+        </article>
+      </section>
+
+      {/* Email Notifications */}
+      <section className="mt-8">
+        <h2 className="text-lg font-bold mb-4">Email Notifications</h2>
+
+        <article className="flex justify-between items-center">
+          <span>Email Digest</span>
+          <Select
+            value={settings.email_digest_frequency || "never"}
+            onValueChange={(value) =>
+              updateSetting(
+                "email_digest_frequency",
+                value as "never" | "daily" | "weekly",
+              )
+            }
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Select frequency" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="never">Never</SelectItem>
+              <SelectItem value="daily">Daily</SelectItem>
+              <SelectItem value="weekly">Weekly</SelectItem>
             </SelectContent>
           </Select>
         </article>

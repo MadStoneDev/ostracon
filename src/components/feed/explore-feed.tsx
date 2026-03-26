@@ -8,6 +8,7 @@ import type { Database } from "../../../database.types";
 import Link from "next/link";
 import { IconSquareRoundedPlus } from "@tabler/icons-react";
 import PullToRefresh from "react-simple-pull-to-refresh";
+import NextLink from "next/link";
 
 // Define types using the Database type
 type FragmentRow = Database["public"]["Tables"]["fragments"]["Row"];
@@ -414,6 +415,17 @@ export default function ExploreFeed() {
   return (
     <PullToRefresh onRefresh={handlePullToRefresh}>
       <div className={`flex flex-col items-center w-full space-y-3 z-0`}>
+        {/* Feed tabs */}
+        <nav className="flex gap-4 w-full px-2">
+          <span className="font-bold border-b-2 border-primary pb-1">For You</span>
+          <NextLink
+            href="/explore/trending"
+            className="text-muted-foreground hover:text-foreground transition-colors pb-1"
+          >
+            Trending
+          </NextLink>
+        </nav>
+
         {/* New posts banner */}
         {newPostsAvailable > 0 && (
           <button

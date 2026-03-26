@@ -22,6 +22,10 @@ import {
   IconSettings,
   IconPlus,
   IconPencil,
+  IconTrendingUp,
+  IconChartBar,
+  IconShieldCheck,
+  IconCreditCard,
 } from "@tabler/icons-react";
 
 export default function CommandPalette({
@@ -85,9 +89,25 @@ export default function CommandPalette({
               Profile
             </CommandItem>
           )}
+          <CommandItem onSelect={() => runCommand(() => router.push("/explore/trending"))}>
+            <IconTrendingUp className="mr-2 h-4 w-4" />
+            Trending
+          </CommandItem>
+          <CommandItem onSelect={() => runCommand(() => router.push("/profile/analytics"))}>
+            <IconChartBar className="mr-2 h-4 w-4" />
+            Your Analytics
+          </CommandItem>
           <CommandItem onSelect={() => runCommand(() => router.push("/settings"))}>
             <IconSettings className="mr-2 h-4 w-4" />
             Settings
+          </CommandItem>
+          <CommandItem onSelect={() => runCommand(() => router.push("/settings/security"))}>
+            <IconShieldCheck className="mr-2 h-4 w-4" />
+            Security & 2FA
+          </CommandItem>
+          <CommandItem onSelect={() => runCommand(() => router.push("/settings/subscription"))}>
+            <IconCreditCard className="mr-2 h-4 w-4" />
+            Subscription
           </CommandItem>
         </CommandGroup>
         <CommandSeparator />

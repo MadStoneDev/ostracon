@@ -27,6 +27,7 @@ import CommunitySelector from "@/components/ui/community-selector";
 import type { User } from "@supabase/supabase-js";
 import type { Database } from "../../../../database.types";
 import TagSelector from "@/components/ui/tag-selector";
+import ThemePicker from "@/components/feed/post/theme-picker";
 
 type PostSettings = {
   allowReactions: boolean;
@@ -95,6 +96,9 @@ export default function PostForm({
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [selectedThemeId, setSelectedThemeId] = useState<string | null>(
+    post?.theme_id || null,
+  );
 
   // Functions
   const handleDefaultSettings = (setting: SettingKey) => {
@@ -212,6 +216,7 @@ export default function PostForm({
           isDraft: selectedCommunity === "draft",
           communityId,
           tagIds: selectedTags.map((tag) => tag.id),
+          themeId: selectedThemeId || undefined,
         });
 
         if (!result.success) {
@@ -511,6 +516,15 @@ export default function PostForm({
           setSelectedTags(tagsArray);
         }}
       />
+
+      {/* Post Theme */}
+      <div className="mt-4">
+        <label className="block text-sm font-medium mb-2 opacity-60">Post Theme</label>
+        <ThemePicker
+          selectedThemeId={selectedThemeId}
+          onSelect={setSelectedThemeId}
+        />
+      </div>
 
       {/* Delete Post Option (only in edit mode) */}
       {isEditing && (

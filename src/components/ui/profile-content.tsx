@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { formatCount } from "@/utils/format-count";
 import { createClient } from "@/utils/supabase/client";
 import { followUser, unfollowUser } from "@/actions/follow-actions";
+import Link from "next/link";
 import { blockUser } from "@/actions/block-actions";
 import { muteUser } from "@/actions/mute-actions";
 import ConfirmDialog from "@/components/ui/confirm-dialog";
@@ -305,6 +306,9 @@ export default function ProfileContent({
           avatar_url={profile.avatar_url || ""}
           avatarSize={`w-24 md:w-32 h-24 md:h-32`}
           textSize={`text-3xl md:text-6xl`}
+          userId={profile.id}
+          showPresence={!isOwnProfile}
+          isVerified={profile.is_verified || false}
         />
         {/* User Info */}
         <article className={`mt-2 mb-8 grid gap-3`}>
@@ -317,6 +321,14 @@ export default function ProfileContent({
             )}
           </h1>
           <p className={`opacity-75 font-normal`}>{profile.bio}</p>
+          {isOwnProfile && (
+            <Link
+              href="/profile/analytics"
+              className="inline-flex items-center gap-1 mt-1 text-sm text-primary hover:underline"
+            >
+              View your analytics
+            </Link>
+          )}
         </article>
         {/* Tabs */}
         <article className={`flex flex-col justify-center gap-3 text-sm`}>

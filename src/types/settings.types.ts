@@ -25,5 +25,8 @@
     messages: boolean;
   };
 
+  // Email digest
+  email_digest_frequency: "never" | "daily" | "weekly";
+
   _version: number;
 }

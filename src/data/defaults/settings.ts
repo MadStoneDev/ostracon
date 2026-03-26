@@ -29,5 +29,7 @@ export const defaultSettings: UserSettings = {
     messages: true,
   },
 
+  email_digest_frequency: "never",
+
   _version: CURRENT_SETTINGS_VERSION,
 };

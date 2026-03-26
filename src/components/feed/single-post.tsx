@@ -12,6 +12,7 @@ import React, {
 import { createClient } from "@/utils/supabase/client";
 import { toggleFragmentReaction, deleteFragment } from "@/actions/fragment-actions";
 import { saveFragment, unsaveFragment } from "@/actions/save-actions";
+import { createRepost, deleteRepost } from "@/actions/repost-actions";
 
 import SinglePostReply from "@/components/ui/single-post-reply";
 import { PostHeader } from "@/components/feed/post/post-header";
@@ -92,6 +93,8 @@ export default function Post({
   const [isDataLoading, setIsDataLoading] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isSaved, setIsSaved] = useState(false);
+  const [hasReposted, setHasReposted] = useState(false);
+  const [repostCount, setRepostCount] = useState(0);
 
   // Initialize state with pre-fetched data
   const [baseState, setBaseState] = useState<PostState>({
@@ -401,6 +404,28 @@ export default function Post({
     }
   }, [isSaved, postId]);
 
+  const handleRepost = useCallback(async () => {
+    if (!currentUser || authorId === currentUser.id) return;
+
+    const wasReposted = hasReposted;
+    setHasReposted(!hasReposted);
+    setRepostCount((c) => (wasReposted ? c - 1 : c + 1));
+
+    try {
+      const result = wasReposted
+        ? await deleteRepost(postId)
+        : await createRepost(postId);
+
+      if (!result.success) {
+        setHasReposted(wasReposted);
+        setRepostCount((c) => (wasReposted ? c + 1 : c - 1));
+      }
+    } catch {
+      setHasReposted(wasReposted);
+      setRepostCount((c) => (wasReposted ? c + 1 : c - 1));
+    }
+  }, [hasReposted, postId, currentUser, authorId]);
+
   const handleCommentAdded = useCallback(() => {
     if (isPending) return;
 
@@ -511,6 +536,9 @@ export default function Post({
             isLoading={isDataLoading}
             isSaved={isSaved}
             onToggleSave={currentUser ? handleToggleSave : undefined}
+            repostCount={repostCount}
+            userReposted={hasReposted}
+            onRepost={currentUser && authorId !== currentUser.id ? handleRepost : undefined}
           />
 
           {commentsAllowed && (
