@@ -12,6 +12,7 @@ import { createClient } from "@/utils/supabase/server";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { RealtimeProvider } from "@/providers/realtime-provider";
+import ServiceWorkerRegister from "@/components/sw-register";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -56,6 +57,13 @@ export default async function RootLayout({
       className={`${outfit.variable} ${merriweather.variable} ${lilitaOne.variable}`}
       suppressHydrationWarning
     >
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#6366f1" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="Ostracon" />
+      </head>
       <body
         className={`relative bg-primary dark:text-light text-dark`}
         style={{
@@ -77,6 +85,7 @@ export default async function RootLayout({
 
                 {children}
                 <Toaster />
+                <ServiceWorkerRegister />
               </TooltipProvider>
             </RealtimeProvider>
           </div>

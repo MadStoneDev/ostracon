@@ -1,0 +1,20 @@
+{
+  "name": "Ostracon",
+  "short_name": "Ostracon",
+  "description": "Where every voice finds its space",
+  "start_url": "/explore",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#6366f1",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/ostracon-symbol.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["social"]
+}
