@@ -11,6 +11,7 @@ import {
   IconMessagePlus,
   IconBookmark,
   IconBookmarkFilled,
+  IconRepeat,
 } from "@tabler/icons-react";
 
 type PostState = {
@@ -33,6 +34,9 @@ type PostActionsProps = {
   isLoading?: boolean;
   isSaved?: boolean;
   onToggleSave?: () => void;
+  repostCount?: number;
+  userReposted?: boolean;
+  onRepost?: () => void;
 };
 
 export const PostActions = React.memo(
@@ -49,6 +53,9 @@ export const PostActions = React.memo(
     isLoading = false,
     isSaved = false,
     onToggleSave,
+    repostCount = 0,
+    userReposted = false,
+    onRepost,
   }: PostActionsProps) => (
     <section className="flex flex-nowrap justify-between items-center">
       <article
@@ -102,6 +109,20 @@ export const PostActions = React.memo(
               <IconMessageOff size={24} strokeWidth={2} />
             </div>
           )}
+
+          {onRepost && (
+            <button
+              className={`transition-all duration-300 ease-in-out ${
+                userReposted ? "text-green-500" : ""
+              } ${isLoading ? "opacity-70 pointer-events-none" : ""}`}
+              onClick={onRepost}
+              disabled={isLoading}
+              aria-label={userReposted ? "Undo repost" : "Repost"}
+              title={userReposted ? "Undo repost" : "Repost"}
+            >
+              <IconRepeat size={24} strokeWidth={2} />
+            </button>
+          )}
         </div>
       </article>
 
@@ -145,6 +166,13 @@ export const PostActions = React.memo(
               {isLoading ? "..." : optimisticState.commentCount}
             </span>
           </Link>
+
+          {repostCount > 0 && (
+            <div className="flex items-center gap-1 opacity-30">
+              <IconRepeat size={20} strokeWidth={2.5} />
+              <span className="font-sans text-sm font-bold">{repostCount}</span>
+            </div>
+          )}
         </div>
 
         {onToggleSave && (

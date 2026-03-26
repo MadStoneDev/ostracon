@@ -1,6 +1,6 @@
 ﻿import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import { IconX } from "@tabler/icons-react";
+import { IconX, IconRosetteDiscountCheckFilled } from "@tabler/icons-react";
 import { usePresence } from "@/providers/realtime-provider";
 
 export default function UserAvatar({
@@ -12,6 +12,7 @@ export default function UserAvatar({
   action,
   userId,
   showPresence = false,
+  isVerified = false,
 }: {
   username: string;
   avatar_url: string;
@@ -21,6 +22,7 @@ export default function UserAvatar({
   action?: () => void | null;
   userId?: string;
   showPresence?: boolean;
+  isVerified?: boolean;
 }) {
   const { onlineUsers } = usePresence();
   const isOnline = showPresence && userId ? onlineUsers.has(userId) : false;
@@ -69,6 +71,13 @@ export default function UserAvatar({
       {/* Online indicator */}
       {isOnline && (
         <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white dark:border-gray-900 rounded-full z-10" />
+      )}
+
+      {/* Verification badge */}
+      {isVerified && (
+        <div className="absolute -bottom-0.5 -right-0.5 z-10">
+          <IconRosetteDiscountCheckFilled size={16} className="text-blue-500" />
+        </div>
       )}
 
       {/* Full Screen Image */}

@@ -20,6 +20,7 @@ export async function createFragment(data: {
   isDraft: boolean;
   communityId: string;
   tagIds: string[];
+  themeId?: string;
 }): Promise<ActionResult<{ id: string }>> {
   const supabase = await createClient();
 
@@ -70,6 +71,7 @@ export async function createFragment(data: {
       is_nsfw: isNsfw,
       is_draft: data.isDraft,
       community_id: data.communityId || "",
+      theme_id: data.themeId || null,
       published_at: publishedAt,
     })
     .select("id")

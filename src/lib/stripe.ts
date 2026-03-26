@@ -1,10 +1,20 @@
 import Stripe from "stripe";
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error("STRIPE_SECRET_KEY is not set in environment variables");
-}
+let _stripe: Stripe | null = null;
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+/**
+ * Get the Stripe client. Lazily initialized to avoid build-time errors
+ * when STRIPE_SECRET_KEY is not set (e.g., during `next build`).
+ */
+export function getStripe(): Stripe {
+  if (!_stripe) {
+    if (!process.env.STRIPE_SECRET_KEY) {
+      throw new Error("STRIPE_SECRET_KEY is not set in environment variables");
+    }
+    _stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+  }
+  return _stripe;
+}
 
 /**
  * Get or create a Stripe customer for a user.
@@ -18,6 +28,7 @@ export async function getOrCreateStripeCustomer(
     return existingCustomerId;
   }
 
+  const stripe = getStripe();
   const customer = await stripe.customers.create({
     email,
     metadata: { supabase_user_id: userId },

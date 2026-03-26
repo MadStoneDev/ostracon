@@ -434,11 +434,42 @@ export type Database = {
         }
         Relationships: []
       }
+      post_themes: {
+        Row: {
+          id: string
+          name: string
+          display_name: string
+          emoji_set: { emoji: string; label: string; type: string }[]
+          color: string | null
+          is_active: boolean | null
+          display_order: number | null
+        }
+        Insert: {
+          id?: string
+          name: string
+          display_name: string
+          emoji_set: { emoji: string; label: string; type: string }[]
+          color?: string | null
+          is_active?: boolean | null
+          display_order?: number | null
+        }
+        Update: {
+          id?: string
+          name?: string
+          display_name?: string
+          emoji_set?: { emoji: string; label: string; type: string }[]
+          color?: string | null
+          is_active?: boolean | null
+          display_order?: number | null
+        }
+        Relationships: []
+      }
       fragments: {
         Row: {
           id: string
           user_id: string
           community_id: string | null
+          theme_id: string | null
           title: string | null
           content: string
           is_draft: boolean | null
@@ -454,6 +485,7 @@ export type Database = {
           id?: string
           user_id: string
           community_id?: string | null
+          theme_id?: string | null
           title?: string | null
           content: string
           is_draft?: boolean | null
@@ -469,6 +501,7 @@ export type Database = {
           id?: string
           user_id?: string
           community_id?: string | null
+          theme_id?: string | null
           title?: string | null
           content?: string
           is_draft?: boolean | null
@@ -817,6 +850,7 @@ export type Database = {
           created_at: string | null
           updated_at: string | null
           is_admin: boolean | null
+          is_verified: boolean | null
         }
         Insert: {
           id: string
