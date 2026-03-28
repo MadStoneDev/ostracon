@@ -1,26 +1,19 @@
-﻿"use server";
+"use server";
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
+import { createAdminClient } from "@/utils/supabase/admin";
 import { authRateLimiter } from "@/utils/rate-limit";
+import { sendMagicLinkEmail } from "@/lib/email";
 
-function getUserFriendlyError(error: any): string {
-  const errorMessages: Record<string, string> = {
-    "Invalid login credentials": "Invalid verification code. Please try again.",
-    "Email not confirmed":
-      "Please verify your email address before logging in.",
-    "Too many requests": "Too many attempts. Please try again later.",
-  };
-
-  return (
-    errorMessages[error.message] || "Authentication failed. Please try again."
-  );
-}
-
+/**
+ * Request a sign-in link via email.
+ * Uses Supabase Admin API to generate the link, then sends it via Resend.
+ * This completely bypasses Supabase's built-in email system.
+ */
 export async function requestOTP(formData: { email: string }) {
   try {
-    // Rate limiting
     const { success: rateLimit } = await authRateLimiter.limit(
       formData.email.toLowerCase(),
     );
@@ -32,20 +25,103 @@ export async function requestOTP(formData: { email: string }) {
       };
     }
 
-    const supabase = await createClient();
+    const adminClient = createAdminClient();
+    const siteUrl =
+      process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3080";
 
-    // Send OTP - profile will be auto-created by database trigger
-    const { error } = await supabase.auth.signInWithOtp({
+    // Use admin API to generate a magic link without sending email
+    const { data, error } = await adminClient.auth.admin.generateLink({
+      type: "magiclink",
       email: formData.email,
       options: {
-        shouldCreateUser: true,
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3080"}/explore`,
+        redirectTo: `${siteUrl}/auth/callback`,
       },
     });
 
     if (error) {
+      console.error("Error generating magic link:", error);
+
+      // If user doesn't exist, create them first then generate link
+      if (
+        error.message.includes("User not found") ||
+        error.message.includes("user_not_found") ||
+        error.message.includes("Unable to find user")
+      ) {
+        const { error: createError } =
+          await adminClient.auth.admin.createUser({
+            email: formData.email,
+            email_confirm: true,
+          });
+
+        if (createError) {
+          console.error("Error creating user:", createError);
+          return {
+            error: "Unable to create account. Please try again.",
+            success: false,
+          };
+        }
+
+        // Generate link for the new user
+        const { data: linkData, error: linkError } =
+          await adminClient.auth.admin.generateLink({
+            type: "magiclink",
+            email: formData.email,
+            options: {
+              redirectTo: `${siteUrl}/auth/callback`,
+            },
+          });
+
+        if (linkError || !linkData?.properties?.action_link) {
+          console.error("Error generating link for new user:", linkError);
+          return {
+            error: "Unable to send sign-in link. Please try again.",
+            success: false,
+          };
+        }
+
+        const emailResult = await sendMagicLinkEmail(
+          formData.email,
+          linkData.properties.action_link,
+        );
+
+        if (emailResult.error) {
+          console.error("Error sending email:", emailResult.error);
+          return {
+            error: "Unable to send email. Please try again.",
+            success: false,
+          };
+        }
+
+        return {
+          error: null,
+          success: true,
+          message: "Sign-in link sent to your email.",
+        };
+      }
+
       return {
-        error: getUserFriendlyError(error),
+        error: "Unable to send sign-in link. Please try again.",
+        success: false,
+      };
+    }
+
+    if (!data?.properties?.action_link) {
+      return {
+        error: "Unable to generate sign-in link. Please try again.",
+        success: false,
+      };
+    }
+
+    // Send the magic link via Resend
+    const emailResult = await sendMagicLinkEmail(
+      formData.email,
+      data.properties.action_link,
+    );
+
+    if (emailResult.error) {
+      console.error("Error sending email:", emailResult.error);
+      return {
+        error: "Unable to send email. Please try again.",
         success: false,
       };
     }
@@ -53,20 +129,28 @@ export async function requestOTP(formData: { email: string }) {
     return {
       error: null,
       success: true,
-      message: "Verification code sent to your email.",
+      message: "Sign-in link sent to your email.",
     };
   } catch (error) {
+    console.error("Unexpected error in requestOTP:", error);
     return {
-      error: "Unable to send verification code. Please try again.",
+      error: "Unable to send sign-in link. Please try again.",
       success: false,
     };
   }
 }
 
-export async function signInWithOAuth(provider: "google" | "github" | "apple") {
+/**
+ * OAuth sign-in (Google, GitHub, Apple).
+ * Uses Supabase OAuth directly — no email involved.
+ */
+export async function signInWithOAuth(
+  provider: "google" | "github" | "apple",
+) {
   try {
     const supabase = await createClient();
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3080";
+    const siteUrl =
+      process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3080";
 
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider,
@@ -89,9 +173,12 @@ export async function signInWithOAuth(provider: "google" | "github" | "apple") {
   }
 }
 
+/**
+ * Verify OTP code.
+ * Still uses Supabase verifyOtp for token validation.
+ */
 export async function verifyOTP(formData: { email: string; otp: string }) {
   try {
-    // Rate limiting
     const { success: rateLimit } = await authRateLimiter.limit(
       formData.email.toLowerCase(),
     );
@@ -105,7 +192,6 @@ export async function verifyOTP(formData: { email: string; otp: string }) {
 
     const supabase = await createClient();
 
-    // Verify OTP
     const { data, error } = await supabase.auth.verifyOtp({
       email: formData.email,
       token: formData.otp,
@@ -114,7 +200,7 @@ export async function verifyOTP(formData: { email: string; otp: string }) {
 
     if (error) {
       return {
-        error: getUserFriendlyError(error),
+        error: "Invalid verification code. Please try again.",
         success: false,
       };
     }
@@ -126,15 +212,12 @@ export async function verifyOTP(formData: { email: string; otp: string }) {
       };
     }
 
-    // Profile is guaranteed to exist due to database trigger
-    // Check if user has completed profile setup (has username)
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile } = await supabase
       .from("profiles")
       .select("username")
       .eq("id", data.user.id)
       .single();
 
-    // Redirect based on profile completion
     if (!profile?.username) {
       revalidatePath("/profile/setup");
       redirect("/profile/setup");
@@ -143,12 +226,10 @@ export async function verifyOTP(formData: { email: string; otp: string }) {
       redirect("/explore");
     }
   } catch (error) {
-    // Allow Next.js redirects to pass through
     if (error instanceof Error && error.message.includes("NEXT_REDIRECT")) {
       throw error;
     }
 
-    // Capture and log any unexpected errors
     return {
       error:
         error instanceof Error

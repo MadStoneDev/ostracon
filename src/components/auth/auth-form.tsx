@@ -185,7 +185,7 @@ export default function AuthForm() {
 
           <BigButton
             type="submit"
-            title={loading ? "Sending..." : "Send Magic Code"}
+            title={loading ? "Sending..." : "Send Sign-In Link"}
             active={!loading}
             disabled={loading || email.trim().length === 0}
             indicator={<IconSend />}
@@ -228,38 +228,15 @@ export default function AuthForm() {
           </div>
         </form>
       ) : (
-        <form onSubmit={handleVerifyOTP} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Enter the 6-digit code sent to your email
-            </label>
-            <div className="flex gap-2 justify-between">
-              {otp.map((digit, index) => (
-                <input
-                  key={index}
-                  type="text"
-                  ref={(el: HTMLInputElement | null) => {
-                    if (inputRefs.current) {
-                      inputRefs.current[index] = el;
-                    }
-                  }}
-                  value={digit}
-                  onChange={(e) => handleOTPChange(index, e.target.value)}
-                  onKeyDown={(e) => handleKeyDown(index, e)}
-                  onPaste={(e) => {
-                    e.preventDefault();
-                    const pastedData = e.clipboardData.getData("text");
-                    handleOTPChange(index, pastedData);
-                  }}
-                  className="w-10 h-12 focus:outline-none focus:ring-none border-b border-primary bg-transparent focus:bg-primary text-center text-dark dark:text-light placeholder:text-dark/30 dark:placeholder:text-light/30 text-lg font-bold transition-all duration-300 ease-in-out"
-                  maxLength={1}
-                  autoFocus={index === 0}
-                  disabled={loading}
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                />
-              ))}
-            </div>
+        <div className="space-y-4">
+          <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
+            <h3 className="font-bold mb-1">Check your email</h3>
+            <p className="text-sm text-muted-foreground">
+              We sent a sign-in link to <strong>{email}</strong>
+            </p>
+            <p className="text-sm text-muted-foreground mt-2">
+              Click the link in the email to sign in. It expires in 1 hour.
+            </p>
           </div>
 
           <div className="flex items-center justify-between">
@@ -267,9 +244,8 @@ export default function AuthForm() {
               type="button"
               onClick={() => setShowOTPInput(false)}
               className="text-primary hover:underline text-sm font-bold"
-              disabled={loading}
             >
-              Change email
+              Use a different email
             </button>
             <button
               type="button"
@@ -277,18 +253,10 @@ export default function AuthForm() {
               className="text-primary hover:underline text-sm font-bold"
               disabled={loading}
             >
-              Resend code
+              {loading ? "Sending..." : "Resend link"}
             </button>
           </div>
-
-          <BigButton
-            type="submit"
-            title={loading ? "Verifying..." : "Verify & Continue"}
-            active={!loading}
-            disabled={loading || otp.join("").length !== 6}
-            indicator={<IconSend />}
-          />
-        </form>
+        </div>
       )}
     </div>
   );
