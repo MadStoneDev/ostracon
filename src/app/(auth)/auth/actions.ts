@@ -8,6 +8,32 @@ import { authRateLimiter } from "@/utils/rate-limit";
 import { sendMagicLinkEmail } from "@/lib/email";
 
 /**
+ * Rewrite a Supabase-generated action_link to point to our app domain.
+ * Supabase generates links like: https://supabase.example.com/auth/v1/verify?token=...&redirect_to=...
+ * We rewrite to: https://ostracon.app/auth/confirm?token_hash=...&type=magiclink
+ * Our /auth/confirm route then exchanges the token with Supabase.
+ */
+function rewriteMagicLink(
+  supabaseLink: string,
+  siteUrl: string,
+): string {
+  try {
+    const url = new URL(supabaseLink);
+    const token = url.searchParams.get("token");
+    const type = url.searchParams.get("type") || "magiclink";
+
+    if (token) {
+      return `${siteUrl}/auth/confirm?token_hash=${encodeURIComponent(token)}&type=${type}`;
+    }
+  } catch {
+    // If URL parsing fails, fall through
+  }
+  // Fallback: just replace the domain
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+  return supabaseLink.replace(supabaseUrl, siteUrl);
+}
+
+/**
  * Request a sign-in link via email.
  * Uses Supabase Admin API to generate the link, then sends it via Resend.
  * This completely bypasses Supabase's built-in email system.
@@ -105,9 +131,10 @@ export async function requestOTP(formData: {
           };
         }
 
+        const appLink = rewriteMagicLink(linkData.properties.action_link, siteUrl);
         const emailResult = await sendMagicLinkEmail(
           formData.email,
-          linkData.properties.action_link,
+          appLink,
         );
 
         if (emailResult.error) {
@@ -138,10 +165,11 @@ export async function requestOTP(formData: {
       };
     }
 
-    // Send the magic link via Resend
+    // Send the magic link via Resend (rewritten to our app domain)
+    const appLink = rewriteMagicLink(data.properties.action_link, siteUrl);
     const emailResult = await sendMagicLinkEmail(
       formData.email,
-      data.properties.action_link,
+      appLink,
     );
 
     if (emailResult.error) {

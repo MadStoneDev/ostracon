@@ -1,28 +1,46 @@
-﻿import { type EmailOtpType } from "@supabase/supabase-js";
-import { type NextRequest } from "next/server";
-
+import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
-import { redirect } from "next/navigation";
 
-export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const token_hash = searchParams.get("token_hash");
-  const type = searchParams.get("type") as EmailOtpType | null;
-  const next = "/explore";
+/**
+ * Handles magic link confirmation.
+ * Receives token_hash and type from the rewritten magic link,
+ * verifies with Supabase, and redirects to the app.
+ */
+export async function GET(request: Request) {
+  const { searchParams, origin } = new URL(request.url);
+  const tokenHash = searchParams.get("token_hash");
+  const type = (searchParams.get("type") || "magiclink") as
+    | "magiclink"
+    | "email";
 
-  if (token_hash && type) {
-    const supabase = await createClient();
-
-    const { error } = await supabase.auth.verifyOtp({
-      type,
-      token_hash,
-    });
-    if (!error) {
-      // redirect user to specified redirect URL or root of app
-      redirect(next);
-    }
+  if (!tokenHash) {
+    return NextResponse.redirect(`${origin}/auth?error=missing_token`);
   }
 
-  // redirect the user to an error page with some instructions
-  redirect("/error");
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.auth.verifyOtp({
+    token_hash: tokenHash,
+    type,
+  });
+
+  if (error || !data.user) {
+    console.error("Magic link verification failed:", error);
+    return NextResponse.redirect(
+      `${origin}/auth?error=invalid_or_expired_link`,
+    );
+  }
+
+  // Check if user has completed profile setup
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("username")
+    .eq("id", data.user.id)
+    .single();
+
+  if (!profile?.username) {
+    return NextResponse.redirect(`${origin}/profile/setup`);
+  }
+
+  return NextResponse.redirect(`${origin}/explore`);
 }
