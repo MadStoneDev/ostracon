@@ -39,7 +39,7 @@ export async function requestOTP(formData: { email: string }) {
       email: formData.email,
       options: {
         shouldCreateUser: true,
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/explore`,
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3080"}/explore`,
       },
     });
 
