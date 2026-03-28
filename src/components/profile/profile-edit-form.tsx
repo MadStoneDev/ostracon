@@ -4,8 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import Image from "next/image";
-import { createClient } from "@/utils/supabase/client";
 import { updateProfile } from "@/actions/profile-actions";
+import { uploadFile } from "@/utils/upload";
 import UserAvatar from "@/components/ui/user-avatar";
 import { IconCamera, IconCheck } from "@tabler/icons-react";
 
@@ -19,7 +19,6 @@ type Profile = {
 
 export default function ProfileEditForm({ profile }: { profile: Profile }) {
   const router = useRouter();
-  const supabase = createClient();
 
   const [bio, setBio] = useState(profile.bio || "");
   const [avatarUrl, setAvatarUrl] = useState(profile.avatar_url || "");
@@ -30,26 +29,6 @@ export default function ProfileEditForm({ profile }: { profile: Profile }) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  const uploadFile = async (
-    file: File,
-    path: string,
-  ): Promise<string | null> => {
-    const { error } = await supabase.storage
-      .from("user.photos")
-      .upload(path, file, { upsert: true });
-
-    if (error) {
-      console.error("Upload error:", error);
-      return null;
-    }
-
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from("user.photos").getPublicUrl(path);
-
-    return publicUrl;
-  };
-
   const handleAvatarUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
   ) => {
@@ -59,12 +38,10 @@ export default function ProfileEditForm({ profile }: { profile: Profile }) {
     setIsUploadingAvatar(true);
     setError(null);
 
-    const path = `${profile.id}/avatar-${Date.now()}.${file.name.split(".").pop()}`;
-    const url = await uploadFile(file, path);
-
-    if (url) {
+    try {
+      const { url } = await uploadFile(file, "ostracon-avatars", "avatars");
       setAvatarUrl(url);
-    } else {
+    } catch {
       setError("Failed to upload avatar");
     }
 
@@ -80,12 +57,10 @@ export default function ProfileEditForm({ profile }: { profile: Profile }) {
     setIsUploadingCover(true);
     setError(null);
 
-    const path = `${profile.id}/cover-${Date.now()}.${file.name.split(".").pop()}`;
-    const url = await uploadFile(file, path);
-
-    if (url) {
+    try {
+      const { url } = await uploadFile(file, "ostracon-images", "covers");
       setCoverUrl(url);
-    } else {
+    } catch {
       setError("Failed to upload cover photo");
     }
 

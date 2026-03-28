@@ -11,6 +11,22 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "**.supabase.in",
       },
+      {
+        protocol: "https",
+        hostname: "**.r2.dev",
+      },
+      {
+        protocol: "https",
+        hostname: "**.cloudflarestorage.com",
+      },
+      {
+        protocol: "https",
+        hostname: "media*.giphy.com",
+      },
+      {
+        protocol: "https",
+        hostname: "i.giphy.com",
+      },
     ],
   },
   // Let's redirect login and register to /auth
@@ -52,12 +68,12 @@ const nextConfig: NextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' js.stripe.com",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' js.stripe.com challenges.cloudflare.com",
               "style-src 'self' 'unsafe-inline'",
-              "img-src 'self' *.supabase.co *.supabase.in data: blob: *.stripe.com",
+              "img-src 'self' *.supabase.co *.supabase.in data: blob: *.stripe.com media*.giphy.com i.giphy.com",
               "font-src 'self'",
-              "connect-src 'self' *.supabase.co *.supabase.in *.upstash.io wss://*.supabase.co api.stripe.com",
-              "frame-src 'self' js.stripe.com hooks.stripe.com",
+              "connect-src 'self' *.supabase.co *.supabase.in *.upstash.io wss://*.supabase.co api.stripe.com api.giphy.com",
+              "frame-src 'self' js.stripe.com hooks.stripe.com challenges.cloudflare.com",
               "object-src 'none'",
               "base-uri 'self'",
             ].join("; "),

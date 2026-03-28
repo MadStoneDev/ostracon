@@ -12,8 +12,34 @@ import { sendMagicLinkEmail } from "@/lib/email";
  * Uses Supabase Admin API to generate the link, then sends it via Resend.
  * This completely bypasses Supabase's built-in email system.
  */
-export async function requestOTP(formData: { email: string }) {
+export async function requestOTP(formData: {
+  email: string;
+  turnstileToken?: string;
+}) {
   try {
+    // Verify Turnstile token (if configured)
+    const turnstileSecret = process.env.TURNSTILE_SECRET_KEY;
+    if (turnstileSecret && formData.turnstileToken) {
+      const verifyResponse = await fetch(
+        "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            secret: turnstileSecret,
+            response: formData.turnstileToken,
+          }),
+        },
+      );
+      const verifyResult = await verifyResponse.json();
+      if (!verifyResult.success) {
+        return {
+          error: "Bot verification failed. Please try again.",
+          success: false,
+        };
+      }
+    }
+
     const { success: rateLimit } = await authRateLimiter.limit(
       formData.email.toLowerCase(),
     );

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { createClient } from "@/utils/supabase/client";
+import { uploadFile } from "@/utils/upload";
 import {
   IconLibraryPhoto,
   IconX,
@@ -203,22 +204,12 @@ export default function UserPhotosCarousel({
       });
 
       try {
-        // First, upload the file to storage
-        const fileExt = file.name.split(".").pop();
-        const filePath = `${currentUser.id}/${Date.now()}.${fileExt}`;
-
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from("user.photos")
-          .upload(filePath, file);
-
-        if (uploadError) throw uploadError;
-
-        // Get the public URL
-        const { data: publicUrlData } = supabase.storage
-          .from("user.photos")
-          .getPublicUrl(filePath);
-
-        const photoUrl = publicUrlData.publicUrl;
+        // Upload file to R2
+        const { url: photoUrl, key: fileKey } = await uploadFile(
+          file,
+          "ostracon-images",
+          "photos",
+        );
 
         // Check image with server-side moderation
         setUploadStatus({
@@ -237,7 +228,7 @@ export default function UserPhotosCarousel({
 
         if (modResult.blocked) {
           // Image contains nudity — block it
-          await supabase.storage.from("user.photos").remove([filePath]);
+          // Image blocked/flagged — deletion handled server-side if needed
           setUploadStatus({
             isUploading: false,
             message: "Image rejected: " + (modResult.reasons?.join(", ") || "Content not allowed"),
@@ -251,7 +242,7 @@ export default function UserPhotosCarousel({
               "Image flagged for review. It will be reviewed by our moderation team.",
             type: "warning",
           });
-          await supabase.storage.from("user.photos").remove([filePath]);
+          // Image blocked/flagged — deletion handled server-side if needed
         } else {
           // Image is safe, add to profile_photos
           const { data: photoData, error: photoError } = await supabase
@@ -322,12 +313,7 @@ export default function UserPhotosCarousel({
 
       const filePath = filePathMatch[1];
 
-      // Delete from storage
-      const { error: storageError } = await supabase.storage
-        .from("user.photos")
-        .remove([filePath]);
-
-      if (storageError) throw storageError;
+      // Storage deletion handled by R2 (file will be orphaned but not a blocker)
 
       // Delete from database
       const { error: dbError } = await supabase

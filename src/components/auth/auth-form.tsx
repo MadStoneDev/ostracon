@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { IconSend } from "@tabler/icons-react";
 
 import BigButton from "@/components/ui/big-button";
+import Turnstile from "@/components/ui/turnstile";
 import { requestOTP, verifyOTP, signInWithOAuth } from "@/app/(auth)/auth/actions";
 
 export default function AuthForm() {
@@ -13,6 +14,7 @@ export default function AuthForm() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [showOTPInput, setShowOTPInput] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
 
@@ -26,11 +28,11 @@ export default function AuthForm() {
     setLoading(true);
 
     try {
-      const result = await requestOTP({ email });
+      const result = await requestOTP({ email, turnstileToken: turnstileToken || undefined });
       if (result.success) {
         toast({
           title: "Success",
-          description: "Verification code sent to your email",
+          description: "Sign-in link sent to your email",
           variant: "default",
         });
         setShowOTPInput(true);
@@ -182,6 +184,11 @@ export default function AuthForm() {
               disabled={loading}
             />
           </div>
+
+          <Turnstile
+            onVerify={setTurnstileToken}
+            onExpire={() => setTurnstileToken(null)}
+          />
 
           <BigButton
             type="submit"

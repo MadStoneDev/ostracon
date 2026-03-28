@@ -3,8 +3,8 @@
 import React, { useState, useRef } from "react";
 import Image from "next/image";
 import { User } from "@supabase/supabase-js";
-import { createClient } from "@/utils/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { uploadFile } from "@/utils/upload";
 import GifPicker from "@/components/messages/gif-picker";
 import {
   IconSend,
@@ -44,7 +44,6 @@ export default function MessageInput({
   const audioChunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<number | null>(null);
 
-  const supabase = createClient();
 
   const handleSend = async () => {
     if (isUploading || isSending) return;
@@ -113,20 +112,8 @@ export default function MessageInput({
     setIsUploading(true);
 
     try {
-      // Upload to Supabase Storage
-      const fileName = `${conversationId}/${Date.now()}-${file.name}`;
-      const { data, error } = await supabase.storage
-        .from("message_media")
-        .upload(fileName, file);
-
-      if (error) throw error;
-
-      // Get public URL
-      const { data: urlData } = supabase.storage
-        .from("message_media")
-        .getPublicUrl(fileName);
-
-      setPreview(urlData.publicUrl);
+      const { url } = await uploadFile(file, "ostracon-images", "messages");
+      setPreview(url);
       setAttachmentType("image");
     } catch (error) {
       console.error("Error uploading file:", error);
@@ -171,20 +158,9 @@ export default function MessageInput({
         setIsUploading(true);
 
         try {
-          // Upload to Supabase Storage
-          const fileName = `${conversationId}/${Date.now()}-voice.mp3`;
-          const { data, error } = await supabase.storage
-            .from("message_media")
-            .upload(fileName, audioBlob);
-
-          if (error) throw error;
-
-          // Get public URL
-          const { data: urlData } = supabase.storage
-            .from("message_media")
-            .getPublicUrl(fileName);
-
-          setPreview(urlData.publicUrl);
+          const voiceFile = new File([audioBlob], "voice.mp3", { type: "audio/mpeg" });
+          const { url } = await uploadFile(voiceFile, "ostracon-images", "voice");
+          setPreview(url);
           setAttachmentType("voice");
         } catch (error) {
           console.error("Error uploading voice recording:", error);
