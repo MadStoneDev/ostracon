@@ -79,7 +79,7 @@ export async function requestOTP(formData: {
 
     const adminClient = createAdminClient();
     const siteUrl =
-      process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3080";
+      process.env.SITE_URL || process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3080";
 
     // Use admin API to generate a magic link without sending email
     const { data, error } = await adminClient.auth.admin.generateLink({
@@ -204,7 +204,7 @@ export async function signInWithOAuth(
   try {
     const supabase = await createClient();
     const siteUrl =
-      process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3080";
+      process.env.SITE_URL || process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3080";
 
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider,
