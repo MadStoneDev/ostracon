@@ -7,7 +7,8 @@ import { createClient } from "@/utils/supabase/server";
  * verifies with Supabase, and redirects to the app.
  */
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url);
+  const { searchParams } = new URL(request.url);
+  const origin = process.env.SITE_URL || process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3080";
   const tokenHash = searchParams.get("token_hash");
   const type = (searchParams.get("type") || "magiclink") as
     | "magiclink"
