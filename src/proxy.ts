@@ -78,20 +78,20 @@ export async function proxy(request: NextRequest) {
       .eq("id", user.id)
       .maybeSingle();
 
-    // Profile doesn't exist (shouldn't happen with trigger, but safety check)
-    // The setup form's upsert action will create the profile when submitted
-    if (error || !profile) {
-      return NextResponse.redirect(new URL("/profile/setup", request.url));
-    }
-
     // Allow profile setup page through — new users need to reach it
     if (path === "/profile/setup") {
-      // If already set up, redirect to explore
-      if (profile.username && profile.date_of_birth) {
+      // If profile is fully set up, redirect to explore
+      if (profile?.username && profile?.date_of_birth) {
         return NextResponse.redirect(new URL("/explore", request.url));
       }
-      // Otherwise let them through to complete setup
+      // Otherwise let them through to complete setup (even if no profile row exists)
       return await updateSession(request);
+    }
+
+    // Profile doesn't exist — redirect to setup
+    // This must come AFTER the /profile/setup check to avoid a redirect loop
+    if (error || !profile) {
+      return NextResponse.redirect(new URL("/profile/setup", request.url));
     }
 
     // For all other protected routes, require completed profile
