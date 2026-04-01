@@ -4,7 +4,7 @@ import { updateSession } from "@/utils/supabase/middleware";
 import { isUserLocked } from "@/utils/upstash/redis-lock";
 import { calculateAge } from "@/utils/validation";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
   const protectedRoutes = [
@@ -129,7 +129,7 @@ export async function middleware(request: NextRequest) {
 
     return await updateSession(request);
   } catch (error) {
-    console.error("Middleware error:", error);
+    console.error("Proxy error:", error);
     return NextResponse.redirect(new URL("/error", request.url));
   }
 }
