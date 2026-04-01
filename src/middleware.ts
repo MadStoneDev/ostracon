@@ -79,24 +79,8 @@ export async function middleware(request: NextRequest) {
       .maybeSingle();
 
     // Profile doesn't exist (shouldn't happen with trigger, but safety check)
+    // The setup form's upsert action will create the profile when submitted
     if (error || !profile) {
-      console.error("⚠️ Profile missing for user:", user.id, error);
-
-      // Try to create profile as fallback
-      const { error: createError } = await supabase
-        .from("profiles")
-        .insert({
-          id: user.id,
-          username: null,
-        })
-        .select()
-        .single();
-
-      if (createError) {
-        console.error("❌ Failed to create profile:", createError);
-      }
-
-      // Redirect to profile setup
       return NextResponse.redirect(new URL("/profile/setup", request.url));
     }
 

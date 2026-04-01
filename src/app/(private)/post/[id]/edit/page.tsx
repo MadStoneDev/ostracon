@@ -12,8 +12,10 @@ async function getPostById(postId: string) {
   const supabase = await createClient();
 
   // First check if the current user is the owner of this post
-  const { data: session } = await supabase.auth.getSession();
-  if (!session.session?.user) {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
     redirect("/login");
   }
 
@@ -42,7 +44,7 @@ async function getPostById(postId: string) {
   }
 
   // Check if the current user is the owner of this post
-  if (post.user_id !== session.session.user.id) {
+  if (post.user_id !== user.id) {
     redirect(`/post/${postId}`); // Redirect to view page if not the owner
   }
 
