@@ -100,54 +100,47 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL("/profile/setup", request.url));
     }
 
-    // If on setup page but already has username, redirect to explore
+    // Allow profile setup page through — new users need to reach it
     if (path === "/profile/setup") {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("username, date_of_birth")
-        .eq("id", user.id)
-        .single();
-
-      if (profile?.username && profile?.date_of_birth) {
+      // If already set up, redirect to explore
+      if (profile.username && profile.date_of_birth) {
         return NextResponse.redirect(new URL("/explore", request.url));
       }
-    } else {
-      if (profile.date_of_birth) {
-        const birthDate = new Date(profile.date_of_birth);
-        const age = calculateAge(birthDate);
+      // Otherwise let them through to complete setup
+      return await updateSession(request);
+    }
 
-        if (age < 21) {
-          return NextResponse.redirect(new URL("/age-restricted", request.url));
-        }
-      } else {
-        return NextResponse.redirect(new URL("/profile/setup", request.url));
-      }
+    // For all other protected routes, require completed profile
+    if (!profile.username || !profile.date_of_birth) {
+      return NextResponse.redirect(new URL("/profile/setup", request.url));
+    }
 
-      // Check account status
-      if (profile.account_status === "suspended") {
-        return NextResponse.redirect(
-          new URL("/error?reason=suspended", request.url),
-        );
-      }
+    // Age check
+    const birthDate = new Date(profile.date_of_birth);
+    const age = calculateAge(birthDate);
 
-      if (profile.account_status === "banned") {
-        // Log out banned users
-        await supabase.auth.signOut();
-        return NextResponse.redirect(
-          new URL("/error?reason=banned", request.url),
-        );
-      }
+    if (age < 21) {
+      return NextResponse.redirect(new URL("/age-restricted", request.url));
+    }
 
-      if (profile.account_status === "deactivated") {
-        return NextResponse.redirect(
-          new URL("/error?reason=deactivated", request.url),
-        );
-      }
+    // Check account status
+    if (profile.account_status === "suspended") {
+      return NextResponse.redirect(
+        new URL("/error?reason=suspended", request.url),
+      );
+    }
 
-      // Profile exists but no username - redirect to setup
-      if (!profile.username) {
-        return NextResponse.redirect(new URL("/profile/setup", request.url));
-      }
+    if (profile.account_status === "banned") {
+      await supabase.auth.signOut();
+      return NextResponse.redirect(
+        new URL("/error?reason=banned", request.url),
+      );
+    }
+
+    if (profile.account_status === "deactivated") {
+      return NextResponse.redirect(
+        new URL("/error?reason=deactivated", request.url),
+      );
     }
 
     return await updateSession(request);
