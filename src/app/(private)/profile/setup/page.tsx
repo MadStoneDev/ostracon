@@ -18,13 +18,13 @@ export default async function ProfileSetup() {
   }
 
   const { data: profile } = await supabase
-    .from("users")
+    .from("profiles")
     .select("username, date_of_birth")
     .eq("id", user.id)
     .single();
 
-  // If profile exists and has username, redirect to explore
-  if (profile?.username) {
+  // If profile is fully set up, redirect to explore
+  if (profile?.username && profile?.date_of_birth) {
     redirect("/explore");
   }
 
